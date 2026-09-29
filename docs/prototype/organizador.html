@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WonderWord — El Organizador & Pomodoro Flotante</title>
+
+  <!-- Fuentes Literarias -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Hanken+Grotesk:wght@400;500;600;700;800;900&family=Charis+SIL:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@0.462.0/dist/umd/lucide.js"></script>
+
+  <style>
+    :root {
+      /* ── Paleta de Pigmentos Literarios ── */
+      --prune: #53335a;
+      --prune-2: #6d4576;
+      --prune-wash: rgba(83, 51, 90, 0.08);
+      --prune-glow: rgba(83, 51, 90, 0.35);
+      
+      --sauge: #006a64;
+      --sauge-2: #0e8880;
+      --sauge-wash: rgba(0, 106, 100, 0.09);
+      --sauge-glow: rgba(0, 106, 100, 0.35);
+      
+      --soleil: #ffcd11;
+      --soleil-ink: #463605;
+      --soleil-wash: rgba(255, 205, 17, 0.18);
+      
+      --terre: #c4632f;
+      --terre-2: #dc7238;
+      --terre-ink: #9c4a1e;
+      --terre-wash: rgba(196, 99, 47, 0.12);
+      
+      --bleuet: #7b9bd1;
+      --bleuet-2: #5b81c2;
+      --bleuet-ink: #32538a;
+      --bleuet-wash: rgba(123, 155, 209, 0.14);
+
+      --canvas: #fbf7ee;
+      --paper: #ffffff;
+      --paper-warm: #fcf9f2;
+      --paper-2: #f4ecdc;
+      --ink: #241d24;
+      --ink-2: #4f4550;
+      --ink-3: #756a77;
+      --rule: rgba(36, 29, 36, 0.12);
+      --rule-soft: rgba(36, 29, 36, 0.06);
+
+      --rail: #282031;
+      --rail-2: #342a3e;
+      --rail-ink: #f2ecf1;
+      --rail-ink-2: #a99fac;
+      --rail-ink-3: #9c92a0;
+      --rail-rule: rgba(255, 255, 255, 0.11);
+      --grain: 0.085;
+      --tooth: 0.5;
+      --vignette-opacity: 0.85;
+    }
+
+    [data-theme="sepia"] {
+      --canvas: #f4ecdb; --paper: #faf4e8; --paper-warm: #f7eedb; --paper-2: #ebdcc2;
+      --ink: #2a2211; --ink-2: #5b4e33; --ink-3: #7b6d4f;
+      --rule: rgba(56, 44, 20, 0.16); --rule-soft: rgba(56, 44, 20, 0.08);
+      --rail: #272014; --rail-2: #33291a; --rail-ink: #f1eade; --rail-ink-2: #ab9f8a; --rail-ink-3: #a0957f;
+      --rail-rule: rgba(255, 255, 255, 0.11); --grain: 0.1; --tooth: 0.6; --vignette-opacity: 0.7;
+    }
+
+    [data-theme="noche"] {
+      --prune: #d7b3de; --prune-2: #e5c8eb; --prune-wash: rgba(215, 179, 222, 0.12);
+      --sauge: #7fd2c9; --sauge-2: #9fe0d8; --sauge-wash: rgba(127, 210, 201, 0.12);
+      --soleil: #ffcd11; --soleil-ink: #ffe9ad; --soleil-wash: rgba(255, 205, 17, 0.16);
+      --terre: #e08a56; --terre-2: #efa172; --terre-ink: #e8996a; --terre-wash: rgba(224, 138, 86, 0.14);
+      --bleuet: #96b0dd; --bleuet-2: #adc2e8; --bleuet-ink: #a6bde5; --bleuet-wash: rgba(150, 176, 221, 0.15);
+      --canvas: #15131a; --paper: #1e1a26; --paper-warm: #231f2c; --paper-2: #2b2536;
+      --ink: #f2ecf3; --ink-2: #b8b0bb; --ink-3: #8e8492;
+      --rule: rgba(236, 230, 237, 0.15); --rule-soft: rgba(236, 230, 237, 0.08);
+      --rail: #100e14; --rail-2: #1b1822; --rail-ink: #ece6ed; --rail-ink-2: #9b929d; --rail-ink-3: #968e99;
+      --rail-rule: rgba(255, 255, 255, 0.1); --grain: 0.06; --tooth: 0.35; --vignette-opacity: 0.35;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      margin: 0;
+      background: var(--canvas);
+      color: var(--ink);
+      font-family: 'Hanken Grotesk', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    a { color: var(--ink); text-decoration: none; }
+    svg.lucide { display: block; stroke-width: 1.6; }
+
+    /* Textura de papel prensado */
+    .paper-texture {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 60;
+      mix-blend-mode: multiply;
+      opacity: var(--grain);
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    /* Marco de acuarela en 4 esquinas */
+    .vignette-container {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      mix-blend-mode: multiply;
+      opacity: var(--vignette-opacity);
+      overflow: hidden;
+    }
+    .corner-top-left {
+      position: absolute; left: -60px; top: -60px; width: 440px; height: 380px;
+      background: radial-gradient(circle at 20% 20%, #4a94e8 0%, #75a7e6 42%, #a8cbfa 70%, transparent 88%);
+      border-radius: 46% 54% 48% 52% / 52% 48% 54% 46%; filter: url(#wc-vignette-heavy); opacity: 0.85;
+    }
+    .corner-top-right {
+      position: absolute; right: -80px; top: -60px; width: 460px; height: 360px;
+      background: radial-gradient(circle at 80% 20%, #e0548a 0%, #eb77a5 40%, #f6aec9 72%, transparent 88%);
+      border-radius: 54% 46% 52% 48% / 48% 54% 46% 54%; filter: url(#wc-vignette-heavy); opacity: 0.82;
+    }
+    .corner-bottom-left {
+      position: absolute; left: -70px; bottom: -70px; width: 480px; height: 380px;
+      background: radial-gradient(circle at 20% 80%, #d8682a 0%, #e88c54 44%, #f5b98f 72%, transparent 88%);
+      border-radius: 50% 50% 46% 54% / 54% 46% 52% 48%; filter: url(#wc-vignette-heavy); opacity: 0.82;
+    }
+    .corner-bottom-right {
+      position: absolute; right: -70px; bottom: -60px; width: 460px; height: 380px;
+      background: radial-gradient(circle at 80% 80%, #f0a818 0%, #f5c448 42%, #fae290 74%, transparent 88%);
+      border-radius: 48% 52% 54% 46% / 46% 54% 48% 52%; filter: url(#wc-vignette-heavy); opacity: 0.84;
+    }
+
+    /* Pestañas de Duración de Rutina */
+    .routine-tab-container {
+      display: inline-flex;
+      background: rgba(36, 29, 36, 0.05);
+      padding: 4px;
+      border-radius: 999px;
+      border: 1px solid var(--rule);
+      gap: 4px;
+    }
+    [data-theme="noche"] .routine-tab-container { background: rgba(255, 255, 255, 0.05); }
+
+    .routine-tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 18px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink-2);
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .routine-tab-btn:hover { color: var(--ink); background: rgba(255,255,255,0.6); }
+    .routine-tab-btn.active {
+      background: var(--paper);
+      color: var(--prune);
+      box-shadow: 0 4px 14px -3px rgba(83, 51, 90, 0.25);
+    }
+    [data-theme="noche"] .routine-tab-btn.active { background: var(--prune); color: #fff; }
+
+    /* Tarjetas del Hero y Bloques */
+    .organizer-hero-card {
+      background: var(--paper);
+      border-radius: 26px;
+      padding: 34px 38px;
+      border: 1px solid var(--rule);
+      box-shadow: 0 1px 3px rgba(36,29,36,0.03), 0 20px 48px -20px rgba(36,29,36,0.14);
+      margin-bottom: 30px;
+    }
+
+    /* Timeline de Bloques Diarios */
+    .routine-blocks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .routine-block-card {
+      background: var(--paper-warm);
+      border: 1px solid var(--rule);
+      border-radius: 20px;
+      padding: 20px 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+    .routine-block-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px -10px rgba(36,29,36,0.15);
+      border-color: var(--ink-3);
+    }
+    .routine-block-card.completed {
+      border-left: 4px solid var(--sauge);
+      background: linear-gradient(180deg, var(--paper-warm) 0%, rgba(0,106,100,0.04) 100%);
+    }
+    .routine-block-card.active-now {
+      border-left: 4px solid var(--soleil);
+      box-shadow: 0 8px 24px -8px var(--soleil-wash);
+    }
+
+    /* Calendario Semanal Grid */
+    .week-calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+    .day-column-card {
+      background: var(--paper-warm);
+      border: 1px solid var(--rule);
+      border-radius: 18px;
+      padding: 16px 12px;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+    .day-column-card.today {
+      background: var(--paper);
+      border-color: var(--soleil);
+      box-shadow: 0 8px 24px -8px var(--soleil-wash);
+      transform: scale(1.02);
+    }
+
+    /* Tarjetas de Metas */
+    .goal-card {
+      background: var(--paper);
+      border: 1px solid var(--rule);
+      border-radius: 20px;
+      padding: 22px 24px;
+      margin-bottom: 16px;
+      transition: all 0.2s ease;
+    }
+    .goal-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px -12px rgba(36,29,36,0.12);
+    }
+
+    /* ======================================================================
+       WIDGET POMODORO FLOTANTE LITERARIO
+       ====================================================================== */
+    .pomodoro-pill-minimized {
+      position: fixed;
+      right: 36px;
+      bottom: 36px;
+      background: var(--paper);
+      border: 1px solid var(--rule);
+      border-radius: 999px;
+      padding: 8px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 14px 34px -8px rgba(83,51,90,0.3), 0 4px 12px rgba(36,29,36,0.08);
+      z-index: 120;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .pomodoro-pill-minimized:hover {
+      transform: translateY(-3px) scale(1.03);
+      border-color: var(--soleil);
+      box-shadow: 0 18px 40px -10px var(--soleil-wash);
+    }
+
+    .pomodoro-card-expanded {
+      position: fixed;
+      right: 36px;
+      bottom: 36px;
+      width: 320px;
+      background: var(--paper);
+      border: 1px solid var(--rule);
+      border-radius: 26px;
+      padding: 26px 28px;
+      box-shadow: 0 24px 60px -15px rgba(83,51,90,0.35), 0 6px 18px rgba(36,29,36,0.08);
+      z-index: 120;
+      animation: popIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes popIn { from { transform: translateY(20px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+
+    @media (max-width: 920px) {
+      [data-rail] { display: none !important; }
+      [data-main] { margin-left: 0 !important; }
+      .week-calendar-grid { grid-template-columns: repeat(4, 1fr); }
+      .pomodoro-pill-minimized, .pomodoro-card-expanded { right: 20px; bottom: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PIPELINE DE FILTROS SVG -->
+  <svg aria-hidden="true" width="0" height="0" style="position:absolute; pointer-events:none;">
+    <defs>
+      <filter id="wc-vignette-heavy" x="-35%" y="-35%" width="170%" height="170%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="14" result="blur" />
+        <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="4" seed="31" result="noise" />
+        <feDisplacementMap in="blur" in2="noise" scale="58" xChannelSelector="R" yChannelSelector="G" result="disp" />
+        <feComponentTransfer in="disp"><feFuncA type="table" tableValues="0 0.45 0.78 0.94 1" /></feComponentTransfer>
+      </filter>
+      <filter id="wc4" x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" seed="61" result="n" />
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="9" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </defs>
+  </svg>
+
+  <div class="paper-texture"></div>
+
+  <!-- MARCO DE ACUARELA EN 4 ESQUINAS -->
+  <div class="vignette-container">
+    <div class="corner-top-left"></div>
+    <div class="corner-top-right"></div>
+    <div class="corner-bottom-left"></div>
+    <div class="corner-bottom-right"></div>
+  </div>
+
+  <div style="min-height:100vh; display:flex;">
+
+    <!-- ======================================================================
+         BARRA LATERAL (RAIL 100% CONECTADO E IDÉNTICO)
+         ====================================================================== -->
+    <aside data-rail style="position:fixed; left:0; top:0; height:100%; width:252px; background:var(--rail,#282031); display:flex; flex-direction:column; z-index:40; box-sizing:border-box; overflow:hidden;">
+      <div aria-hidden="true" style="position:absolute; inset:0; pointer-events:none; background:radial-gradient(120% 55% at 12% 0%, rgba(196,99,47,.20), transparent 62%), radial-gradient(100% 48% at 92% 42%, rgba(0,106,100,.20), transparent 66%), radial-gradient(120% 46% at 0% 100%, rgba(123,155,209,.16), transparent 60%);"></div>
+      <div aria-hidden="true" style="position:absolute; inset:0; pointer-events:none; mix-blend-mode:overlay; opacity:var(--tooth,.5); background-image:url(&quot;data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjAiIGhlaWdodD0iMTYwIj48ZmlsdGVyIGlkPSJuIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC44IiBudW1PY3RhdmVzPSI0IiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjE2MCIgaGVpZ2h0PSIxNjAiIGZpbHRlcj0idXJsKCNuKSIvPjwvc3ZnPg==&quot;);"></div>
+
+      <div style="position:relative; padding:26px 26px 22px; border-bottom:1px solid var(--rail-rule,rgba(255,255,255,.11));">
+        <h1 style="font-family:'Libre Caslon Text',serif; font-size:21px; font-weight:400; letter-spacing:-0.02em; color:var(--rail-ink,#f2ecf1); line-height:1; margin:0 0 7px;">WonderWord</h1>
+        <span style="font-size:9px; text-transform:uppercase; letter-spacing:.2em; font-weight:600; color:var(--rail-ink-3,#9c92a0);">Inmersión literaria</span>
+      </div>
+
+            <nav style="position:relative; flex:1; overflow-y:auto; padding:22px 0;">
+        <p style="font-size:9px; text-transform:uppercase; letter-spacing:.2em; font-weight:600; color:var(--rail-ink-3,#9c92a0); margin:0 0 10px; padding:0 26px;">Lectura</p>
+        <a href="index.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="layout-dashboard" width="16" height="16"></i>
+          <span style="flex:1;">Dashboard</span>
+          
+        </a>
+        <a href="biblioteca.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="book-open" width="16" height="16"></i>
+          <span style="flex:1;">Biblioteca</span>
+          
+        </a>
+        <a href="lector.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="book-open-check" width="16" height="16"></i>
+          <span style="flex:1;">Lector & Estudio</span>
+          
+        </a>
+        <p style="font-size:9px; text-transform:uppercase; letter-spacing:.2em; font-weight:600; color:var(--rail-ink-3,#9c92a0); margin:26px 0 10px; padding:0 26px;">Práctica & Memoria</p>
+        <a href="vocabulario.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="brain" width="16" height="16"></i>
+          <span style="flex:1;">Vocabulario & Repaso</span>
+          <span style="font-family:'Libre Caslon Text',serif; font-size:13px; color:var(--soleil,#ffcd11);">18</span>
+        </a>
+        <a href="shadowing.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="mic" width="16" height="16"></i>
+          <span style="flex:1;">Shadowing & Fonética</span>
+          
+        </a>
+        <a href="inmersion.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="film" width="16" height="16"></i>
+          <span style="flex:1;">Inmersión Streaming</span>
+          
+        </a>
+        <p style="font-size:9px; text-transform:uppercase; letter-spacing:.2em; font-weight:600; color:var(--rail-ink-3,#9c92a0); margin:26px 0 10px; padding:0 26px;">Progreso & Exploración</p>
+        <a href="logros.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="award" width="16" height="16"></i>
+          <span style="flex:1;">Logros & Maestría</span>
+          
+        </a>
+        <a href="#" style="position:relative; display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:600; color:var(--rail-ink,#f2ecf1);">
+          <span aria-hidden="true" style="position:absolute; inset:1px 16px 1px 0; background:rgba(255,255,255,.10); border-radius:0 999px 999px 0; filter:url(#wc4);"></span>
+          <span aria-hidden="true" style="position:absolute; left:0; top:4px; bottom:4px; width:3px; background:var(--soleil,#ffcd11); filter:url(#wc4);"></span>
+          <i data-lucide="calendar" width="16" height="16" style="position:relative; color:var(--soleil);"></i>
+          <span style="position:relative; flex:1;">Organizador</span>
+          
+        </a>
+        <a href="viajes.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="compass" width="16" height="16"></i>
+          <span style="flex:1;">Viajes</span>
+          
+        </a>
+        <a href="tienda.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="shopping-bag" width="16" height="16"></i>
+          <span style="flex:1;">Tienda</span>
+          
+        </a>
+        <a href="ajustes.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="settings" width="16" height="16"></i>
+          <span style="flex:1;">Ajustes</span>
+          
+        </a>
+      </nav>
+
+      <!-- WIDGET INFERIOR IDÉNTICO -->
+      <div style="position:relative; padding:18px 26px 22px; border-top:1px solid var(--rail-rule,rgba(255,255,255,.11)); display:flex; align-items:center; gap:14px;">
+        <span style="position:relative; width:52px; height:52px; flex-shrink:0; display:block;">
+          <svg viewBox="0 0 52 52" width="52" height="52" style="display:block; transform:rotate(-90deg);">
+            <circle cx="26" cy="26" r="22" fill="none" stroke="rgba(255,255,255,.13)" stroke-width="5"></circle>
+            <circle cx="26" cy="26" r="22" fill="none" stroke="var(--sauge-2,#0f8c84)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138.2" stroke-dashoffset="55.2" style="filter:url(#wc4);"></circle>
+          </svg>
+          <span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Libre Caslon Text',serif; font-size:13px; color:var(--rail-ink,#f2ecf1); font-variant-numeric:tabular-nums;">18</span>
+        </span>
+        <div style="min-width:0;">
+          <p style="font-size:11.5px; color:var(--rail-ink-2,#a99fac); margin:0; line-height:1.4;">18 de 30 min hoy</p>
+          <p style="font-size:11px; color:var(--soleil,#ffcd11); margin:4px 0 0; line-height:1.4; font-weight:600;">Racha de 14 días</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ======================================================================
+         CONTENIDO PRINCIPAL: EL ORGANIZADOR
+         ====================================================================== -->
+    <div data-main style="flex:1; display:flex; flex-direction:column; margin-left:252px; min-width:0; position:relative;">
+      
+      <!-- TOPBAR -->
+      <header style="position:sticky; top:0; z-index:30; background:var(--rail,#282031); height:56px; padding:0 40px; display:flex; align-items:center; justify-content:space-between; overflow:hidden;">
+        <div aria-hidden="true" style="position:absolute; inset:0; pointer-events:none; background:radial-gradient(90% 200% at 6% 50%, rgba(196,99,47,.2), transparent 58%), radial-gradient(70% 180% at 74% 50%, rgba(0,106,100,.2), transparent 62%), radial-gradient(60% 160% at 100% 50%, rgba(123,155,209,.16), transparent 60%);"></div>
+        <div style="position:relative; display:flex; align-items:center; gap:10px; font-size:11.5px; color:var(--rail-ink-2,#a99fac); letter-spacing:.02em;">
+          <span>Progreso & Rutina</span><span style="color:var(--rail-ink-3,#9c92a0);">/</span><span style="color:#fff; font-weight:600;">El Organizador</span>
+        </div>
+        <div style="position:relative; display:flex; align-items:center; gap:22px;">
+          <!-- Botón de apertura rápida del Pomodoro -->
+          <button type="button" onclick="expandPomodoro()" title="Abrir Pomodoro Literario" style="background:rgba(255,255,255,0.08); border:1px solid var(--rail-rule); color:#fff; border-radius:999px; padding:5px 12px; font-size:11.5px; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer;">
+            <i data-lucide="timer" width="13" height="13" style="color:var(--soleil);"></i>
+            <span id="topbar-pomodoro-time">25:00</span>
+          </button>
+
+          <div style="display:flex; align-items:center; gap:3px; padding:3px; background:rgba(0,0,0,.3); border-radius:999px;">
+            <button type="button" onclick="setTheme('papel')" id="tab-papel" title="Papel" style="display:flex; align-items:center; justify-content:center; width:28px; height:26px; border:none; border-radius:999px; cursor:pointer; background:var(--soleil,#ffcd11); color:#463605;"><i data-lucide="sun" width="14" height="14"></i></button>
+            <button type="button" onclick="setTheme('sepia')" id="tab-sepia" title="Sepia" style="display:flex; align-items:center; justify-content:center; width:28px; height:26px; border:none; border-radius:999px; cursor:pointer; background:transparent; color:var(--rail-ink-3,#9c92a0);"><i data-lucide="book" width="14" height="14"></i></button>
+            <button type="button" onclick="setTheme('noche')" id="tab-noche" title="Noche" style="display:flex; align-items:center; justify-content:center; width:28px; height:26px; border:none; border-radius:999px; cursor:pointer; background:transparent; color:var(--rail-ink-3,#9c92a0);"><i data-lucide="moon" width="14" height="14"></i></button>
+          </div>
+          <span style="width:1px; height:18px; background:var(--rail-rule,rgba(255,255,255,.11));"></span>
+          <span style="font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--rail-ink-2,#a99fac); font-weight:600;">Kevin</span>
+        </div>
+      </header>
+
+      <main style="flex:1; padding:44px 56px 88px; max-width:1300px; margin:0 auto; width:100%; box-sizing:border-box; position:relative; z-index:10;">
+
+        <!-- CABECERA PRINCIPAL -->
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:24px; margin-bottom:34px; flex-wrap:wrap;">
+          <div>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+              <span style="width:8px; height:8px; border-radius:50%; background:var(--soleil);"></span>
+              <p style="font-size:9.5px; text-transform:uppercase; letter-spacing:.22em; font-weight:700; color:var(--soleil-ink); margin:0;">Planificación & Ritmo Diario</p>
+            </div>
+            <h1 style="font-family:'Libre Caslon Text',serif; font-size:46px; line-height:1.05; letter-spacing:-0.03em; color:var(--ink); margin:0; font-weight:400;">El Organizador</h1>
+          </div>
+
+          <!-- Selector de Modo de Rutina (Time-Blocking) -->
+          <div class="routine-tab-container">
+            <button class="routine-tab-btn active" id="btn-routine-30" onclick="changeRoutine(30)">
+              <i data-lucide="zap" width="14" height="14"></i>
+              <span>Esencial (30 min)</span>
+            </button>
+            <button class="routine-tab-btn" id="btn-routine-60" onclick="changeRoutine(60)">
+              <i data-lucide="sparkles" width="14" height="14"></i>
+              <span>Consagrada (60 min)</span>
+            </button>
+            <button class="routine-tab-btn" id="btn-routine-150" onclick="changeRoutine(150)">
+              <i data-lucide="flame" width="14" height="14"></i>
+              <span>Inmersión Total (2h30)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ======================================================================
+             SECCIÓN 1: TU RUTA DE ESTUDIO PARA HOY (FLOW GUIADO 1-CLICK)
+             ====================================================================== -->
+        <section class="organizer-hero-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:20px; border-bottom:1px solid var(--rule-soft); padding-bottom:20px;">
+            <div>
+              <span style="font-size:10px; text-transform:uppercase; letter-spacing:.16em; font-weight:800; color:var(--sauge);">Miércoles, 2 de Septiembre · Día 14 de Racha</span>
+              <h2 style="font-family:'Libre Caslon Text',serif; font-size:28px; color:var(--ink); margin:6px 0 2px; font-weight:400;">Ruta Recomendada de Hoy</h2>
+              <p style="font-size:13px; color:var(--ink-2); margin:0;">Completa los 3 bloques guiados para cumplir tu meta diaria de 30 minutos sin fatiga mental.</p>
+            </div>
+
+            <!-- Botón Maestro 1-Click -->
+            <button type="button" onclick="startDailyFlow()" style="background:var(--prune); color:#fff; border:none; border-radius:999px; padding:14px 32px; font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:.12em; display:flex; align-items:center; gap:10px; cursor:pointer; box-shadow:0 8px 24px -6px rgba(83,51,90,0.4);">
+              <i data-lucide="play" width="16" height="16" fill="#fff"></i>
+              <span>Iniciar Flujo de Hoy</span>
+            </button>
+          </div>
+
+          <!-- Grid de Bloques de la Rutina -->
+          <div class="routine-blocks-grid" id="routine-blocks-container">
+            
+            <!-- Bloque 1: Repaso FSRS (Completado) -->
+            <div class="routine-block-card completed">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                  <span style="font-size:9.5px; text-transform:uppercase; letter-spacing:.12em; font-weight:800; color:var(--sauge); background:rgba(0,106,100,0.1); padding:2px 7px; border-radius:999px;">10 min · ¡Hecho!</span>
+                  <i data-lucide="check-circle-2" width="18" height="18" style="color:var(--sauge);"></i>
+                </div>
+                <h3 style="font-family:'Libre Caslon Text',serif; font-size:18px; color:var(--ink); margin:0 0 4px;">1. Repaso Global FSRS</h3>
+                <p style="font-size:12px; color:var(--ink-2); margin:0 0 14px;">18 tarjetas consolidadas en memoria a largo plazo.</p>
+              </div>
+              <a href="vocabulario.html" style="font-size:11.5px; font-weight:700; color:var(--sauge); display:flex; align-items:center; gap:4px;">
+                <span>Ver tarjetas repasadas</span> <i data-lucide="chevron-right" width="14" height="14"></i>
+              </a>
+            </div>
+
+            <!-- Bloque 2: Lectura Inmersiva (En progreso / Siguiente) -->
+            <div class="routine-block-card active-now">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                  <span style="font-size:9.5px; text-transform:uppercase; letter-spacing:.12em; font-weight:800; color:var(--soleil-ink); background:var(--soleil); padding:2px 7px; border-radius:999px;">15 min · Siguiente paso</span>
+                  <i data-lucide="clock" width="18" height="18" style="color:var(--soleil-ink);"></i>
+                </div>
+                <h3 style="font-family:'Libre Caslon Text',serif; font-size:18px; color:var(--ink); margin:0 0 4px;">2. Lectura en Francés V.O.</h3>
+                <p style="font-size:12px; color:var(--ink-2); margin:0 0 14px;"><em>Le Petit Prince</em> · Capítulo II (Págs. 12 a 16).</p>
+              </div>
+              <a href="lector.html" style="font-size:11.5px; font-weight:700; color:var(--prune); display:flex; align-items:center; gap:4px;">
+                <span>Abrir en el Lector</span> <i data-lucide="arrow-right" width="14" height="14"></i>
+              </a>
+            </div>
+
+            <!-- Bloque 3: Fonética & Shadowing (Pendiente) -->
+            <div class="routine-block-card">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                  <span style="font-size:9.5px; text-transform:uppercase; letter-spacing:.12em; font-weight:800; color:var(--ink-3); background:var(--rule-soft); padding:2px 7px; border-radius:999px;">5 min · Pendiente</span>
+                  <i data-lucide="circle" width="18" height="18" style="color:var(--ink-3);"></i>
+                </div>
+                <h3 style="font-family:'Libre Caslon Text',serif; font-size:18px; color:var(--ink); margin:0 0 4px;">3. Fonética & Shadowing</h3>
+                <p style="font-size:12px; color:var(--ink-2); margin:0 0 14px;">Entrenar 3 frases clave del capítulo leído.</p>
+              </div>
+              <a href="shadowing.html" style="font-size:11.5px; font-weight:700; color:var(--ink-2); display:flex; align-items:center; gap:4px;">
+                <span>Iniciar Shadowing</span> <i data-lucide="arrow-right" width="14" height="14"></i>
+              </a>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ======================================================================
+             SECCIÓN 2 Y 3: CALENDARIO SEMANAL & METAS LITERARIAS VIVAS
+             ====================================================================== -->
+        <div style="display:grid; grid-template-columns: 1.2fr 1fr; gap:32px; align-items:start;">
+          
+          <!-- COLUMNA IZQUIERDA: CALENDARIO SEMANAL & CARGA COGNITIVA FSRS -->
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+              <div>
+                <span style="font-size:9.5px; text-transform:uppercase; letter-spacing:.18em; font-weight:800; color:var(--sauge);">Carga Prevista de Repasos</span>
+                <h3 style="font-family:'Libre Caslon Text',serif; font-size:24px; color:var(--ink); margin:2px 0 0;">Esta Semana</h3>
+              </div>
+              <span style="font-size:11.5px; color:var(--ink-3);">Semana 36 · Septiembre</span>
+            </div>
+
+            <div class="week-calendar-grid">
+              <!-- Lunes -->
+              <div class="day-column-card">
+                <span style="font-size:10px; font-weight:700; color:var(--ink-3); text-transform:uppercase;">Lun 31</span>
+                <p style="font-family:'Libre Caslon Text',serif; font-size:16px; font-weight:700; color:var(--ink); margin:6px 0 2px;">35m</p>
+                <span style="font-size:9.5px; color:var(--sauge); font-weight:700;">Cumplido</span>
+              </div>
+
+              <!-- Martes -->
+              <div class="day-column-card">
+                <span style="font-size:10px; font-weight:700; color:var(--ink-3); text-transform:uppercase;">Mar 1</span>
+                <p style="font-family:'Libre Caslon Text',serif; font-size:16px; font-weight:700; color:var(--ink); margin:6px 0 2px;">30m</p>
+                <span style="font-size:9.5px; color:var(--sauge); font-weight:700;">Cumplido</span>
+              </div>
+
+              <!-- Miércoles (Hoy) -->
+              <div class="day-column-card today">
+                <span style="font-size:10px; font-weight:800; color:var(--soleil-ink); text-transform:uppercase;">Mié 2</span>
+                <p style="font-family:'Libre Caslon Text',serif; font-size:18px; font-weight:700; color:var(--ink); margin:6px 0 2px;">18/30m</p>
+                <span style="font-size:9.5px; background:var(--soleil); color:var(--soleil-ink); padding:1px 5px; border-radius:4px; font-weight:800;">Hoy</span>
+              </div>
+
+              <!-- Jueves -->
+              <div class="day-column-card">
+                <span style="font-size:10px; font-weight:700; color:var(--ink-3); text-transform:uppercase;">Jue 3</span>
+                <p style="font-family:'Libre Caslon Text',serif; font-size:16px; font-weight:700; color:var(--ink-3); margin:6px 0 2px;">~25m</p>
+                <span style="font-size:9.5px; color:var(--ink-3);">14 FSRS</span>
+              </div>
+
+              <!-- Viernes -->
+              <div class="day-column-card">
+                <span style="font-size:10px; font-weight:700; color:var(--ink-3); text-transform:uppercase;">Vie 4</span>
+                <p style="font-family:'Libre Caslon Text',serif; font-size:16px; font-weight:700; color:var(--ink-3); margin:6px 0 2px;">~30m</p>
+                <span style="font-size:9.5px; color:var(--ink-3);">10 FSRS</span>
+              </div>
+
+              <!-- Sábado -->
+              <div class="day-column-card">
+                <span style="font-size:10px; font-weight:700; color:var(--ink-3); text-transform:uppercase;">Sáb 5</span>
+                <p style="font-family:'Libre Caslon Text',serif; font-size:16px; font-weight:700; color:var(--ink-3); margin:6px 0 2px;">~40m</p>
+                <span style="font-size:9.5px; color:var(--prune); font-weight:700;">Cine V.O.</span>
+              </div>
+
+              <!-- Domingo -->
+              <div class="day-column-card">
+                <span style="font-size:10px; font-weight:700; color:var(--ink-3); text-transform:uppercase;">Dom 6</span>
+                <p style="font-family:'Libre Caslon Text',serif; font-size:16px; font-weight:700; color:var(--ink-3); margin:6px 0 2px;">~20m</p>
+                <span style="font-size:9.5px; color:var(--ink-3);">8 FSRS</span>
+              </div>
+            </div>
+
+            <!-- Alerta de Salud de Memoria FSRS -->
+            <div style="background:var(--paper); border:1px solid var(--rule); border-radius:18px; padding:18px 22px; margin-top:20px; display:flex; align-items:center; gap:16px;">
+              <div style="width:38px; height:38px; border-radius:50%; background:var(--sauge-wash); color:var(--sauge); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <i data-lucide="shield-check" width="20" height="20"></i>
+              </div>
+              <div>
+                <h4 style="font-size:13.5px; font-weight:700; color:var(--ink); margin:0 0 2px;">Carga Cognitiva Balanceada</h4>
+                <p style="font-size:12px; color:var(--ink-2); line-height:1.4; margin:0;">El algoritmo FSRS distribuye tus repasos sin picos de saturación. Retención global prevista: <strong>93.4%</strong>.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- COLUMNA DERECHA: METAS LITERARIAS & COMPROMISOS -->
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+              <div>
+                <span style="font-size:9.5px; text-transform:uppercase; letter-spacing:.18em; font-weight:800; color:var(--terre);">Objetivos & Ritmo de Lectura</span>
+                <h3 style="font-family:'Libre Caslon Text',serif; font-size:24px; color:var(--ink); margin:2px 0 0;">Tus Metas Activas</h3>
+              </div>
+              <button type="button" onclick="alert('Crear Nueva Meta')" style="background:none; border:none; color:var(--prune); font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px;">
+                <i data-lucide="plus" width="14" height="14"></i>
+                <span>Nueva Meta</span>
+              </button>
+            </div>
+
+            <!-- Meta 1: Le Petit Prince -->
+            <div class="goal-card">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+                <div>
+                  <span style="font-size:9px; text-transform:uppercase; letter-spacing:.1em; font-weight:800; color:var(--sauge); background:var(--sauge-wash); padding:2px 6px; border-radius:999px;">Francés · B1</span>
+                  <h4 style="font-family:'Libre Caslon Text',serif; font-size:18px; color:var(--ink); margin:4px 0 2px;">Le Petit Prince</h4>
+                </div>
+                <span style="font-size:12px; font-weight:700; color:var(--ink);">62%</span>
+              </div>
+              <p style="font-size:11.5px; color:var(--ink-3); margin:0 0 10px;">Objetivo: Terminar antes del 15 de Sept. (6 págs/día)</p>
+              <div style="width:100%; height:5px; background:var(--rule-soft); border-radius:999px; overflow:hidden;">
+                <div style="width:62%; height:100%; background:var(--sauge);"></div>
+              </div>
+            </div>
+
+            <!-- Meta 2: Zauberwald der Grimm -->
+            <div class="goal-card">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+                <div>
+                  <span style="font-size:9px; text-transform:uppercase; letter-spacing:.1em; font-weight:800; color:var(--bleuet-ink); background:var(--bleuet-wash); padding:2px 6px; border-radius:999px;">Alemán · A1</span>
+                  <h4 style="font-family:'Libre Caslon Text',serif; font-size:18px; color:var(--ink); margin:4px 0 2px;">Der Zauberwald der Grimm</h4>
+                </div>
+                <span style="font-size:12px; font-weight:700; color:var(--ink);">80%</span>
+              </div>
+              <p style="font-size:11.5px; color:var(--ink-3); margin:0 0 10px;">Objetivo: 120 palabras dominadas en FSRS (8/día)</p>
+              <div style="width:100%; height:5px; background:var(--rule-soft); border-radius:999px; overflow:hidden;">
+                <div style="width:80%; height:100%; background:var(--soleil);"></div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       CRONÓMETRO POMODORO FLOTANTE LITERARIO (MINIMIZADO Y EXPANDIDO)
+       ====================================================================== -->
+  
+  <!-- ESTADO 1: CÁPSULA MINIMIZADA (PILL) -->
+  <div id="pomodoro-pill" class="pomodoro-pill-minimized" onclick="expandPomodoro()" style="display:flex;">
+    <div style="width:10px; height:10px; border-radius:50%; background:var(--soleil); box-shadow:0 0 8px var(--soleil);"></div>
+    <div style="display:flex; align-items:center; gap:6px;">
+      <i data-lucide="timer" width="15" height="15" style="color:var(--prune);"></i>
+      <span id="pill-timer-text" style="font-family:'Libre Caslon Text',serif; font-size:14.5px; font-weight:700; color:var(--ink);">25:00</span>
+    </div>
+    <span style="width:1px; height:12px; background:var(--rule);"></span>
+    <span style="font-size:11px; font-weight:700; color:var(--ink-2);">Lectura V.O.</span>
+  </div>
+
+  <!-- ESTADO 2: TARJETA EXPANDIDA (MODAL FLOTANTE DE ENFOQUE) -->
+  <div id="pomodoro-expanded" class="pomodoro-card-expanded" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+      <div>
+        <span id="pomo-mode-badge" style="font-size:9.5px; text-transform:uppercase; letter-spacing:.12em; font-weight:800; color:var(--sauge); background:var(--sauge-wash); padding:2px 7px; border-radius:999px;">Bloque de Enfoque</span>
+        <h4 id="pomo-activity-title" style="font-family:'Libre Caslon Text',serif; font-size:18px; color:var(--ink); margin:4px 0 0;">Lectura Inmersiva</h4>
+      </div>
+      <button type="button" onclick="minimizePomodoro()" style="background:none; border:none; color:var(--ink-3); cursor:pointer;" title="Minimizar">
+        <i data-lucide="minimize-2" width="16" height="16"></i>
+      </button>
+    </div>
+
+    <!-- Anillo Visual del Temporizador Pomodoro -->
+    <div style="text-align:center; padding:12px 0 16px;">
+      <div style="position:relative; width:130px; height:130px; margin:0 auto 8px;">
+        <svg viewBox="0 0 130 130" width="130" height="130" style="transform:rotate(-90deg); display:block;">
+          <circle cx="65" cy="65" r="54" fill="none" stroke="var(--rule-soft)" stroke-width="7"></circle>
+          <circle id="pomo-circle-progress" cx="65" cy="65" r="54" fill="none" stroke="var(--soleil)" stroke-width="7" stroke-linecap="round" stroke-dasharray="339.3" stroke-dashoffset="0" style="filter:url(#wc4); transition: stroke-dashoffset 0.5s ease;"></circle>
+        </svg>
+        <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+          <span id="pomo-main-timer" style="font-family:'Libre Caslon Text',serif; font-size:32px; font-weight:400; color:var(--ink); line-height:1;">25:00</span>
+          <span id="pomo-state-label" style="font-size:10px; text-transform:uppercase; letter-spacing:.1em; color:var(--ink-3); margin-top:4px;">En pausa</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controles de Reproducción -->
+    <div style="display:flex; justify-content:center; align-items:center; gap:12px; margin-bottom:16px;">
+      <button type="button" onclick="resetPomodoro()" style="width:36px; height:36px; border-radius:50%; background:var(--paper-warm); border:1px solid var(--rule); color:var(--ink-2); display:flex; align-items:center; justify-content:center; cursor:pointer;" title="Reiniciar">
+        <i data-lucide="rotate-ccw" width="15" height="15"></i>
+      </button>
+
+      <button type="button" id="btn-pomo-toggle" onclick="togglePomodoroTimer()" style="width:48px; height:48px; border-radius:50%; background:var(--prune); color:#fff; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 6px 18px -4px rgba(83,51,90,0.4);" title="Iniciar / Pausar">
+        <i id="icon-pomo-toggle" data-lucide="play" width="20" height="20" fill="#fff"></i>
+      </button>
+
+      <button type="button" onclick="setPomodoroMode('break')" style="width:36px; height:36px; border-radius:50%; background:var(--paper-warm); border:1px solid var(--rule); color:var(--ink-2); display:flex; align-items:center; justify-content:center; cursor:pointer;" title="Pausa Café (5 min)">
+        <i data-lucide="coffee" width="15" height="15"></i>
+      </button>
+    </div>
+
+    <!-- Botones de Selección Rápida de Tiempo -->
+    <div style="display:flex; justify-content:space-between; gap:6px; border-top:1px solid var(--rule-soft); padding-top:12px;">
+      <button type="button" onclick="setCustomPomodoroMinutes(15)" style="flex:1; padding:5px; border-radius:8px; border:1px solid var(--rule); background:var(--paper-warm); font-size:10.5px; font-weight:700; color:var(--ink-2); cursor:pointer;">15m</button>
+      <button type="button" onclick="setCustomPomodoroMinutes(25)" style="flex:1; padding:5px; border-radius:8px; border:1px solid var(--sauge); background:var(--sauge-wash); font-size:10.5px; font-weight:700; color:var(--sauge); cursor:pointer;">25m</button>
+      <button type="button" onclick="setCustomPomodoroMinutes(45)" style="flex:1; padding:5px; border-radius:8px; border:1px solid var(--rule); background:var(--paper-warm); font-size:10.5px; font-weight:700; color:var(--ink-2); cursor:pointer;">45m</button>
+    </div>
+  </div>
+
+  <script>
+    if (window.lucide) lucide.createIcons();
+
+    /* ======================================================================
+       LÓGICA DEL CRONÓMETRO POMODORO LITERARIO
+       ====================================================================== */
+    let pomoTotalSeconds = 25 * 60;
+    let pomoRemainingSeconds = 25 * 60;
+    let pomoTimerInterval = null;
+    let isPomoRunning = false;
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60).toString().padStart(2, '0');
+      const s = (sec % 60).toString().padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    function updatePomodoroUI() {
+      const timeStr = formatTime(pomoRemainingSeconds);
+      document.getElementById('pomo-main-timer').innerText = timeStr;
+      document.getElementById('pill-timer-text').innerText = timeStr;
+      document.getElementById('topbar-pomodoro-time').innerText = timeStr;
+
+      // Update circle stroke offset
+      const circle = document.getElementById('pomo-circle-progress');
+      const totalOffset = 339.3;
+      const progress = (pomoTotalSeconds - pomoRemainingSeconds) / pomoTotalSeconds;
+      const offset = totalOffset * (1 - progress);
+      circle.style.strokeDashoffset = offset;
+    }
+
+    function togglePomodoroTimer() {
+      if (isPomoRunning) {
+        pausePomodoro();
+      } else {
+        startPomodoro();
+      }
+    }
+
+    function startPomodoro() {
+      if (isPomoRunning) return;
+      isPomoRunning = true;
+      document.getElementById('pomo-state-label').innerText = 'Enfocado';
+      document.getElementById('pomo-state-label').style.color = 'var(--sauge)';
+      document.getElementById('icon-pomo-toggle').setAttribute('data-lucide', 'pause');
+      document.getElementById('btn-pomo-toggle').style.background = 'var(--sauge)';
+
+      if (window.lucide) lucide.createIcons();
+
+      pomoTimerInterval = setInterval(() => {
+        if (pomoRemainingSeconds > 0) {
+          pomoRemainingSeconds--;
+          updatePomodoroUI();
+        } else {
+          pausePomodoro();
+          alert('¡Tiempo de enfoque completado! Tómate una pausa de café de 5 minutos.');
+          setPomodoroMode('break');
+        }
+      }, 1000);
+    }
+
+    function pausePomodoro() {
+      isPomoRunning = false;
+      clearInterval(pomoTimerInterval);
+      document.getElementById('pomo-state-label').innerText = 'En pausa';
+      document.getElementById('pomo-state-label').style.color = 'var(--ink-3)';
+      document.getElementById('icon-pomo-toggle').setAttribute('data-lucide', 'play');
+      document.getElementById('btn-pomo-toggle').style.background = 'var(--prune)';
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function resetPomodoro() {
+      pausePomodoro();
+      pomoRemainingSeconds = pomoTotalSeconds;
+      updatePomodoroUI();
+    }
+
+    function setCustomPomodoroMinutes(min) {
+      pausePomodoro();
+      pomoTotalSeconds = min * 60;
+      pomoRemainingSeconds = pomoTotalSeconds;
+      document.getElementById('pomo-mode-badge').innerText = 'Bloque de Enfoque';
+      document.getElementById('pomo-activity-title').innerText = 'Lectura Inmersiva';
+      updatePomodoroUI();
+    }
+
+    function setPomodoroMode(mode) {
+      pausePomodoro();
+      if (mode === 'break') {
+        pomoTotalSeconds = 5 * 60;
+        pomoRemainingSeconds = 5 * 60;
+        document.getElementById('pomo-mode-badge').innerText = 'Pausa Café';
+        document.getElementById('pomo-activity-title').innerText = 'Descanso Ligero (5 min)';
+        document.getElementById('pomo-circle-progress').setAttribute('stroke', 'var(--sauge)');
+      }
+      updatePomodoroUI();
+      startPomodoro();
+    }
+
+    function expandPomodoro() {
+      document.getElementById('pomodoro-pill').style.display = 'none';
+      document.getElementById('pomodoro-expanded').style.display = 'block';
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function minimizePomodoro() {
+      document.getElementById('pomodoro-expanded').style.display = 'none';
+      document.getElementById('pomodoro-pill').style.display = 'flex';
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function changeRoutine(minutes) {
+      const b30 = document.getElementById('btn-routine-30');
+      const b60 = document.getElementById('btn-routine-60');
+      const b150 = document.getElementById('btn-routine-150');
+      const container = document.getElementById('routine-blocks-container');
+
+      [b30, b60, b150].forEach(b => b.classList.remove('active'));
+
+      if (minutes === 30) {
+        b30.classList.add('active');
+        container.innerHTML = `
+          <div class="routine-block-card completed">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <span style="font-size:9.5px; text-transform:uppercase; letter-spacing:.12em; font-weight:800; color:var(--sauge); background:rgba(0,106,100,0.1); padding:2px 7px; border-radius:999px;">10 min · ¡Hecho!</span>
+                <i data-lucide="check-circle-2" width="18" height="18" style="color:var(--sauge);"></i>
+              </div>
+              <h3 style="font-family:'Libre Caslon Text',serif; font-size:18px; color:var(--ink); margin:0 0 4px;">1. Repaso Global FSRS</h3>
+              <p style="font-size:12px; color:var(--ink-2); margin:0 0 14px;">18 tarjetas consolidadas en memoria a largo plazo.</p>
+            </div>
+            <a href="vocabulario.html" style="font-size:11.5px; font-weight:700; color:var(--sauge); display:flex; align-items:center; gap:4px;">
+              <span>Ver tarjetas repasadas</span> <i data-lucide="chevron-right" width="14" height="14"></i>
+            </a>
+          </div>
+          <div class="routine-block-card active-now">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <span style="font-size:9.5px; text-transform:uppercase; letter-spacing:.12em; font-weight:800; color:var(--soleil-ink); background:var(--soleil); padding:2px 7px; border-radius:999px;">15 min · Siguiente paso</span>
+                <i data-lucide="clock" width="18" height="18" style="color:var(--soleil-ink);"></i>
+              </div>
+              <h3 style="font-family:'Libre Caslon Text',serif; font-size:18px; color:var(--ink); margin:0 0 4px;">2. Lectura en Francés V.O.</h3>
+              <p style="font-size:12px; color:var(--ink-2); margin:0 0 14px;"><em>Le Petit Prince</em> · Capítulo II (Págs. 12 a 16).</p>
+            </div>
+            <a href="lector.html" style="font-size:11.5px; font-weight:700; color:var(--prune); display:flex; align-items:center; gap:4px;">
+              <span>Abrir en el Lector</span> <i data-lucide="arrow-right" width="14" height="14"></i>
+            </a>
+          </div>
+          <div class="routine-block-card">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <span style="font-size:9.5px; text-transform:uppercase; letter-spacing:.12em; font-weight:800; color:var(--ink-3); background:var(--rule-soft); padding:2px 7px; border-radius:999px;">5 min · Pendiente</span>
+                <i data-lucide="circle" width="18" height="18" style="color:var(--ink-3);"></i>
+              </div>
+              <h3 style="font-family:'Libre Caslon Text',serif; font-size:18px; color:var(--ink); margin:0 0 4px;">3. Fonética & Shadowing</h3>
+              <p style="font-size:12px; color:var(--ink-2); margin:0 0 14px;">Entrenar 3 frases clave del capítulo leído.</p>
+            </div>
+            <a href="shadowing.html" style="font-size:11.5px; font-weight:700; color:var(--ink-2); display:flex; align-items:center; gap:4px;">
+              <span>Iniciar Shadowing</span> <i data-lucide="arrow-right" width="14" height="14"></i>
+            </a>
+          </div>
+        `;
+      } else if (minutes === 60) {
+        b60.classList.add('active');
+        container.innerHTML = `
+          <div class="routine-block-card completed">
+            <div>
+              <span style="font-size:9.5px; text-transform:uppercase; letter-spacing:.12em; font-weight:800; color:var(--sauge); background:rgba(0,106,100,0.1); padding:2px 7px; border-radius:999px;">15 min · ¡Hecho!</span>
+              <h3 style="font-family:'Libre Caslon Text',serif; font-size:18px; color:var(--ink); margin:8px 0 4px;">1. Repaso Global FSRS</h3>
+              <p style="font-size:12px; color:var(--ink-2); margin:0 0 14px;">25 tarjetas repasadas con FSRS-6.</p>
+            </div>
+            <a href="vocabulario.html" style="font-size:11.5px; font-weight:700; color:var(--sauge);">Ver tarjetas</a>
+          </div>
+          <div class="routine-block-card active-now">
+            <div>
+              <span style="font-size:9.5px; text-transform:uppercase; letter-spacing:.12em; font-weight:800; color:var(--soleil-ink); background:var(--soleil); padding:2px 7px; border-radius:999px;">25 min · Activo</span>
+              <h3 style="font-family:'Libre Caslon Text',serif; font-size:18px; color:var(--ink); margin:8px 0 4px;">2. Lectura Inmersiva</h3>
+              <p style="font-size:12px; color:var(--ink-2); margin:0 0 14px;">8 páginas de <em>Le Petit Prince</em>.</p>
+            </div>
+            <a href="lector.html" style="font-size:11.5px; font-weight:700; color:var(--prune);">Continuar lectura</a>
+          </div>
+          <div class="routine-block-card">
+            <div>
+              <span style="font-size:9.5px; text-transform:uppercase; letter-spacing:.12em; font-weight:800; color:var(--ink-3); background:var(--rule-soft); padding:2px 7px; border-radius:999px;">10 min · Pendiente</span>
+              <h3 style="font-family:'Libre Caslon Text',serif; font-size:18px; color:var(--ink); margin:8px 0 4px;">3. Shadowing & Fonética</h3>
+              <p style="font-size:12px; color:var(--ink-2); margin:0 0 14px;">Gimnasio HVPT de pares mínimos.</p>
+            </div>
+            <a href="shadowing.html" style="font-size:11.5px; font-weight:700; color:var(--ink-2);">Abrir Shadowing</a>
+          </div>
+          <div class="routine-block-card">
+            <div>
+              <span style="font-size:9.5px; text-transform:uppercase; letter-spacing:.12em; font-weight:800; color:var(--ink-3); background:var(--rule-soft); padding:2px 7px; border-radius:999px;">10 min · Pendiente</span>
+              <h3 style="font-family:'Libre Caslon Text',serif; font-size:18px; color:var(--ink); margin:8px 0 4px;">4. Inmersión Streaming</h3>
+              <p style="font-size:12px; color:var(--ink-2); margin:0 0 14px;">1 escena en versión original con Blur.</p>
+            </div>
+            <a href="inmersion.html" style="font-size:11.5px; font-weight:700; color:var(--ink-2);">Ver película</a>
+          </div>
+        `;
+      } else if (minutes === 150) {
+        b150.classList.add('active');
+        container.innerHTML = `
+          <div class="routine-block-card completed">
+            <span style="font-size:9.5px; font-weight:800; color:var(--sauge);">30 min · FSRS</span>
+            <h3 style="font-family:'Libre Caslon Text',serif; font-size:18px; margin:6px 0 4px;">1. Repaso Profundo</h3>
+            <p style="font-size:12px; color:var(--ink-2); margin:0;">50 tarjetas y mazo de gramática.</p>
+          </div>
+          <div class="routine-block-card active-now">
+            <span style="font-size:9.5px; font-weight:800; color:var(--soleil-ink);">45 min · Lectura</span>
+            <h3 style="font-family:'Libre Caslon Text',serif; font-size:18px; margin:6px 0 4px;">2. Lectura Extensa</h3>
+            <p style="font-size:12px; color:var(--ink-2); margin:0;">15 páginas con anotaciones marginales.</p>
+          </div>
+          <div class="routine-block-card">
+            <span style="font-size:9.5px; font-weight:800; color:var(--ink-3);">30 min · Fonética</span>
+            <h3 style="font-family:'Libre Caslon Text',serif; font-size:18px; margin:6px 0 4px;">3. Shadowing Intensivo</h3>
+            <p style="font-size:12px; color:var(--ink-2); margin:0;">Grabación y análisis DTW de prosodia.</p>
+          </div>
+          <div class="routine-block-card">
+            <span style="font-size:9.5px; font-weight:800; color:var(--ink-3);">45 min · Cine V.O.</span>
+            <h3 style="font-family:'Libre Caslon Text',serif; font-size:18px; margin:6px 0 4px;">4. Inmersión Streaming</h3>
+            <p style="font-size:12px; color:var(--ink-2); margin:0;">1 episodio completo en V.O. con subtítulos duales.</p>
+          </div>
+        `;
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function startDailyFlow() {
+      expandPomodoro();
+      startPomodoro();
+    }
+
+    function setTheme(theme) {
+      const body = document.body;
+      const tabPapel = document.getElementById('tab-papel');
+      const tabSepia = document.getElementById('tab-sepia');
+      const tabNoche = document.getElementById('tab-noche');
+
+      [tabPapel, tabSepia, tabNoche].forEach(t => {
+        t.style.background = 'transparent';
+        t.style.color = 'var(--rail-ink-3,#9c92a0)';
+      });
+
+      if (theme === 'papel') {
+        body.removeAttribute('data-theme');
+        tabPapel.style.background = 'var(--soleil,#ffcd11)';
+        tabPapel.style.color = '#463605';
+      } else if (theme === 'sepia') {
+        body.setAttribute('data-theme', 'sepia');
+        tabSepia.style.background = 'var(--soleil,#ffcd11)';
+        tabSepia.style.color = '#463605';
+      } else if (theme === 'noche') {
+        body.setAttribute('data-theme', 'noche');
+        tabNoche.style.background = 'var(--soleil,#ffcd11)';
+        tabNoche.style.color = '#463605';
+      }
+
+      if (window.lucide) lucide.createIcons();
+    }
+  </script>
+</body>
+</html>

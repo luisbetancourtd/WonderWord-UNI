@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WonderWord — Vocabulario & Repaso FSRS-6</title>
+
+  <!-- Fuentes Literarias -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Hanken+Grotesk:wght@400;500;600;700&family=Charis+SIL:wght@400;700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@0.462.0/dist/umd/lucide.js"></script>
+
+  <style>
+    :root {
+      /* ── Paleta de Pigmentos Literarios ── */
+      --prune: #53335a;
+      --prune-2: #6f4877;
+      --prune-wash: rgba(83, 51, 90, 0.11);
+      
+      --sauge: #006a64;
+      --sauge-2: #0f8c84;
+      --sauge-wash: rgba(0, 106, 100, 0.10);
+      
+      --soleil: #ffcd11;
+      --soleil-ink: #463605;
+      --soleil-wash: rgba(255, 205, 17, 0.22);
+      
+      --terre: #c4632f;
+      --terre-ink: #9c4a1e;
+      --terre-wash: rgba(196, 99, 47, 0.14);
+      
+      --bleuet: #7b9bd1;
+      --bleuet-ink: #3f5f96;
+      --bleuet-wash: rgba(123, 155, 209, 0.18);
+
+      --canvas: #fdfaf3;
+      --paper: #fffdf8;
+      --paper-2: #f6efe2;
+      --ink: #241d24;
+      --ink-2: #544a54;
+      --ink-3: #6f6570;
+      --rule: rgba(36, 29, 36, 0.15);
+      --rule-soft: rgba(36, 29, 36, 0.08);
+
+      --rail: #282031;
+      --rail-2: #342a3e;
+      --rail-ink: #f2ecf1;
+      --rail-ink-2: #a99fac;
+      --rail-ink-3: #9c92a0;
+      --rail-rule: rgba(255, 255, 255, 0.11);
+      --grain: 0.085;
+      --tooth: 0.5;
+      --vignette-opacity: 0.85;
+    }
+
+    [data-theme="sepia"] {
+      --prune: #5b3b63; --prune-2: #755080; --prune-wash: rgba(91, 59, 99, 0.12);
+      --sauge: #0a6159; --sauge-2: #12857a; --sauge-wash: rgba(10, 97, 89, 0.11);
+      --soleil: #eaa90d; --soleil-ink: #463605; --soleil-wash: rgba(234, 169, 13, 0.22);
+      --terre: #b25a2a; --terre-ink: #8c4318; --terre-wash: rgba(178, 90, 42, 0.14);
+      --bleuet: #7590bd; --bleuet-ink: #3a5788; --bleuet-wash: rgba(117, 144, 189, 0.16);
+      --canvas: #f4ecdb; --paper: #fbf5e8; --paper-2: #ebdfc7; --ink: #2a2211; --ink-2: #5b4e33;
+      --ink-3: #6f6142; --rule: rgba(56, 44, 20, 0.19); --rule-soft: rgba(56, 44, 20, 0.09);
+      --rail: #272014; --rail-2: #33291a; --rail-ink: #f1eade; --rail-ink-2: #ab9f8a; --rail-ink-3: #a0957f;
+      --rail-rule: rgba(255, 255, 255, 0.11); --grain: 0.1; --tooth: 0.6; --vignette-opacity: 0.7;
+    }
+
+    [data-theme="noche"] {
+      --prune: #d7b3de; --prune-2: #c49ecc; --prune-wash: rgba(215, 179, 222, 0.13);
+      --sauge: #7fd2c9; --sauge-2: #9fe0d8; --sauge-wash: rgba(127, 210, 201, 0.13);
+      --soleil: #ffcd11; --soleil-ink: #ffe9ad; --soleil-wash: rgba(255, 205, 17, 0.16);
+      --terre: #e08a56; --terre-ink: #e8996a; --terre-wash: rgba(224, 138, 86, 0.15);
+      --bleuet: #96b0dd; --bleuet-ink: #a6bde5; --bleuet-wash: rgba(150, 176, 221, 0.17);
+      --canvas: #16141a; --paper: #1d1a22; --paper-2: #262230; --ink: #ece6ed; --ink-2: #aaa2ac;
+      --ink-3: #9c939e; --rule: rgba(236, 230, 237, 0.17); --rule-soft: rgba(236, 230, 237, 0.09);
+      --rail: #100e14; --rail-2: #1b1822; --rail-ink: #ece6ed; --rail-ink-2: #9b929d; --rail-ink-3: #968e99;
+      --rail-rule: rgba(255, 255, 255, 0.1); --grain: 0.06; --tooth: 0.35; --vignette-opacity: 0.35;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      margin: 0;
+      background: var(--canvas, #fdfaf3);
+      color: var(--ink, #241d24);
+      font-family: 'Hanken Grotesk', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    a { color: var(--ink); text-decoration: none; }
+    svg.lucide { display: block; stroke-width: 1.5; }
+
+    /* Textura de papel prensado */
+    .paper-texture {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 60;
+      mix-blend-mode: multiply;
+      opacity: var(--grain, 0.085);
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    /* Marco de acuarela en 4 esquinas */
+    .vignette-container {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      mix-blend-mode: multiply;
+      opacity: var(--vignette-opacity);
+      overflow: hidden;
+    }
+    .corner-top-left {
+      position: absolute; left: -60px; top: -60px; width: 440px; height: 380px;
+      background: radial-gradient(circle at 20% 20%, #4a94e8 0%, #75a7e6 42%, #a8cbfa 70%, transparent 88%);
+      border-radius: 46% 54% 48% 52% / 52% 48% 54% 46%; filter: url(#wc-vignette-heavy); opacity: 0.85;
+    }
+    .corner-top-right {
+      position: absolute; right: -80px; top: -60px; width: 460px; height: 360px;
+      background: radial-gradient(circle at 80% 20%, #e0548a 0%, #eb77a5 40%, #f6aec9 72%, transparent 88%);
+      border-radius: 54% 46% 52% 48% / 48% 54% 46% 54%; filter: url(#wc-vignette-heavy); opacity: 0.82;
+    }
+    .corner-bottom-left {
+      position: absolute; left: -70px; bottom: -70px; width: 480px; height: 380px;
+      background: radial-gradient(circle at 20% 80%, #d8682a 0%, #e88c54 44%, #f5b98f 72%, transparent 88%);
+      border-radius: 50% 50% 46% 54% / 54% 46% 52% 48%; filter: url(#wc-vignette-heavy); opacity: 0.82;
+    }
+    .corner-bottom-right {
+      position: absolute; right: -70px; bottom: -60px; width: 460px; height: 380px;
+      background: radial-gradient(circle at 80% 80%, #f0a818 0%, #f5c448 42%, #fae290 74%, transparent 88%);
+      border-radius: 48% 52% 54% 46% / 46% 54% 48% 52%; filter: url(#wc-vignette-heavy); opacity: 0.84;
+    }
+
+    /* Tarjetas de Mazo */
+    .deck-card {
+      position: relative;
+      background: var(--paper);
+      border-radius: 20px;
+      padding: 24px 28px;
+      border: 1px solid rgba(36,29,36,0.07);
+      box-shadow: 0 2px 6px rgba(36,29,36,0.03), 0 12px 28px -18px rgba(36,29,36,0.18);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      transition: all 0.2s ease;
+      margin-bottom: 16px;
+    }
+    .deck-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(36,29,36,0.05), 0 18px 36px -18px rgba(36,29,36,0.25);
+    }
+
+    /* ======================================================================
+       ESTILOS OFICIALES DE LA TARJETA WONDERWORD (AquarelleUI Anki & Web)
+       ====================================================================== */
+    .wonderword-card {
+      font-family: 'Hanken Grotesk', -apple-system, sans-serif;
+      background: #fffdf8;
+      color: #241d24;
+      border-radius: 22px;
+      padding: 26px 30px;
+      max-width: 500px;
+      width: 100%;
+      margin: 0 auto;
+      border: 1px solid rgba(36, 29, 36, 0.12);
+      box-shadow: 0 16px 40px -16px rgba(36, 29, 36, 0.25);
+      text-align: center;
+      box-sizing: border-box;
+      position: relative;
+    }
+    [data-theme="noche"] .wonderword-card {
+      background: #1d1a22;
+      color: #ece6ed;
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .badge-lang, .badge-pos {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(0, 106, 100, 0.10);
+      color: #006a64;
+    }
+    [data-theme="noche"] .badge-lang, [data-theme="noche"] .badge-pos {
+      background: rgba(127, 210, 201, 0.15);
+      color: #7fd2c9;
+    }
+
+    /* Imagen 1:1 Cuadrada Acuarela */
+    .card-image-wrapper {
+      width: 100%;
+      max-width: 190px;
+      margin: 0 auto 16px;
+    }
+    .card-image-wrapper.compact {
+      max-width: 120px;
+      margin-bottom: 12px;
+    }
+    .card-image-box {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 16px;
+      border: 1px solid rgba(36, 29, 36, 0.08);
+      box-shadow: 0 6px 16px rgba(36, 29, 36, 0.08);
+      background: #fdfaf3;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    /* Tipografía */
+    .card-prompt, .card-word {
+      font-family: 'Libre Caslon Text', Georgia, serif;
+      font-size: 28px;
+      font-weight: 400;
+      margin: 0 0 6px;
+      color: #241d24;
+      line-height: 1.2;
+    }
+    [data-theme="noche"] .card-prompt, [data-theme="noche"] .card-word { color: #ece6ed; }
+    
+    .card-ipa-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .card-ipa {
+      font-family: 'Charis SIL', serif;
+      font-size: 18px;
+      color: #006a64;
+      font-weight: 700;
+    }
+    [data-theme="noche"] .card-ipa { color: #7fd2c9; }
+
+    .card-translation p {
+      font-size: 19px;
+      font-weight: 600;
+      color: #53335a;
+      margin: 0;
+    }
+    [data-theme="noche"] .card-translation p { color: #d7b3de; }
+    
+    .card-divider {
+      height: 1px;
+      background: rgba(36, 29, 36, 0.08);
+      margin: 16px 0;
+    }
+    [data-theme="noche"] .card-divider { background: rgba(255, 255, 255, 0.1); }
+
+    .card-example-box {
+      background: rgba(0, 0, 0, 0.025);
+      border-radius: 14px;
+      padding: 14px 18px;
+      margin-bottom: 12px;
+      text-align: left;
+      border: 1px solid rgba(36, 29, 36, 0.05);
+    }
+    .example-tl {
+      font-family: 'Libre Caslon Text', serif;
+      font-size: 15.5px;
+      line-height: 1.5;
+      margin: 0 0 4px;
+      color: var(--ink);
+    }
+    .example-es {
+      font-size: 13px;
+      color: #6f6570;
+      margin: 0;
+    }
+
+    .card-collocations-box, .card-grammar-box {
+      font-size: 12.5px;
+      text-align: left;
+      line-height: 1.45;
+      margin-bottom: 10px;
+      padding: 10px 14px;
+      background: rgba(196, 99, 47, 0.05);
+      border-radius: 12px;
+      border-left: 3px solid #c4632f;
+    }
+    .collocations-title {
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: #9c4a1e;
+      margin: 0 0 4px;
+      text-transform: uppercase;
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10.5px;
+      color: #9c92a0;
+      margin-top: 14px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(36, 29, 36, 0.06);
+    }
+
+    /* Modales */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(36,29,36,0.6);
+      backdrop-filter: blur(8px);
+      z-index: 150;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      animation: fadeIn 0.2s ease;
+    }
+    .modal-content {
+      background: var(--paper);
+      border-radius: 26px;
+      padding: 38px;
+      max-width: 860px;
+      width: 100%;
+      border: 1px solid var(--rule);
+      box-shadow: 0 24px 60px -20px rgba(36,29,36,0.45);
+      position: relative;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+
+    @media (max-width: 920px) {
+      [data-rail] { display: none !important; }
+      [data-main] { margin-left: 0 !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PIPELINE DE FILTROS SVG -->
+  <svg aria-hidden="true" width="0" height="0" style="position:absolute; pointer-events:none;">
+    <defs>
+      <filter id="wc-vignette-heavy" x="-35%" y="-35%" width="170%" height="170%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="14" result="blur" />
+        <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="4" seed="31" result="noise" />
+        <feDisplacementMap in="blur" in2="noise" scale="58" xChannelSelector="R" yChannelSelector="G" result="disp" />
+        <feComponentTransfer in="disp"><feFuncA type="table" tableValues="0 0.45 0.78 0.94 1" /></feComponentTransfer>
+      </filter>
+      <filter id="wc1" x="-25%" y="-25%" width="150%" height="150%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="11" result="b" />
+        <feTurbulence type="fractalNoise" baseFrequency="0.011" numOctaves="4" seed="7" result="n" />
+        <feDisplacementMap in="b" in2="n" scale="40" xChannelSelector="R" yChannelSelector="G" result="d" />
+        <feComponentTransfer in="d"><feFuncA type="table" tableValues="0 .55 .82 .95 1" /></feComponentTransfer>
+      </filter>
+      <filter id="wc3" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="7" result="b" />
+        <feTurbulence type="fractalNoise" baseFrequency="0.022" numOctaves="3" seed="41" result="n" />
+        <feDisplacementMap in="b" in2="n" scale="26" xChannelSelector="R" yChannelSelector="G" result="d" />
+        <feComponentTransfer in="d"><feFuncA type="table" tableValues="0 .6 .86 .97 1" /></feComponentTransfer>
+      </filter>
+      <filter id="wc4" x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" seed="61" result="n" />
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="9" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </defs>
+  </svg>
+
+  <div class="paper-texture"></div>
+
+  <!-- MARCO DE ACUARELA EN 4 ESQUINAS -->
+  <div class="vignette-container">
+    <div class="corner-top-left"></div>
+    <div class="corner-top-right"></div>
+    <div class="corner-bottom-left"></div>
+    <div class="corner-bottom-right"></div>
+  </div>
+
+  <div style="min-height:100vh; display:flex;">
+
+    <!-- ======================================================================
+         BARRA LATERAL (RAIL 100% IDÉNTICO Y CONECTADO)
+         ====================================================================== -->
+    <aside data-rail style="position:fixed; left:0; top:0; height:100%; width:252px; background:var(--rail,#282031); display:flex; flex-direction:column; z-index:40; box-sizing:border-box; overflow:hidden;">
+      <div aria-hidden="true" style="position:absolute; inset:0; pointer-events:none; background:radial-gradient(120% 55% at 12% 0%, rgba(196,99,47,.20), transparent 62%), radial-gradient(100% 48% at 92% 42%, rgba(0,106,100,.20), transparent 66%), radial-gradient(120% 46% at 0% 100%, rgba(123,155,209,.16), transparent 60%);"></div>
+      <div aria-hidden="true" style="position:absolute; inset:0; pointer-events:none; mix-blend-mode:overlay; opacity:var(--tooth,.5); background-image:url(&quot;data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjAiIGhlaWdodD0iMTYwIj48ZmlsdGVyIGlkPSJuIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC44IiBudW1PY3RhdmVzPSI0IiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjE2MCIgaGVpZ2h0PSIxNjAiIGZpbHRlcj0idXJsKCNuKSIvPjwvc3ZnPg==&quot;);"></div>
+
+      <div style="position:relative; padding:26px 26px 22px; border-bottom:1px solid var(--rail-rule,rgba(255,255,255,.11));">
+        <h1 style="font-family:'Libre Caslon Text',serif; font-size:21px; font-weight:400; letter-spacing:-0.02em; color:var(--rail-ink,#f2ecf1); line-height:1; margin:0 0 7px;">WonderWord</h1>
+        <span style="font-size:9px; text-transform:uppercase; letter-spacing:.2em; font-weight:600; color:var(--rail-ink-3,#9c92a0);">Inmersión literaria</span>
+      </div>
+
+            <nav style="position:relative; flex:1; overflow-y:auto; padding:22px 0;">
+        <p style="font-size:9px; text-transform:uppercase; letter-spacing:.2em; font-weight:600; color:var(--rail-ink-3,#9c92a0); margin:0 0 10px; padding:0 26px;">Lectura</p>
+        <a href="index.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="layout-dashboard" width="16" height="16"></i>
+          <span style="flex:1;">Dashboard</span>
+          
+        </a>
+        <a href="biblioteca.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="book-open" width="16" height="16"></i>
+          <span style="flex:1;">Biblioteca</span>
+          
+        </a>
+        <a href="lector.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="book-open-check" width="16" height="16"></i>
+          <span style="flex:1;">Lector & Estudio</span>
+          
+        </a>
+        <p style="font-size:9px; text-transform:uppercase; letter-spacing:.2em; font-weight:600; color:var(--rail-ink-3,#9c92a0); margin:26px 0 10px; padding:0 26px;">Práctica & Memoria</p>
+        <a href="#" style="position:relative; display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:600; color:var(--rail-ink,#f2ecf1);">
+          <span aria-hidden="true" style="position:absolute; inset:1px 16px 1px 0; background:rgba(255,255,255,.10); border-radius:0 999px 999px 0; filter:url(#wc4);"></span>
+          <span aria-hidden="true" style="position:absolute; left:0; top:4px; bottom:4px; width:3px; background:var(--soleil,#ffcd11); filter:url(#wc4);"></span>
+          <i data-lucide="brain" width="16" height="16" style="position:relative; color:var(--soleil);"></i>
+          <span style="position:relative; flex:1;">Vocabulario & Repaso</span>
+          <span style="font-family:'Libre Caslon Text',serif; font-size:13px; color:var(--soleil,#ffcd11);">18</span>
+        </a>
+        <a href="shadowing.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="mic" width="16" height="16"></i>
+          <span style="flex:1;">Shadowing & Fonética</span>
+          
+        </a>
+        <a href="inmersion.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="film" width="16" height="16"></i>
+          <span style="flex:1;">Inmersión Streaming</span>
+          
+        </a>
+        <p style="font-size:9px; text-transform:uppercase; letter-spacing:.2em; font-weight:600; color:var(--rail-ink-3,#9c92a0); margin:26px 0 10px; padding:0 26px;">Progreso & Exploración</p>
+        <a href="logros.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="award" width="16" height="16"></i>
+          <span style="flex:1;">Logros & Maestría</span>
+          
+        </a>
+        <a href="organizador.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="calendar" width="16" height="16"></i>
+          <span style="flex:1;">Organizador</span>
+          
+        </a>
+        <a href="viajes.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="compass" width="16" height="16"></i>
+          <span style="flex:1;">Viajes</span>
+          
+        </a>
+        <a href="tienda.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="shopping-bag" width="16" height="16"></i>
+          <span style="flex:1;">Tienda</span>
+          
+        </a>
+        <a href="ajustes.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="settings" width="16" height="16"></i>
+          <span style="flex:1;">Ajustes</span>
+          
+        </a>
+      </nav>
+
+      <!-- WIDGET INFERIOR IDÉNTICO -->
+      <div style="position:relative; padding:18px 26px 22px; border-top:1px solid var(--rail-rule,rgba(255,255,255,.11)); display:flex; align-items:center; gap:14px;">
+        <span style="position:relative; width:52px; height:52px; flex-shrink:0; display:block;">
+          <svg viewBox="0 0 52 52" width="52" height="52" style="display:block; transform:rotate(-90deg);">
+            <circle cx="26" cy="26" r="22" fill="none" stroke="rgba(255,255,255,.13)" stroke-width="5"></circle>
+            <circle cx="26" cy="26" r="22" fill="none" stroke="var(--sauge-2,#0f8c84)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138.2" stroke-dashoffset="55.2" style="filter:url(#wc4);"></circle>
+          </svg>
+          <span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Libre Caslon Text',serif; font-size:13px; color:var(--rail-ink,#f2ecf1); font-variant-numeric:tabular-nums;">18</span>
+        </span>
+        <div style="min-width:0;">
+          <p style="font-size:11.5px; color:var(--rail-ink-2,#a99fac); margin:0; line-height:1.4;">18 de 30 min hoy</p>
+          <p style="font-size:11px; color:var(--soleil,#ffcd11); margin:4px 0 0; line-height:1.4; font-weight:600;">Racha de 14 días</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ======================================================================
+         CONTENIDO PRINCIPAL
+         ====================================================================== -->
+    <div data-main style="flex:1; display:flex; flex-direction:column; margin-left:252px; min-width:0; position:relative;">
+      
+      <!-- TOPBAR -->
+      <header style="position:sticky; top:0; z-index:30; background:var(--rail,#282031); height:56px; padding:0 40px; display:flex; align-items:center; justify-content:space-between; overflow:hidden;">
+        <div aria-hidden="true" style="position:absolute; inset:0; pointer-events:none; background:radial-gradient(90% 200% at 6% 50%, rgba(196,99,47,.2), transparent 58%), radial-gradient(70% 180% at 74% 50%, rgba(0,106,100,.2), transparent 62%), radial-gradient(60% 160% at 100% 50%, rgba(123,155,209,.16), transparent 60%);"></div>
+        <div style="position:relative; display:flex; align-items:center; gap:10px; font-size:11.5px; color:var(--rail-ink-2,#a99fac); letter-spacing:.02em;">
+          <span>Vocabulario & Repaso</span><span style="color:var(--rail-ink-3,#9c92a0);">/</span><span>Mazos FSRS (Alemán & Francés)</span>
+        </div>
+        <div style="position:relative; display:flex; align-items:center; gap:22px;">
+          <div style="display:flex; align-items:center; gap:3px; padding:3px; background:rgba(0,0,0,.3); border-radius:999px;">
+            <button type="button" onclick="setTheme('papel')" id="tab-papel" title="Papel" style="display:flex; align-items:center; justify-content:center; width:28px; height:26px; border:none; border-radius:999px; cursor:pointer; background:var(--soleil,#ffcd11); color:#463605;"><i data-lucide="sun" width="14" height="14"></i></button>
+            <button type="button" onclick="setTheme('sepia')" id="tab-sepia" title="Sepia" style="display:flex; align-items:center; justify-content:center; width:28px; height:26px; border:none; border-radius:999px; cursor:pointer; background:transparent; color:var(--rail-ink-3,#9c92a0);"><i data-lucide="book" width="14" height="14"></i></button>
+            <button type="button" onclick="setTheme('noche')" id="tab-noche" title="Noche" style="display:flex; align-items:center; justify-content:center; width:28px; height:26px; border:none; border-radius:999px; cursor:pointer; background:transparent; color:var(--rail-ink-3,#9c92a0);"><i data-lucide="moon" width="14" height="14"></i></button>
+          </div>
+          <span style="width:1px; height:18px; background:var(--rail-rule,rgba(255,255,255,.11));"></span>
+          <span style="font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--rail-ink-2,#a99fac); font-weight:600;">Kevin</span>
+        </div>
+      </header>
+
+      <main style="flex:1; padding:52px 56px 88px; max-width:1300px; margin:0 auto; width:100%; box-sizing:border-box; position:relative; z-index:10;">
+
+        <!-- CABECERA -->
+        <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:32px; flex-wrap:wrap; margin-bottom:34px;">
+          <div>
+            <p style="font-size:9.5px; text-transform:uppercase; letter-spacing:.24em; font-weight:600; color:var(--terre-ink,#9c4a1e); margin:0 0 12px;">Memoria a Largo Plazo & Motor FSRS</p>
+            <h1 style="font-family:'Libre Caslon Text',serif; font-size:52px; line-height:1.05; letter-spacing:-0.03em; color:var(--ink,#241d24); margin:0; font-weight:400;">Vocabulario & Repaso</h1>
+          </div>
+          
+          <div style="display:flex; gap:12px;">
+            <button type="button" onclick="alert('Crear Nuevo Mazo')" style="display:flex; align-items:center; gap:8px; padding:12px 20px; border-radius:999px; border:1px solid var(--rule); background:var(--paper); font-size:12px; font-weight:600; cursor:pointer;">
+              <i data-lucide="plus" width="15" height="15"></i>
+              <span>Nuevo Mazo</span>
+            </button>
+            <button type="button" onclick="alert('Importar paquete de Anki .apkg')" style="display:flex; align-items:center; gap:8px; padding:12px 20px; border-radius:999px; border:1px solid var(--rule); background:var(--paper); font-size:12px; font-weight:600; cursor:pointer;">
+              <i data-lucide="import" width="15" height="15"></i>
+              <span>Importar .apkg</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ======================================================================
+             1. ACCIÓN GLOBAL DESTACADA: REPASO DIARIO FSRS (FLUJO 1)
+             ====================================================================== -->
+        <section style="position:relative; margin-bottom:44px; background:var(--paper); border-radius:24px; padding:32px 38px; border:1px solid rgba(36,29,36,0.08); box-shadow:0 1px 3px rgba(36,29,36,0.03), 0 16px 36px -18px rgba(36,29,36,0.22); overflow:hidden;">
+          <div aria-hidden="true" style="position:absolute; right:-20px; top:-20px; width:260px; height:200px; border-radius:50%; background:var(--soleil-wash); filter:url(#wc1); pointer-events:none; opacity:0.8;"></div>
+
+          <div style="position:relative; display:flex; justify-content:space-between; align-items:center; gap:32px; flex-wrap:wrap;">
+            <div>
+              <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                <span style="font-size:9.5px; text-transform:uppercase; letter-spacing:.16em; font-weight:700; color:var(--soleil-ink); background:var(--soleil); border-radius:999px; padding:3px 10px;">Rutina Diaria · 30 min</span>
+                <span style="font-size:12px; color:var(--ink-3);">Todos tus mazos combinados</span>
+              </div>
+              <h2 style="font-family:'Libre Caslon Text',serif; font-size:32px; font-weight:400; color:var(--ink); margin:0 0 12px;">Sesión de Repaso Global</h2>
+              
+              <div style="display:flex; gap:20px; font-size:13.5px; color:var(--ink-2); flex-wrap:wrap;">
+                <span style="display:flex; align-items:center; gap:6px;"><strong style="color:var(--terre-ink); font-size:16px;">18</strong> vencidas hoy</span>
+                <span style="color:var(--rule);">·</span>
+                <span style="display:flex; align-items:center; gap:6px;"><strong style="color:var(--sauge); font-size:16px;">10</strong> nuevas</span>
+                <span style="color:var(--rule);">·</span>
+                <span style="display:flex; align-items:center; gap:6px;"><strong style="color:var(--prune); font-size:16px;">15</strong> en aprendizaje</span>
+                <span style="color:var(--rule);">·</span>
+                <span>~8 minutos estimados</span>
+              </div>
+            </div>
+
+            <!-- Botón de Inicio de Repaso Global -->
+            <button type="button" onclick="startOfficialStudySession('Deutsch A1', 'der Apfel')" style="display:flex; align-items:center; gap:12px; background:var(--prune); color:#fff; font-size:12.5px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; padding:16px 36px; border-radius:999px; border:none; cursor:pointer; box-shadow:0 8px 24px -8px rgba(83,51,90,0.45); transition:transform .2s ease;">
+              <i data-lucide="play" width="18" height="18" fill="#fff"></i>
+              <span>Iniciar Repaso Global</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- ======================================================================
+             2. TUS MAZOS Y COLECCIONES (FLUJO 2: ESTUDIO AISLADO O GESTIÓN)
+             ====================================================================== -->
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:20px; margin-bottom:24px; flex-wrap:wrap;">
+          <div style="display:flex; align-items:center; gap:14px;">
+            <span style="font-size:10px; text-transform:uppercase; letter-spacing:.22em; font-weight:700; color:var(--ink-3); white-space:nowrap;">Tus Mazos Activos (4)</span>
+            <span style="width:120px; height:1px; background:var(--rule);"></span>
+          </div>
+
+          <!-- Selector de Idioma -->
+          <div style="display:flex; gap:8px;">
+            <button class="filter-pill active" style="padding:5px 14px; border-radius:999px; border:1px solid var(--ink); background:var(--ink); color:#fff; font-size:11px; font-weight:600;">Todos los idiomas</button>
+            <button class="filter-pill" style="padding:5px 14px; border-radius:999px; border:1px solid var(--rule); background:var(--paper); color:var(--ink-2); font-size:11px; font-weight:600;">Deutsch (3)</button>
+            <button class="filter-pill" style="padding:5px 14px; border-radius:999px; border:1px solid var(--rule); background:var(--paper); color:var(--ink-2); font-size:11px; font-weight:600;">Français (1)</button>
+          </div>
+        </div>
+
+        <!-- LISTA DE MAZOS -->
+        <div>
+
+          <!-- MAZO 1: DER ZAUBERWALD DER GRIMM (DECK OFICIAL ALEMÁN A1) -->
+          <div class="deck-card" style="border-left: 4px solid var(--sauge);">
+            <div style="flex:1; min-width:280px;">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                <span style="font-size:9px; text-transform:uppercase; letter-spacing:.1em; font-weight:700; color:var(--bleuet-ink); border:1px solid var(--bleuet-ink); border-radius:999px; padding:1px 6px;">Deutsch · A1</span>
+                <span style="font-size:11px; color:var(--ink-3);"><i data-lucide="trees" width="16" height="16" style="color:var(--sauge); display:inline-block; vertical-align:middle; margin-right:6px;"></i>Der Zauberwald der Brüder Grimm (Semana 2)</span>
+              </div>
+              <h3 style="font-family:'Libre Caslon Text',serif; font-size:22px; color:var(--ink); margin:0 0 6px;">Der Zauberwald der Grimm (Deck A1)</h3>
+              <p style="font-size:12.5px; color:var(--ink-2); margin:0;">
+                <strong style="color:var(--soleil-ink);">8 vencidas</strong> · 10 nuevas · 120 palabras en total
+              </p>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+              <button type="button" onclick="startOfficialStudySession('Deutsch A1', 'der Apfel')" style="display:flex; align-items:center; gap:8px; padding:10px 22px; border-radius:999px; background:var(--sauge); color:#fff; border:none; font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; cursor:pointer;">
+                <i data-lucide="target" width="15" height="15"></i>
+                <span>Estudiar este Mazo</span>
+              </button>
+              <button type="button" onclick="openDeckWordsDrawer('Der Zauberwald der Grimm', 'Deutsch · A1')" style="display:flex; align-items:center; gap:8px; padding:10px 18px; border-radius:999px; background:var(--paper-2); color:var(--ink); border:1px solid var(--rule); font-size:11.5px; font-weight:600; cursor:pointer;">
+                <i data-lucide="list" width="15" height="15"></i>
+                <span>Explorar Palabras (120)</span>
+              </button>
+              <button type="button" title="Exportar mazo a Anki .apkg" style="padding:10px; border-radius:50%; background:none; border:1px solid var(--rule); color:var(--ink-3); cursor:pointer;">
+                <i data-lucide="share-2" width="15" height="15"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- MAZO 2: LAS CUITAS DE WERTHER -->
+          <div class="deck-card">
+            <div style="flex:1; min-width:280px;">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                <span style="font-size:9px; text-transform:uppercase; letter-spacing:.1em; font-weight:700; color:var(--bleuet-ink); border:1px solid var(--bleuet-ink); border-radius:999px; padding:1px 6px;">Deutsch · B1</span>
+                <span style="font-size:11px; color:var(--ink-3);">Extraído de <em>«Die Leiden des jungen Werthers»</em></span>
+              </div>
+              <h3 style="font-family:'Libre Caslon Text',serif; font-size:22px; color:var(--ink); margin:0 0 6px;"><i data-lucide="mail" width="16" height="16" style="color:var(--terre); display:inline-block; vertical-align:middle; margin-right:6px;"></i>Las Cuitas de Werther</h3>
+              <p style="font-size:12.5px; color:var(--ink-2); margin:0;">
+                <strong style="color:var(--soleil-ink);">12 vencidas</strong> · 5 nuevas · 65 palabras en total
+              </p>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+              <button type="button" onclick="startOfficialStudySession('Deutsch B1', 'der Brief')" style="display:flex; align-items:center; gap:8px; padding:10px 22px; border-radius:999px; background:var(--bleuet-ink); color:#fff; border:none; font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; cursor:pointer;">
+                <i data-lucide="target" width="15" height="15"></i>
+                <span>Estudiar este Mazo</span>
+              </button>
+              <button type="button" onclick="openDeckWordsDrawer('Las Cuitas de Werther', 'Deutsch · B1')" style="display:flex; align-items:center; gap:8px; padding:10px 18px; border-radius:999px; background:var(--paper-2); color:var(--ink); border:1px solid var(--rule); font-size:11.5px; font-weight:600; cursor:pointer;">
+                <i data-lucide="list" width="15" height="15"></i>
+                <span>Explorar Palabras (65)</span>
+              </button>
+              <button type="button" title="Exportar mazo a Anki .apkg" style="padding:10px; border-radius:50%; background:none; border:1px solid var(--rule); color:var(--ink-3); cursor:pointer;">
+                <i data-lucide="share-2" width="15" height="15"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- MAZO 3: VERBOS FUERTES E IRREGULARES -->
+          <div class="deck-card">
+            <div style="flex:1; min-width:280px;">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                <span style="font-size:9px; text-transform:uppercase; letter-spacing:.1em; font-weight:700; color:var(--terre-ink); border:1px solid var(--terre-ink); border-radius:999px; padding:1px 6px;">Deutsch · Gramática</span>
+                <span style="font-size:11px; color:var(--ink-3);">Morfosintaxis y Formas Principales</span>
+              </div>
+              <h3 style="font-family:'Libre Caslon Text',serif; font-size:22px; color:var(--ink); margin:0 0 6px;"><i data-lucide="landmark" width="16" height="16" style="color:var(--bleuet-ink); display:inline-block; vertical-align:middle; margin-right:6px;"></i>Verbos Fuertes e Irregulares</h3>
+              <p style="font-size:12.5px; color:var(--ink-2); margin:0;">
+                <strong style="color:var(--soleil-ink);">4 vencidas</strong> · 0 nuevas · 50 palabras en total
+              </p>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+              <button type="button" onclick="startOfficialStudySession('Deutsch Gramática', 'fahren')" style="display:flex; align-items:center; gap:8px; padding:10px 22px; border-radius:999px; background:var(--terre); color:#fff; border:none; font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; cursor:pointer;">
+                <i data-lucide="target" width="15" height="15"></i>
+                <span>Estudiar este Mazo</span>
+              </button>
+              <button type="button" onclick="openDeckWordsDrawer('Verbos Fuertes e Irregulares', 'Deutsch · Gramática')" style="display:flex; align-items:center; gap:8px; padding:10px 18px; border-radius:999px; background:var(--paper-2); color:var(--ink); border:1px solid var(--rule); font-size:11.5px; font-weight:600; cursor:pointer;">
+                <i data-lucide="list" width="15" height="15"></i>
+                <span>Explorar Palabras (50)</span>
+              </button>
+              <button type="button" title="Exportar mazo a Anki .apkg" style="padding:10px; border-radius:50%; background:none; border:1px solid var(--rule); color:var(--ink-3); cursor:pointer;">
+                <i data-lucide="share-2" width="15" height="15"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- MAZO 4: LE PETIT PRINCE -->
+          <div class="deck-card">
+            <div style="flex:1; min-width:280px;">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                <span style="font-size:9px; text-transform:uppercase; letter-spacing:.1em; font-weight:700; color:var(--sauge); border:1px solid var(--sauge); border-radius:999px; padding:1px 6px;">Français · A2</span>
+                <span style="font-size:11px; color:var(--ink-3);">Extraído de <em>«Le Petit Prince»</em></span>
+              </div>
+              <h3 style="font-family:'Libre Caslon Text',serif; font-size:22px; color:var(--ink); margin:0 0 6px;"><i data-lucide="book-open" width="16" height="16" style="color:var(--prune); display:inline-block; vertical-align:middle; margin-right:6px;"></i>Le Petit Prince (Vocabulaire)</h3>
+              <p style="font-size:12.5px; color:var(--ink-2); margin:0;">
+                <strong style="color:var(--soleil-ink);">6 vencidas</strong> · 2 nuevas · 68 palabras en total
+              </p>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+              <button type="button" onclick="startOfficialStudySession('Français A2', 'apprivoiser')" style="display:flex; align-items:center; gap:8px; padding:10px 22px; border-radius:999px; background:var(--sauge); color:#fff; border:none; font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; cursor:pointer;">
+                <i data-lucide="target" width="15" height="15"></i>
+                <span>Estudiar este Mazo</span>
+              </button>
+              <button type="button" onclick="openDeckWordsDrawer('Le Petit Prince', 'Français · A2')" style="display:flex; align-items:center; gap:8px; padding:10px 18px; border-radius:999px; background:var(--paper-2); color:var(--ink); border:1px solid var(--rule); font-size:11.5px; font-weight:600; cursor:pointer;">
+                <i data-lucide="list" width="15" height="15"></i>
+                <span>Explorar Palabras (68)</span>
+              </button>
+              <button type="button" title="Exportar mazo a Anki .apkg" style="padding:10px; border-radius:50%; background:none; border:1px solid var(--rule); color:var(--ink-3); cursor:pointer;">
+                <i data-lucide="share-2" width="15" height="15"></i>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL: SESIÓN DE ESTUDIO OFICIAL (PLANTILLA UNIVERSAL WONDERWORD & ANKI)
+       ====================================================================== -->
+  <div id="modal-study-session" class="modal-backdrop" style="display:none;">
+    <div style="max-width:540px; width:100%; position:relative;">
+      
+      <!-- Botón de Cerrar Modal -->
+      <button type="button" onclick="closeStudySession()" style="position:absolute; right:-12px; top:-40px; background:none; border:none; cursor:pointer; color:#fff; font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px;">
+        <span>Cerrar</span> <i data-lucide="x" width="18" height="18"></i>
+      </button>
+
+      <!-- TARJETA OFICIAL WONDERWORD (CARA A & CARA B) -->
+      <div class="wonderword-card">
+        
+        <!-- ── CARA A (FRONT) ── -->
+        <div id="card-front" onclick="flipOfficialCard()" style="cursor:pointer;" title="Haz clic o pulsa Espacio para voltear">
+          <div class="card-header">
+            <span class="badge-lang">DEUTSCH · A1</span>
+            <span class="badge-pos">SUSTANTIVO</span>
+          </div>
+
+          <!-- Imagen 1:1 Cuadrada Acuarela de la Manzana -->
+          <div class="card-image-wrapper">
+            <div class="card-image-box">
+              <svg viewBox="0 0 160 160" width="100%" height="100%" style="display:block;">
+                <circle cx="80" cy="80" r="72" fill="#fffdf8" />
+                <!-- Mancha de acuarela roja y verde para la manzana -->
+                <circle cx="78" cy="88" r="46" fill="#e05454" opacity="0.85" filter="url(#wc3)" />
+                <circle cx="88" cy="86" r="42" fill="#d93838" opacity="0.75" filter="url(#wc1)" />
+                <!-- Tallo y hoja verde -->
+                <path d="M80 48 Q 82 32 94 26" stroke="#5a3d28" stroke-width="4" stroke-linecap="round" fill="none" />
+                <path d="M86 36 Q 106 32 108 44 Q 96 46 86 36 Z" fill="#006a64" opacity="0.85" filter="url(#wc4)" />
+                <!-- Luz y brillo de acuarela -->
+                <circle cx="64" cy="74" r="14" fill="#ffcd11" opacity="0.35" filter="url(#wc3)" />
+              </svg>
+            </div>
+          </div>
+
+          <h1 class="card-prompt">der Apfel</h1>
+
+          <div class="card-example-box" style="margin-top:14px;">
+            <p class="example-tl" style="font-size:16.5px; text-align:center;">
+              «Er isst jeden Morgen einen frischen <strong style="border-bottom:2px solid var(--soleil); padding:0 8px; color:var(--terre-ink);">________</strong>.»
+            </p>
+          </div>
+
+          <div style="margin-top:18px; font-size:11px; color:var(--ink-3); letter-spacing:.08em; text-transform:uppercase;">
+            <span>Toca o pulsa espacio para voltear</span>
+          </div>
+        </div>
+
+        <!-- ── CARA B (BACK) ── -->
+        <div id="card-back" style="display:none; text-align:center; animation:fadeIn .2s ease;">
+          <div class="card-header">
+            <span class="badge-lang">DEUTSCH · A1</span>
+            <span class="badge-pos">SUSTANTIVO</span>
+          </div>
+
+          <!-- Imagen Compacta 1:1 -->
+          <div class="card-image-wrapper compact">
+            <div class="card-image-box">
+              <svg viewBox="0 0 160 160" width="100%" height="100%">
+                <circle cx="78" cy="88" r="46" fill="#e05454" opacity="0.85" filter="url(#wc3)" />
+                <path d="M80 48 Q 82 32 94 26" stroke="#5a3d28" stroke-width="4" stroke-linecap="round" fill="none" />
+                <path d="M86 36 Q 106 32 108 44 Q 96 46 86 36 Z" fill="#006a64" opacity="0.85" />
+              </svg>
+            </div>
+          </div>
+
+          <h1 class="card-word">der Apfel, die Äpfel</h1>
+          
+          <div class="card-ipa-row">
+            <span class="card-ipa">/ˈap͡fl̩, ˈɛp͡fl̩/</span>
+            <button type="button" onclick="alert('Reproduciendo audio nativo: der Apfel')" style="background:var(--soleil-wash); border:none; border-radius:50%; width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer;"><i data-lucide="volume-2" width="14" height="14" style="color:var(--soleil-ink);"></i></button>
+          </div>
+
+          <div class="card-translation">
+            <p>la manzana</p>
+          </div>
+
+          <div class="card-divider"></div>
+
+          <!-- Ejemplo en Contexto Auténtico -->
+          <div class="card-example-box">
+            <p class="example-tl">
+              «Er isst jeden Morgen einen frischen <strong>Apfel</strong>.» 
+              <button type="button" onclick="alert('Reproduciendo frase completa')" style="background:none; border:none; cursor:pointer; vertical-align:middle; padding:0 4px;"><i data-lucide="volume-2" width="14" height="14" style="color:var(--sauge);"></i></button>
+            </p>
+            <p class="example-es">(Él come una manzana fresca cada mañana.)</p>
+          </div>
+
+          <!-- Colocaciones y Gramática -->
+          <div class="card-collocations-box">
+            <p class="collocations-title">COLOCACIONES & USO:</p>
+            <p style="margin:0 0 3px;">• <strong>einen Apfel pflücken</strong> — recoger una manzana</p>
+            <p style="margin:0;">• <strong>in den sauren Apfel beißen</strong> — hacer de tripas corazón</p>
+          </div>
+
+          <div class="card-grammar-box" style="border-left-color:var(--sauge); background:rgba(0,106,100,0.05);">
+            <p style="margin:0; font-size:11.5px; color:var(--ink-2);">
+              <strong>Gramática:</strong> Maskulinum · Plural con Umlaut (<em>die Äpfel</em>) · Gen: <em>des Apfels</em>
+            </p>
+          </div>
+
+          <!-- Pie Diegético -->
+          <div class="card-footer">
+            <span style="font-weight:600; color:var(--sauge);"><i data-lucide="trees" width="16" height="16" style="color:var(--sauge); display:inline-block; vertical-align:middle; margin-right:6px;"></i>Der Zauberwald der Brüder Grimm (Semana 2)</span>
+            <span>DE_A1_0042</span>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- BOTONES DE CALIFICACIÓN FSRS Y VOLTEO -->
+      <div style="margin-top:20px;">
+        <button id="btn-show-answer" type="button" onclick="flipOfficialCard()" style="width:100%; padding:15px; background:var(--prune); color:#fff; border:none; border-radius:999px; font-size:12.5px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; cursor:pointer; box-shadow:0 8px 24px -8px rgba(83,51,90,0.5);">
+          Mostrar Respuesta (Espacio)
+        </button>
+
+        <!-- 4 Botones FSRS -->
+        <div id="fsrs-buttons" style="display:none; grid-template-columns:repeat(4, 1fr); gap:10px;">
+          <button type="button" onclick="gradeOfficialCard(1)" style="padding:12px; border-radius:14px; border:1px solid rgba(220,53,69,0.3); background:#fff5f5; color:#c92a2a; font-size:11px; font-weight:700; cursor:pointer;">
+            <div>Otra vez (1)</div>
+            <div style="font-size:9.5px; opacity:.7; margin-top:2px;">&lt; 10 min</div>
+          </button>
+          <button type="button" onclick="gradeOfficialCard(2)" style="padding:12px; border-radius:14px; border:1px solid rgba(245,159,0,0.3); background:#fff9db; color:#e67700; font-size:11px; font-weight:700; cursor:pointer;">
+            <div>Difícil (2)</div>
+            <div style="font-size:9.5px; opacity:.7; margin-top:2px;">1 día</div>
+          </button>
+          <button type="button" onclick="gradeOfficialCard(3)" style="padding:12px; border-radius:14px; border:1px solid rgba(18,184,134,0.3); background:#ebfbee; color:#0ca678; font-size:11px; font-weight:700; cursor:pointer;">
+            <div>Bien (3)</div>
+            <div style="font-size:9.5px; opacity:.7; margin-top:2px;">3 días</div>
+          </button>
+          <button type="button" onclick="gradeOfficialCard(4)" style="padding:12px; border-radius:14px; border:1px solid rgba(34,139,230,0.3); background:#e7f5ff; color:#1c7ed6; font-size:11px; font-weight:700; cursor:pointer;">
+            <div>Fácil (4)</div>
+            <div style="font-size:9.5px; opacity:.7; margin-top:2px;">7 días</div>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL: EXPLORADOR DE PALABRAS -->
+  <div id="modal-deck-words" class="modal-backdrop" style="display:none;">
+    <div class="modal-content" style="max-height:85vh; display:flex; flex-direction:column;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+        <div>
+          <span id="drawer-deck-badge" style="font-size:9px; text-transform:uppercase; letter-spacing:.1em; font-weight:700; color:var(--bleuet-ink); border:1px solid var(--bleuet-ink); border-radius:999px; padding:1px 6px;">Deutsch · A1</span>
+          <h2 id="drawer-deck-title" style="font-family:'Libre Caslon Text',serif; font-size:26px; color:var(--ink); margin:6px 0 0;"><i data-lucide="trees" width="16" height="16" style="color:var(--sauge); display:inline-block; vertical-align:middle; margin-right:6px;"></i>Der Zauberwald der Brüder Grimm</h2>
+        </div>
+        <button type="button" onclick="closeDeckWordsDrawer()" style="background:none; border:none; cursor:pointer; color:var(--ink-3);"><i data-lucide="x" width="22" height="22"></i></button>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 2fr 1.5fr 2fr 1.5fr 1fr; padding:10px 18px; font-size:10.5px; text-transform:uppercase; letter-spacing:.14em; font-weight:700; color:var(--ink-3); border-bottom:1px solid var(--rule);">
+        <span>Lema & Display</span>
+        <span>Fonética (IPA)</span>
+        <span>Traducción</span>
+        <span>Origen</span>
+        <span>Estado</span>
+      </div>
+
+      <div style="flex:1; overflow-y:auto;">
+        <div style="display:grid; grid-template-columns: 2fr 1.5fr 2fr 1.5fr 1fr; padding:14px 18px; border-bottom:1px solid var(--rule-soft); align-items:center; font-size:13.5px;">
+          <div><strong style="color:var(--ink);">der Apfel, die Äpfel</strong></div>
+          <div style="font-family:'Charis SIL',serif; color:var(--sauge);">/ˈap͡fl̩, ˈɛp͡fl̩/</div>
+          <div>la manzana</div>
+          <div style="font-size:11px; color:var(--ink-3);">Semana 2 · DE_A1_0042</div>
+          <div><span style="font-size:10px; background:rgba(255,205,17,0.25); color:var(--soleil-ink); padding:2px 6px; border-radius:4px; font-weight:700;">Vencida</span></div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 2fr 1.5fr 2fr 1.5fr 1fr; padding:14px 18px; border-bottom:1px solid var(--rule-soft); align-items:center; font-size:13.5px;">
+          <div><strong style="color:var(--ink);">der Wald, die Wälder</strong></div>
+          <div style="font-family:'Charis SIL',serif; color:var(--sauge);">/valt, ˈvɛldɐ/</div>
+          <div>el bosque</div>
+          <div style="font-size:11px; color:var(--ink-3);">Semana 1 · DE_A1_0012</div>
+          <div><span style="font-size:10px; background:rgba(0,106,100,0.15); color:var(--sauge); padding:2px 6px; border-radius:4px; font-weight:700;">Dominada</span></div>
+        </div>
+      </div>
+
+      <div style="margin-top:18px; padding-top:14px; border-top:1px solid var(--rule-soft); display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-size:12px; color:var(--ink-3);">120 palabras con fonética IPA y audio nativo</span>
+        <button type="button" onclick="closeDeckWordsDrawer(); startOfficialStudySession('Deutsch A1', 'der Apfel');" style="padding:10px 24px; border-radius:999px; background:var(--sauge); color:#fff; border:none; font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; cursor:pointer;">Repasar este mazo ahora</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    if (window.lucide) lucide.createIcons();
+
+    function startOfficialStudySession(lang, word) {
+      document.getElementById('card-front').style.display = 'block';
+      document.getElementById('card-back').style.display = 'none';
+      document.getElementById('btn-show-answer').style.display = 'block';
+      document.getElementById('fsrs-buttons').style.display = 'none';
+      document.getElementById('modal-study-session').style.display = 'flex';
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeStudySession() {
+      document.getElementById('modal-study-session').style.display = 'none';
+    }
+
+    function flipOfficialCard() {
+      document.getElementById('card-front').style.display = 'none';
+      document.getElementById('card-back').style.display = 'block';
+      document.getElementById('btn-show-answer').style.display = 'none';
+      document.getElementById('fsrs-buttons').style.display = 'grid';
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function gradeOfficialCard(score) {
+      alert(`Tarjeta calificada con nota ${score}. El algoritmo FSRS ha programado el próximo intervalo de retención.`);
+      closeStudySession();
+    }
+
+    function openDeckWordsDrawer(title, badge) {
+      document.getElementById('drawer-deck-title').innerText = title;
+      document.getElementById('drawer-deck-badge').innerText = badge;
+      document.getElementById('modal-deck-words').style.display = 'flex';
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeDeckWordsDrawer() {
+      document.getElementById('modal-deck-words').style.display = 'none';
+    }
+
+    function setTheme(theme) {
+      const body = document.body;
+      const tabPapel = document.getElementById('tab-papel');
+      const tabSepia = document.getElementById('tab-sepia');
+      const tabNoche = document.getElementById('tab-noche');
+
+      [tabPapel, tabSepia, tabNoche].forEach(t => {
+        t.style.background = 'transparent';
+        t.style.color = 'var(--rail-ink-3,#9c92a0)';
+      });
+
+      if (theme === 'papel') {
+        body.removeAttribute('data-theme');
+        tabPapel.style.background = 'var(--soleil,#ffcd11)';
+        tabPapel.style.color = '#463605';
+      } else if (theme === 'sepia') {
+        body.setAttribute('data-theme', 'sepia');
+        tabSepia.style.background = 'var(--soleil,#ffcd11)';
+        tabSepia.style.color = '#463605';
+      } else if (theme === 'noche') {
+        body.setAttribute('data-theme', 'noche');
+        tabNoche.style.background = 'var(--soleil,#ffcd11)';
+        tabNoche.style.color = '#463605';
+      }
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    /* Atajos de Teclado Ergonómicos para el Repasador FSRS */
+    document.addEventListener('keydown', function(e) {
+      const studyModal = document.getElementById('modal-study-session');
+      const drawerModal = document.getElementById('modal-deck-words');
+
+      if (drawerModal && drawerModal.style.display === 'flex' && e.key === 'Escape') {
+        closeDeckWordsDrawer();
+        return;
+      }
+
+      if (!studyModal || studyModal.style.display !== 'flex') return;
+
+      const isFrontVisible = document.getElementById('card-front').style.display !== 'none';
+
+      if (e.key === ' ' || e.code === 'Space') {
+        e.preventDefault();
+        if (isFrontVisible) {
+          flipOfficialCard();
+        }
+      } else if (!isFrontVisible) {
+        if (e.key === '1') gradeOfficialCard(1);
+        else if (e.key === '2') gradeOfficialCard(2);
+        else if (e.key === '3') gradeOfficialCard(3);
+        else if (e.key === '4') gradeOfficialCard(4);
+      }
+
+      if (e.key === 'Escape') {
+        closeStudySession();
+      }
+    });
+  </script>
+</body>
+</html>

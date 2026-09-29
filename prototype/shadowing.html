@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WonderWord — Shadowing & Fonética Profunda</title>
+
+  <!-- Fuentes Literarias -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Charis+SIL:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@0.462.0/dist/umd/lucide.js"></script>
+
+  <style>
+    :root {
+      /* ── Paleta de Pigmentos Literarios ── */
+      --prune: #53335a;
+      --prune-2: #6d4576;
+      --prune-wash: rgba(83, 51, 90, 0.08);
+      --prune-glow: rgba(83, 51, 90, 0.35);
+      
+      --sauge: #006a64;
+      --sauge-2: #0e8880;
+      --sauge-wash: rgba(0, 106, 100, 0.09);
+      --sauge-glow: rgba(0, 106, 100, 0.35);
+      
+      --soleil: #ffcd11;
+      --soleil-ink: #463605;
+      --soleil-wash: rgba(255, 205, 17, 0.18);
+      
+      --terre: #c4632f;
+      --terre-2: #dc7238;
+      --terre-ink: #9c4a1e;
+      --terre-wash: rgba(196, 99, 47, 0.12);
+      --terre-glow: rgba(196, 99, 47, 0.4);
+      
+      --bleuet: #7b9bd1;
+      --bleuet-2: #5b81c2;
+      --bleuet-ink: #32538a;
+      --bleuet-wash: rgba(123, 155, 209, 0.14);
+
+      --canvas: #fbf7ee;
+      --paper: #ffffff;
+      --paper-warm: #fcf9f2;
+      --paper-2: #f4ecdc;
+      --ink: #241d24;
+      --ink-2: #4f4550;
+      --ink-3: #756a77;
+      --rule: rgba(36, 29, 36, 0.12);
+      --rule-soft: rgba(36, 29, 36, 0.06);
+
+      --rail: #282031;
+      --rail-2: #342a3e;
+      --rail-ink: #f2ecf1;
+      --rail-ink-2: #a99fac;
+      --rail-ink-3: #9c92a0;
+      --rail-rule: rgba(255, 255, 255, 0.11);
+      --grain: 0.085;
+      --tooth: 0.5;
+      --vignette-opacity: 0.85;
+    }
+
+    [data-theme="sepia"] {
+      --prune: #5b3b63; --prune-2: #755080; --prune-wash: rgba(91, 59, 99, 0.10);
+      --sauge: #0a6159; --sauge-2: #12857a; --sauge-wash: rgba(10, 97, 89, 0.09);
+      --soleil: #eaa90d; --soleil-ink: #463605; --soleil-wash: rgba(234, 169, 13, 0.18);
+      --terre: #b25a2a; --terre-2: #ca6a35; --terre-ink: #8c4318; --terre-wash: rgba(178, 90, 42, 0.12);
+      --bleuet: #7590bd; --bleuet-2: #5877aa; --bleuet-ink: #3a5788; --bleuet-wash: rgba(117, 144, 189, 0.14);
+      --canvas: #f4ecdb; --paper: #faf4e8; --paper-warm: #f7eedb; --paper-2: #ebdcc2;
+      --ink: #2a2211; --ink-2: #5b4e33; --ink-3: #7b6d4f;
+      --rule: rgba(56, 44, 20, 0.16); --rule-soft: rgba(56, 44, 20, 0.08);
+      --rail: #272014; --rail-2: #33291a; --rail-ink: #f1eade; --rail-ink-2: #ab9f8a; --rail-ink-3: #a0957f;
+      --rail-rule: rgba(255, 255, 255, 0.11); --grain: 0.1; --tooth: 0.6; --vignette-opacity: 0.7;
+    }
+
+    [data-theme="noche"] {
+      --prune: #d7b3de; --prune-2: #e5c8eb; --prune-wash: rgba(215, 179, 222, 0.12);
+      --sauge: #7fd2c9; --sauge-2: #9fe0d8; --sauge-wash: rgba(127, 210, 201, 0.12);
+      --soleil: #ffcd11; --soleil-ink: #ffe9ad; --soleil-wash: rgba(255, 205, 17, 0.16);
+      --terre: #e08a56; --terre-2: #efa172; --terre-ink: #e8996a; --terre-wash: rgba(224, 138, 86, 0.14);
+      --bleuet: #96b0dd; --bleuet-2: #adc2e8; --bleuet-ink: #a6bde5; --bleuet-wash: rgba(150, 176, 221, 0.15);
+      --canvas: #15131a; --paper: #1e1a26; --paper-warm: #231f2c; --paper-2: #2b2536;
+      --ink: #f2ecf3; --ink-2: #b8b0bb; --ink-3: #8e8492;
+      --rule: rgba(236, 230, 237, 0.15); --rule-soft: rgba(236, 230, 237, 0.08);
+      --rail: #100e14; --rail-2: #1b1822; --rail-ink: #ece6ed; --rail-ink-2: #9b929d; --rail-ink-3: #968e99;
+      --rail-rule: rgba(255, 255, 255, 0.1); --grain: 0.06; --tooth: 0.35; --vignette-opacity: 0.35;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      margin: 0;
+      background: var(--canvas);
+      color: var(--ink);
+      font-family: 'Hanken Grotesk', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    a { color: var(--ink); text-decoration: none; }
+    svg.lucide { display: block; stroke-width: 1.6; }
+
+    /* Textura de papel */
+    .paper-texture {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 60;
+      mix-blend-mode: multiply;
+      opacity: var(--grain);
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    /* Marco de acuarela en 4 esquinas */
+    .vignette-container {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      mix-blend-mode: multiply;
+      opacity: var(--vignette-opacity);
+      overflow: hidden;
+    }
+    .corner-top-left {
+      position: absolute; left: -60px; top: -60px; width: 440px; height: 380px;
+      background: radial-gradient(circle at 20% 20%, #4a94e8 0%, #75a7e6 42%, #a8cbfa 70%, transparent 88%);
+      border-radius: 46% 54% 48% 52% / 52% 48% 54% 46%; filter: url(#wc-vignette-heavy); opacity: 0.85;
+    }
+    .corner-top-right {
+      position: absolute; right: -80px; top: -60px; width: 460px; height: 360px;
+      background: radial-gradient(circle at 80% 20%, #e0548a 0%, #eb77a5 40%, #f6aec9 72%, transparent 88%);
+      border-radius: 54% 46% 52% 48% / 48% 54% 46% 54%; filter: url(#wc-vignette-heavy); opacity: 0.82;
+    }
+    .corner-bottom-left {
+      position: absolute; left: -70px; bottom: -70px; width: 480px; height: 380px;
+      background: radial-gradient(circle at 20% 80%, #d8682a 0%, #e88c54 44%, #f5b98f 72%, transparent 88%);
+      border-radius: 50% 50% 46% 54% / 54% 46% 52% 48%; filter: url(#wc-vignette-heavy); opacity: 0.82;
+    }
+    .corner-bottom-right {
+      position: absolute; right: -70px; bottom: -60px; width: 460px; height: 380px;
+      background: radial-gradient(circle at 80% 80%, #f0a818 0%, #f5c448 42%, #fae290 74%, transparent 88%);
+      border-radius: 48% 52% 54% 46% / 46% 54% 48% 52%; filter: url(#wc-vignette-heavy); opacity: 0.84;
+    }
+
+    /* ======================================================================
+       BOTONES Y PÍLDORAS REDISEÑADOS (AQUARELLE UI PREMIUM)
+       ====================================================================== */
+    
+    /* Pestañas Superiores */
+    .tab-nav-container {
+      display: inline-flex;
+      background: rgba(36, 29, 36, 0.05);
+      padding: 5px;
+      border-radius: 999px;
+      border: 1px solid var(--rule);
+      box-shadow: inset 0 2px 4px rgba(36, 29, 36, 0.03);
+      gap: 4px;
+    }
+    [data-theme="noche"] .tab-nav-container {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 20px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink-2);
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      user-select: none;
+      letter-spacing: 0.02em;
+    }
+    .tab-btn:hover {
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.6);
+    }
+    [data-theme="noche"] .tab-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    .tab-btn.active {
+      background: var(--paper);
+      color: var(--prune);
+      box-shadow: 0 4px 14px -3px rgba(83, 51, 90, 0.25), 0 1px 3px rgba(36,29,36,0.06);
+    }
+    [data-theme="noche"] .tab-btn.active {
+      background: var(--prune);
+      color: #fff;
+    }
+
+    /* Botón Primario de Grabación (La joya del estudio) */
+    .btn-record-main {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 36px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--prune) 0%, var(--prune-2) 100%);
+      color: #ffffff;
+      border: none;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .14em;
+      cursor: pointer;
+      box-shadow: 0 10px 28px -6px var(--prune-glow), 0 2px 6px rgba(0,0,0,0.1);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+    }
+    .btn-record-main:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 34px -6px var(--prune-glow), 0 4px 10px rgba(0,0,0,0.15);
+    }
+    .btn-record-main:active {
+      transform: translateY(1px);
+    }
+
+    /* Estado de Grabación Activa */
+    @keyframes pulseRing {
+      0% { box-shadow: 0 0 0 0 var(--terre-glow); transform: scale(1); }
+      50% { box-shadow: 0 0 0 18px rgba(196, 99, 47, 0); transform: scale(1.03); }
+      100% { box-shadow: 0 0 0 0 rgba(196, 99, 47, 0); transform: scale(1); }
+    }
+    .btn-record-main.recording-active {
+      background: linear-gradient(135deg, var(--terre) 0%, var(--terre-2) 100%) !important;
+      animation: pulseRing 1.5s infinite ease-out;
+      box-shadow: 0 10px 28px -4px var(--terre-glow) !important;
+    }
+
+    /* Botones Secundarios Elegantes (Escuchar Nativo / Tu Voz) */
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 13px 24px;
+      border-radius: 999px;
+      background: var(--paper);
+      border: 1px solid var(--rule);
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--ink);
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(36,29,36,0.04);
+      transition: all 0.2s ease;
+    }
+    .btn-secondary:hover {
+      background: var(--paper-warm);
+      border-color: var(--ink-2);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px -4px rgba(36,29,36,0.12);
+    }
+    .btn-secondary:active {
+      transform: translateY(1px);
+    }
+
+    /* ======================================================================
+       TARJETAS Y CONTENEDORES REDISEÑADOS (PAPER CRAFT EDITORIAL)
+       ====================================================================== */
+    
+    /* Tarjeta Principal de Shadowing */
+    .shadowing-hero-card {
+      background: var(--paper);
+      border-radius: 28px;
+      padding: 38px 44px;
+      border: 1px solid var(--rule);
+      box-shadow: 0 1px 3px rgba(36,29,36,0.03), 0 20px 48px -20px rgba(36,29,36,0.18);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 30px;
+    }
+
+    /* Caja de la Onda Melódica */
+    .waveform-card {
+      background: linear-gradient(180deg, var(--paper-warm) 0%, var(--paper) 100%);
+      border: 1px solid var(--rule);
+      border-radius: 22px;
+      padding: 22px 26px;
+      margin: 22px 0;
+      box-shadow: inset 0 2px 6px rgba(36, 29, 36, 0.02);
+      position: relative;
+    }
+
+    /* Tarjetas del Diagnóstico de 3 Ejes */
+    .axis-card {
+      background: var(--paper);
+      border-radius: 22px;
+      padding: 24px 26px;
+      border: 1px solid var(--rule);
+      box-shadow: 0 4px 16px -6px rgba(36,29,36,0.06);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .axis-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 26px -10px rgba(36,29,36,0.12);
+    }
+    .axis-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+    }
+    .axis-card.eje-1::before { background: var(--sauge); }
+    .axis-card.eje-2::before { background: var(--soleil); }
+    .axis-card.eje-3::before { background: var(--terre); }
+
+    /* Tarjetas de Opciones Fonéticas (Gimnasio) */
+    .phonetic-choice-card {
+      background: var(--paper);
+      border-radius: 24px;
+      border: 2px solid var(--rule);
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 4px 12px -4px rgba(36,29,36,0.05);
+      position: relative;
+    }
+    .phonetic-choice-card:hover {
+      border-color: var(--sauge);
+      transform: translateY(-4px);
+      box-shadow: 0 16px 32px -12px var(--sauge-glow);
+    }
+    .phonetic-choice-card.is-correct {
+      border-color: var(--sauge) !important;
+      background: linear-gradient(180deg, var(--paper) 0%, rgba(0, 106, 100, 0.06) 100%) !important;
+      box-shadow: 0 12px 28px -8px var(--sauge-glow) !important;
+    }
+
+    /* Tarjetas de Mediateca */
+    .media-item-card {
+      background: var(--paper);
+      border-radius: 22px;
+      border: 1px solid var(--rule);
+      padding: 22px 26px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      transition: all 0.25s ease;
+      box-shadow: 0 2px 8px -4px rgba(36,29,36,0.05);
+      margin-bottom: 16px;
+    }
+    .media-item-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--ink-2);
+      box-shadow: 0 10px 24px -10px rgba(36,29,36,0.15);
+    }
+
+    /* Zona de Carga / Drag & Drop */
+    .dropzone-container {
+      border: 2px dashed rgba(83, 51, 90, 0.25);
+      border-radius: 26px;
+      padding: 48px 30px;
+      text-align: center;
+      background: linear-gradient(180deg, var(--paper-warm) 0%, var(--paper) 100%);
+      transition: all 0.25s ease;
+      cursor: pointer;
+    }
+    .dropzone-container:hover {
+      border-color: var(--prune);
+      background: rgba(83, 51, 90, 0.03);
+      transform: scale(1.005);
+    }
+
+    @media (max-width: 920px) {
+      [data-rail] { display: none !important; }
+      [data-main] { margin-left: 0 !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PIPELINE DE FILTROS SVG -->
+  <svg aria-hidden="true" width="0" height="0" style="position:absolute; pointer-events:none;">
+    <defs>
+      <filter id="wc-vignette-heavy" x="-35%" y="-35%" width="170%" height="170%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="14" result="blur" />
+        <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="4" seed="31" result="noise" />
+        <feDisplacementMap in="blur" in2="noise" scale="58" xChannelSelector="R" yChannelSelector="G" result="disp" />
+        <feComponentTransfer in="disp"><feFuncA type="table" tableValues="0 0.45 0.78 0.94 1" /></feComponentTransfer>
+      </filter>
+      <filter id="wc1" x="-25%" y="-25%" width="150%" height="150%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="11" result="b" />
+        <feTurbulence type="fractalNoise" baseFrequency="0.011" numOctaves="4" seed="7" result="n" />
+        <feDisplacementMap in="b" in2="n" scale="40" xChannelSelector="R" yChannelSelector="G" result="d" />
+        <feComponentTransfer in="d"><feFuncA type="table" tableValues="0 .55 .82 .95 1" /></feComponentTransfer>
+      </filter>
+      <filter id="wc3" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="7" result="b" />
+        <feTurbulence type="fractalNoise" baseFrequency="0.022" numOctaves="3" seed="41" result="n" />
+        <feDisplacementMap in="b" in2="n" scale="26" xChannelSelector="R" yChannelSelector="G" result="d" />
+        <feComponentTransfer in="d"><feFuncA type="table" tableValues="0 .6 .86 .97 1" /></feComponentTransfer>
+      </filter>
+      <filter id="wc4" x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" seed="61" result="n" />
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="9" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </defs>
+  </svg>
+
+  <div class="paper-texture"></div>
+
+  <!-- MARCO DE ACUARELA EN 4 ESQUINAS -->
+  <div class="vignette-container">
+    <div class="corner-top-left"></div>
+    <div class="corner-top-right"></div>
+    <div class="corner-bottom-left"></div>
+    <div class="corner-bottom-right"></div>
+  </div>
+
+  <div style="min-height:100vh; display:flex;">
+
+    <!-- ======================================================================
+         BARRA LATERAL (RAIL 100% CONECTADO E IDÉNTICO)
+         ====================================================================== -->
+    <aside data-rail style="position:fixed; left:0; top:0; height:100%; width:252px; background:var(--rail,#282031); display:flex; flex-direction:column; z-index:40; box-sizing:border-box; overflow:hidden;">
+      <div aria-hidden="true" style="position:absolute; inset:0; pointer-events:none; background:radial-gradient(120% 55% at 12% 0%, rgba(196,99,47,.20), transparent 62%), radial-gradient(100% 48% at 92% 42%, rgba(0,106,100,.20), transparent 66%), radial-gradient(120% 46% at 0% 100%, rgba(123,155,209,.16), transparent 60%);"></div>
+      <div aria-hidden="true" style="position:absolute; inset:0; pointer-events:none; mix-blend-mode:overlay; opacity:var(--tooth,.5); background-image:url(&quot;data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjAiIGhlaWdodD0iMTYwIj48ZmlsdGVyIGlkPSJuIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC44IiBudW1PY3RhdmVzPSI0IiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjE2MCIgaGVpZ2h0PSIxNjAiIGZpbHRlcj0idXJsKCNuKSIvPjwvc3ZnPg==&quot;);"></div>
+
+      <div style="position:relative; padding:26px 26px 22px; border-bottom:1px solid var(--rail-rule,rgba(255,255,255,.11));">
+        <h1 style="font-family:'Libre Caslon Text',serif; font-size:21px; font-weight:400; letter-spacing:-0.02em; color:var(--rail-ink,#f2ecf1); line-height:1; margin:0 0 7px;">WonderWord</h1>
+        <span style="font-size:9px; text-transform:uppercase; letter-spacing:.2em; font-weight:600; color:var(--rail-ink-3,#9c92a0);">Inmersión literaria</span>
+      </div>
+
+            <nav style="position:relative; flex:1; overflow-y:auto; padding:22px 0;">
+        <p style="font-size:9px; text-transform:uppercase; letter-spacing:.2em; font-weight:600; color:var(--rail-ink-3,#9c92a0); margin:0 0 10px; padding:0 26px;">Lectura</p>
+        <a href="index.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="layout-dashboard" width="16" height="16"></i>
+          <span style="flex:1;">Dashboard</span>
+          
+        </a>
+        <a href="biblioteca.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="book-open" width="16" height="16"></i>
+          <span style="flex:1;">Biblioteca</span>
+          
+        </a>
+        <a href="lector.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="book-open-check" width="16" height="16"></i>
+          <span style="flex:1;">Lector & Estudio</span>
+          
+        </a>
+        <p style="font-size:9px; text-transform:uppercase; letter-spacing:.2em; font-weight:600; color:var(--rail-ink-3,#9c92a0); margin:26px 0 10px; padding:0 26px;">Práctica & Memoria</p>
+        <a href="vocabulario.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="brain" width="16" height="16"></i>
+          <span style="flex:1;">Vocabulario & Repaso</span>
+          <span style="font-family:'Libre Caslon Text',serif; font-size:13px; color:var(--soleil,#ffcd11);">18</span>
+        </a>
+        <a href="#" style="position:relative; display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:600; color:var(--rail-ink,#f2ecf1);">
+          <span aria-hidden="true" style="position:absolute; inset:1px 16px 1px 0; background:rgba(255,255,255,.10); border-radius:0 999px 999px 0; filter:url(#wc4);"></span>
+          <span aria-hidden="true" style="position:absolute; left:0; top:4px; bottom:4px; width:3px; background:var(--soleil,#ffcd11); filter:url(#wc4);"></span>
+          <i data-lucide="mic" width="16" height="16" style="position:relative; color:var(--soleil);"></i>
+          <span style="position:relative; flex:1;">Shadowing & Fonética</span>
+          
+        </a>
+        <a href="inmersion.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="film" width="16" height="16"></i>
+          <span style="flex:1;">Inmersión Streaming</span>
+          
+        </a>
+        <p style="font-size:9px; text-transform:uppercase; letter-spacing:.2em; font-weight:600; color:var(--rail-ink-3,#9c92a0); margin:26px 0 10px; padding:0 26px;">Progreso & Exploración</p>
+        <a href="logros.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="award" width="16" height="16"></i>
+          <span style="flex:1;">Logros & Maestría</span>
+          
+        </a>
+        <a href="organizador.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="calendar" width="16" height="16"></i>
+          <span style="flex:1;">Organizador</span>
+          
+        </a>
+        <a href="viajes.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="compass" width="16" height="16"></i>
+          <span style="flex:1;">Viajes</span>
+          
+        </a>
+        <a href="tienda.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="shopping-bag" width="16" height="16"></i>
+          <span style="flex:1;">Tienda</span>
+          
+        </a>
+        <a href="ajustes.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="settings" width="16" height="16"></i>
+          <span style="flex:1;">Ajustes</span>
+          
+        </a>
+      </nav>
+
+      <!-- WIDGET INFERIOR IDÉNTICO -->
+      <div style="position:relative; padding:18px 26px 22px; border-top:1px solid var(--rail-rule,rgba(255,255,255,.11)); display:flex; align-items:center; gap:14px;">
+        <span style="position:relative; width:52px; height:52px; flex-shrink:0; display:block;">
+          <svg viewBox="0 0 52 52" width="52" height="52" style="display:block; transform:rotate(-90deg);">
+            <circle cx="26" cy="26" r="22" fill="none" stroke="rgba(255,255,255,.13)" stroke-width="5"></circle>
+            <circle cx="26" cy="26" r="22" fill="none" stroke="var(--sauge-2,#0f8c84)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138.2" stroke-dashoffset="55.2" style="filter:url(#wc4);"></circle>
+          </svg>
+          <span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Libre Caslon Text',serif; font-size:13px; color:var(--rail-ink,#f2ecf1); font-variant-numeric:tabular-nums;">18</span>
+        </span>
+        <div style="min-width:0;">
+          <p style="font-size:11.5px; color:var(--rail-ink-2,#a99fac); margin:0; line-height:1.4;">18 de 30 min hoy</p>
+          <p style="font-size:11px; color:var(--soleil,#ffcd11); margin:4px 0 0; line-height:1.4; font-weight:600;">Racha de 14 días</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ======================================================================
+         CONTENIDO PRINCIPAL: FONÉTICA & SHADOWING UNIFICADO
+         ====================================================================== -->
+    <div data-main style="flex:1; display:flex; flex-direction:column; margin-left:252px; min-width:0; position:relative;">
+      
+      <!-- TOPBAR -->
+      <header style="position:sticky; top:0; z-index:30; background:var(--rail,#282031); height:56px; padding:0 40px; display:flex; align-items:center; justify-content:space-between; overflow:hidden;">
+        <div aria-hidden="true" style="position:absolute; inset:0; pointer-events:none; background:radial-gradient(90% 200% at 6% 50%, rgba(196,99,47,.2), transparent 58%), radial-gradient(70% 180% at 74% 50%, rgba(0,106,100,.2), transparent 62%), radial-gradient(60% 160% at 100% 50%, rgba(123,155,209,.16), transparent 60%);"></div>
+        <div style="position:relative; display:flex; align-items:center; gap:10px; font-size:11.5px; color:var(--rail-ink-2,#a99fac); letter-spacing:.02em;">
+          <span>Fonética & Shadowing</span><span style="color:var(--rail-ink-3,#9c92a0);">/</span><span id="breadcrumb-section">1. Estudio de Shadowing</span>
+        </div>
+        <div style="position:relative; display:flex; align-items:center; gap:22px;">
+          <div style="display:flex; align-items:center; gap:3px; padding:3px; background:rgba(0,0,0,.3); border-radius:999px;">
+            <button type="button" onclick="setTheme('papel')" id="tab-papel" title="Papel" style="display:flex; align-items:center; justify-content:center; width:28px; height:26px; border:none; border-radius:999px; cursor:pointer; background:var(--soleil,#ffcd11); color:#463605;"><i data-lucide="sun" width="14" height="14"></i></button>
+            <button type="button" onclick="setTheme('sepia')" id="tab-sepia" title="Sepia" style="display:flex; align-items:center; justify-content:center; width:28px; height:26px; border:none; border-radius:999px; cursor:pointer; background:transparent; color:var(--rail-ink-3,#9c92a0);"><i data-lucide="book" width="14" height="14"></i></button>
+            <button type="button" onclick="setTheme('noche')" id="tab-noche" title="Noche" style="display:flex; align-items:center; justify-content:center; width:28px; height:26px; border:none; border-radius:999px; cursor:pointer; background:transparent; color:var(--rail-ink-3,#9c92a0);"><i data-lucide="moon" width="14" height="14"></i></button>
+          </div>
+          <span style="width:1px; height:18px; background:var(--rail-rule,rgba(255,255,255,.11));"></span>
+          <span style="font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--rail-ink-2,#a99fac); font-weight:600;">Kevin</span>
+        </div>
+      </header>
+
+      <main style="flex:1; padding:44px 56px 88px; max-width:1300px; margin:0 auto; width:100%; box-sizing:border-box; position:relative; z-index:10;">
+
+        <!-- CABECERA Y SELECTOR DE PESTAÑAS REDISEÑADO -->
+        <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:28px; flex-wrap:wrap; margin-bottom:32px;">
+          <div>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+              <span style="width:8px; height:8px; border-radius:50%; background:var(--terre);"></span>
+              <p style="font-size:9.5px; text-transform:uppercase; letter-spacing:.24em; font-weight:700; color:var(--terre-ink); margin:0;">Santuario Auditivo & Articulatorio</p>
+            </div>
+            <h1 style="font-family:'Libre Caslon Text',serif; font-size:46px; line-height:1.05; letter-spacing:-0.03em; color:var(--ink); margin:0; font-weight:400;">Fonética & Shadowing</h1>
+          </div>
+          
+          <!-- Pestañas Superiores Estilizadas -->
+          <div class="tab-nav-container">
+            <button class="tab-btn active" id="btn-tab-shadowing" onclick="switchSection('shadowing')">
+              <i data-lucide="mic" width="14" height="14"></i>
+              <span>1. Estudio Shadowing</span>
+            </button>
+            <button class="tab-btn" id="btn-tab-gym" onclick="switchSection('gym')">
+              <i data-lucide="sparkles" width="14" height="14"></i>
+              <span>2. Gimnasio Fonético</span>
+            </button>
+            <button class="tab-btn" id="btn-tab-library" onclick="switchSection('library')">
+              <i data-lucide="film" width="14" height="14"></i>
+              <span>3. Mediateca</span>
+            </button>
+            <button class="tab-btn" id="btn-tab-import" onclick="switchSection('import')">
+              <i data-lucide="upload-cloud" width="14" height="14"></i>
+              <span>4. Subir & Importar</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ======================================================================
+             SECCIÓN 1: ESTUDIO DE SHADOWING (LA TARJETA DE PRÁCTICA EN VIVO)
+             ====================================================================== -->
+        <section id="section-shadowing" style="display:block;">
+          
+          <!-- HERO CARD DE SHADOWING -->
+          <div class="shadowing-hero-card">
+            <!-- Aureola sutil de acuarela -->
+            <div aria-hidden="true" style="position:absolute; right:-30px; top:-30px; width:340px; height:260px; border-radius:50%; background:var(--sauge-wash); filter:url(#wc1); pointer-events:none; opacity:0.8;"></div>
+
+            <!-- Fila Superior: Badges y Velocidad -->
+            <div style="position:relative; display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <span style="font-size:10px; text-transform:uppercase; letter-spacing:.14em; font-weight:800; color:var(--sauge); background:var(--sauge-wash); border:1px solid rgba(0,106,100,0.25); border-radius:999px; padding:3px 10px;">Français · A2</span>
+                <span style="font-size:13px; color:var(--ink-2); font-weight:500;">De <em>«Le Petit Prince»</em> · Cap. IV (Página 34)</span>
+              </div>
+
+              <!-- Selector de Velocidad -->
+              <div style="display:flex; align-items:center; gap:3px; background:rgba(36,29,36,0.05); padding:3px; border-radius:999px; font-size:11px; font-weight:700; border:1px solid var(--rule-soft);">
+                <span style="color:var(--ink-3); padding:0 8px 0 6px; font-size:10.5px; text-transform:uppercase; letter-spacing:.08em;">Tempo</span>
+                <button type="button" style="background:transparent; border:none; color:var(--ink-2); cursor:pointer; padding:4px 9px; border-radius:999px; font-weight:600;">0.75x</button>
+                <button type="button" style="background:var(--paper); color:var(--sauge); border:none; border-radius:999px; padding:4px 10px; font-weight:800; box-shadow:0 1px 3px rgba(0,0,0,0.1);">1.0x</button>
+                <button type="button" style="background:transparent; border:none; color:var(--ink-2); cursor:pointer; padding:4px 9px; border-radius:999px; font-weight:600;">1.25x</button>
+              </div>
+            </div>
+
+            <!-- Texto de la Frase con Fonética Ruby de Alta Precisión -->
+            <div style="position:relative; margin-bottom:24px; text-align:center; padding:12px 0;">
+              <h2 style="font-family:'Libre Caslon Text',serif; font-size:38px; line-height:2.0; color:var(--ink); font-weight:400; margin:0 0 10px;">
+                <ruby style="padding:0 3px;">J’ai<rt style="font-family:'Charis SIL',serif; font-size:.44em; color:var(--sauge); font-weight:700;">ʒe</rt></ruby> 
+                <ruby style="padding:0 3px;">de<rt style="font-family:'Charis SIL',serif; font-size:.44em; color:var(--ink-3);">də</rt></ruby> 
+                <ruby style="padding:0 3px;">sérieuses<rt style="font-family:'Charis SIL',serif; font-size:.44em; color:var(--ink-3);">seʁjøz</rt></ruby> 
+                <ruby style="padding:0 3px;">raisons<rt style="font-family:'Charis SIL',serif; font-size:.44em; color:var(--ink-3);">ʁɛzɔ̃</rt></ruby> 
+                <ruby style="padding:0 3px;">de<rt style="font-family:'Charis SIL',serif; font-size:.44em; color:var(--ink-3);">də</rt></ruby> 
+                <ruby style="padding:0 3px;">croire<rt style="font-family:'Charis SIL',serif; font-size:.44em; color:var(--terre-ink); font-weight:700; text-decoration:underline;">kʁwaʁ</rt></ruby> 
+                <ruby style="padding:0 3px;">que<rt style="font-family:'Charis SIL',serif; font-size:.44em; color:var(--ink-3);">kə</rt></ruby> 
+                <ruby style="padding:0 3px;">la<rt style="font-family:'Charis SIL',serif; font-size:.44em; color:var(--ink-3);">la</rt></ruby> 
+                <ruby style="padding:0 3px;">planète<rt style="font-family:'Charis SIL',serif; font-size:.44em; color:var(--ink-3);">planɛt</rt></ruby>…
+              </h2>
+              <p style="font-size:15.5px; color:var(--ink-2); font-style:italic; margin:0;">«Tengo serias razones para creer que el planeta de donde venía el principito…»</p>
+            </div>
+
+            <!-- CAJA DE LA ONDA MELÓDICA (PROSODIA & DTW) -->
+            <div class="waveform-card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="display:flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; background:var(--sauge-wash); color:var(--sauge);">
+                    <i data-lucide="activity" width="15" height="15"></i>
+                  </span>
+                  <span style="font-size:11.5px; font-weight:800; text-transform:uppercase; letter-spacing:.12em; color:var(--sauge);">Curva Melódica & Prosodia (DTW)</span>
+                </div>
+                <div style="display:flex; gap:16px; font-size:11.5px; font-weight:600; color:var(--ink-2);">
+                  <span>Hablante Nativo: <strong style="color:var(--sauge);">2.8s</strong></span>
+                  <span>Tu Grabación: <strong style="color:var(--terre);">3.1s</strong></span>
+                </div>
+              </div>
+
+              <!-- Gráfico Vectorial de Ondas -->
+              <svg viewBox="0 0 800 120" width="100%" height="115" style="display:block; overflow:visible;">
+                <!-- Fondo con gradiente para la onda del nativo -->
+                <defs>
+                  <linearGradient id="nativeGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="var(--sauge)" stop-opacity="0.25" />
+                    <stop offset="100%" stop-color="var(--sauge)" stop-opacity="0.0" />
+                  </linearGradient>
+                </defs>
+
+                <line x1="0" y1="60" x2="800" y2="60" stroke="rgba(36,29,36,0.08)" stroke-dasharray="4 4" />
+                
+                <!-- Área sombreada nativo -->
+                <path d="M 20 60 Q 70 20 120 60 T 220 60 T 320 15 T 420 60 T 520 25 T 620 60 T 720 30 T 780 60 L 780 60 L 20 60 Z" fill="url(#nativeGrad)" />
+
+                <!-- 1. Curva del Nativo (Azul Salvia) -->
+                <path d="M 20 60 Q 70 20 120 60 T 220 60 T 320 15 T 420 60 T 520 25 T 620 60 T 720 30 T 780 60" fill="none" stroke="var(--sauge)" stroke-width="3.5" stroke-linecap="round" />
+                
+                <!-- 2. Tu Onda Grabada (Terracota punteada) -->
+                <path id="user-wave" d="M 20 60 Q 75 25 130 60 T 235 60 T 340 30 T 450 60 T 560 20 T 670 60 T 750 35 T 790 60" fill="none" stroke="var(--terre)" stroke-width="3" stroke-linecap="round" stroke-dasharray="6 3" />
+                
+                <!-- Tramo a mejorar -->
+                <rect x="420" y="8" width="350" height="104" rx="10" fill="rgba(196,99,47,0.08)" stroke="rgba(196,99,47,0.3)" stroke-dasharray="4 4" />
+                <text x="595" y="105" text-anchor="middle" font-size="10.5" font-family="'Hanken Grotesk',sans-serif" font-weight="800" fill="var(--terre-ink)">▲ TRAMO DONDE EL RITMO SE DESACELERÓ (+22%)</text>
+              </svg>
+
+              <div style="display:flex; justify-content:center; gap:28px; margin-top:10px; font-size:12px; font-weight:600;">
+                <span style="display:flex; align-items:center; gap:8px;"><span style="width:14px; height:4px; background:var(--sauge); border-radius:999px;"></span> Hablante Nativo</span>
+                <span style="display:flex; align-items:center; gap:8px;"><span style="width:14px; height:4px; background:var(--terre); border-radius:999px; border-top:1px dashed #fff;"></span> Tu Intento Grabado</span>
+              </div>
+            </div>
+
+            <!-- FILA DE BOTONES REDISEÑADOS -->
+            <div style="display:flex; justify-content:center; align-items:center; gap:18px; margin:28px 0 10px; flex-wrap:wrap;">
+              
+              <!-- 1. Escuchar Nativo -->
+              <button type="button" class="btn-secondary" onclick="alert('Reproduciendo audio nativo de referencia')">
+                <i data-lucide="volume-2" width="18" height="18" style="color:var(--sauge);"></i>
+                <span>Escuchar Nativo</span>
+              </button>
+
+              <!-- 2. Botón Central de Grabación -->
+              <button id="btn-record" type="button" class="btn-record-main" onclick="toggleRecording()">
+                <i data-lucide="mic" width="20" height="20"></i>
+                <span id="record-label">Grabar tu Voz (Espacio)</span>
+              </button>
+
+              <!-- 3. Escuchar Tu Voz -->
+              <button type="button" class="btn-secondary" onclick="alert('Reproduciendo tu grabación')">
+                <i data-lucide="play" width="18" height="18" style="color:var(--terre);"></i>
+                <span>Escuchar Tu Voz</span>
+              </button>
+
+            </div>
+
+          </div>
+
+          <!-- DIAGNÓSTICO 3 EJES REDISEÑADO -->
+          <div style="display:flex; align-items:center; gap:14px; margin-bottom:18px;">
+            <span style="font-size:10px; text-transform:uppercase; letter-spacing:.22em; font-weight:800; color:var(--ink-3); white-space:nowrap;">Diagnóstico Honesto de 3 Ejes</span>
+            <span style="flex:1; height:1px; background:var(--rule);"></span>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:20px;">
+            
+            <!-- EJE 1: DIJISTE -->
+            <div class="axis-card eje-1">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                  <span style="font-size:10px; text-transform:uppercase; letter-spacing:.14em; font-weight:800; color:var(--sauge);">1. ¿Qué Dijiste?</span>
+                  <span style="font-size:11px; background:var(--sauge-wash); color:var(--sauge); padding:3px 9px; border-radius:999px; font-weight:700;"><i data-lucide="check" width="12" height="12" style="display:inline; vertical-align:middle;"></i> Frase Completa</span>
+                </div>
+                <p style="font-family:'Libre Caslon Text',serif; font-size:16px; color:var(--ink); margin:0 0 6px;">«J’ai de sérieuses raisons…»</p>
+                <p style="font-size:12.5px; color:var(--ink-2); margin:0; line-height:1.45;">Whisper ASR detectó el 100% de las palabras sin omisiones ni palabras inventadas.</p>
+              </div>
+              <div style="margin-top:16px; padding-top:12px; border-top:1px solid var(--rule-soft); font-size:12px; color:var(--sauge); font-weight:700;">
+                Puerta P1 superada con éxito.
+              </div>
+            </div>
+
+            <!-- EJE 2: SONÓ -->
+            <div class="axis-card eje-2">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                  <span style="font-size:10px; text-transform:uppercase; letter-spacing:.14em; font-weight:800; color:var(--soleil-ink);">2. ¿Cómo Sonó?</span>
+                  <span style="font-size:11px; background:var(--soleil-wash); color:var(--soleil-ink); padding:3px 9px; border-radius:999px; font-weight:700;">Ajuste en /ʁ/</span>
+                </div>
+                <p style="font-family:'Charis SIL',serif; font-size:16px; color:var(--ink); margin:0 0 6px;">/ʒe də seʁjøz ʁɛzɔ̃ də <strong><span style="color:var(--terre-ink); text-decoration:underline;">kʁwaʁ</span></strong>/</p>
+                <p style="font-size:12.5px; color:var(--ink-2); margin:0; line-height:1.45;">La <strong>/ʁ/</strong> uvular en <em>croire</em> sonó alveolar (como en español). Dale más fricción uvular.</p>
+              </div>
+              <div style="margin-top:16px; padding-top:12px; border-top:1px solid var(--rule-soft); font-size:12px; color:var(--terre-ink); font-weight:700;">
+                Sonido diana: /ʁ/ uvular francesa.
+              </div>
+            </div>
+
+            <!-- EJE 3: FLUJÓ -->
+            <div class="axis-card eje-3">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                  <span style="font-size:10px; text-transform:uppercase; letter-spacing:.14em; font-weight:800; color:var(--terre-ink);">3. ¿Cómo Fluyó?</span>
+                  <span style="font-size:11px; background:var(--terre-wash); color:var(--terre-ink); padding:3px 9px; border-radius:999px; font-weight:700;">-22% 2ª mitad</span>
+                </div>
+                <p style="font-size:15px; font-weight:700; color:var(--ink); margin:0 0 6px;">Ritmo constante al inicio</p>
+                <p style="font-size:12.5px; color:var(--ink-2); margin:0; line-height:1.45;">Hiciste una micro-pausa antes de <em>«croire que la planète»</em>. Encadena en un solo impulso de aire.</p>
+              </div>
+              <div style="margin-top:16px; padding-top:12px; border-top:1px solid var(--rule-soft); font-size:12px; color:var(--prune); font-weight:700;">
+                Consejo único: encadenar sin pausa.
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ======================================================================
+             SECCIÓN 2: GIMNASIO FONÉTICO (ENTRENAMIENTO PERCEPTUAL HVPT)
+             ====================================================================== -->
+        <section id="section-gym" style="display:none;">
+          
+          <div class="shadowing-hero-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:28px; flex-wrap:wrap; gap:16px;">
+              <div>
+                <span style="font-size:10px; text-transform:uppercase; letter-spacing:.14em; font-weight:800; color:var(--bleuet-ink); background:var(--bleuet-wash); border-radius:999px; padding:3px 10px;">Entrenamiento Perceptual HVPT (2AFC)</span>
+                <h3 style="font-family:'Libre Caslon Text',serif; font-size:32px; color:var(--ink); margin:8px 0 4px; font-weight:400;">Contraste /u/ (ou) vs /y/ (u) en Francés</h3>
+                <p style="font-size:13.5px; color:var(--ink-2); margin:0;">Escucha con atención y selecciona cuál de los dos pares mínimos pronunció el hablante nativo.</p>
+              </div>
+              <button type="button" onclick="alert('Reproduciendo estímulo sonoro nativo')" class="btn-record-main" style="background:var(--sauge); box-shadow:0 8px 24px -6px var(--sauge-glow); padding:13px 28px; font-size:12px;">
+                <i data-lucide="volume-2" width="16" height="16"></i>
+                <span>Escuchar Estímulo</span>
+              </button>
+            </div>
+
+            <!-- Tarjetas de Opciones Fonéticas -->
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:24px;">
+              <button class="phonetic-choice-card" onclick="checkPhoneticAnswer(this, true)">
+                <span style="font-size:42px; font-family:'Libre Caslon Text',serif; color:var(--ink); font-weight:400;">tu</span>
+                <span style="font-family:'Charis SIL',serif; font-size:20px; color:var(--sauge); font-weight:700;">/ty/</span>
+                <span style="font-size:13px; color:var(--ink-3); font-weight:500;">«tú» (Vocal anterior redondeada)</span>
+              </button>
+
+              <button class="phonetic-choice-card" onclick="checkPhoneticAnswer(this, false)">
+                <span style="font-size:42px; font-family:'Libre Caslon Text',serif; color:var(--ink); font-weight:400;">tout</span>
+                <span style="font-family:'Charis SIL',serif; font-size:20px; color:var(--prune); font-weight:700;">/tu/</span>
+                <span style="font-size:13px; color:var(--ink-3); font-weight:500;">«todo» (Vocal posterior cerrada)</span>
+              </button>
+            </div>
+
+            <div id="phonetic-feedback" style="display:none; padding:18px 24px; background:rgba(0,106,100,0.08); border-radius:18px; border-left:4px solid var(--sauge); font-size:13.5px; color:var(--ink);">
+              <strong style="color:var(--sauge); font-size:14.5px;">¡Exacto! Discriminación correcta.</strong><br/>
+              Has identificado la vocal anterior <strong>/y/</strong> con formantes F2 elevados (labios abocinados y lengua adelantada).
+            </div>
+          </div>
+
+          <!-- LISTA DE BATERÍAS DE LECCIONES -->
+          <div style="display:flex; align-items:center; gap:14px; margin-bottom:18px;">
+            <span style="font-size:10px; text-transform:uppercase; letter-spacing:.22em; font-weight:800; color:var(--ink-3); white-space:nowrap;">Lecciones Fonéticas Disponibles</span>
+            <span style="flex:1; height:1px; background:var(--rule);"></span>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:20px;">
+            <div class="axis-card" style="cursor:pointer;" onclick="alert('Cargando lección de Nasales')">
+              <div>
+                <span style="font-size:9.5px; text-transform:uppercase; letter-spacing:.14em; font-weight:800; color:var(--terre-ink);">Français · Lección 02</span>
+                <h4 style="font-family:'Libre Caslon Text',serif; font-size:20px; color:var(--ink); margin:8px 0 6px; font-weight:400;">Vocales Nasales (/ɑ̃/ vs /ɔ̃/ vs /ɛ̃/)</h4>
+                <p style="font-size:12.5px; color:var(--ink-2); margin:0;">Discriminación auditiva de <em>cent</em>, <em>son</em>, <em>saint</em>.</p>
+              </div>
+              <div style="margin-top:16px; padding-top:12px; border-top:1px solid var(--rule-soft); font-size:12px; color:var(--sauge); font-weight:700;">8 pares mínimos listos →</div>
+            </div>
+
+            <div class="axis-card" style="cursor:pointer;" onclick="alert('Cargando lección de Ich/Ach Laut')">
+              <div>
+                <span style="font-size:9.5px; text-transform:uppercase; letter-spacing:.14em; font-weight:800; color:var(--bleuet-ink);">Deutsch · Lección 01</span>
+                <h4 style="font-family:'Libre Caslon Text',serif; font-size:20px; color:var(--ink); margin:8px 0 6px; font-weight:400;">Ich-Laut /ç/ vs Ach-Laut /x/</h4>
+                <p style="font-size:12.5px; color:var(--ink-2); margin:0;">Contraste fricativo de <em>ich / nicht</em> frente a <em>Buch / Nacht</em>.</p>
+              </div>
+              <div style="margin-top:16px; padding-top:12px; border-top:1px solid var(--rule-soft); font-size:12px; color:var(--sauge); font-weight:700;">12 pares mínimos listos →</div>
+            </div>
+
+            <div class="axis-card" style="cursor:pointer;" onclick="alert('Cargando lección de Oclusivas')">
+              <div>
+                <span style="font-size:9.5px; text-transform:uppercase; letter-spacing:.14em; font-weight:800; color:var(--soleil-ink);">Deutsch · Lección 03</span>
+                <h4 style="font-family:'Libre Caslon Text',serif; font-size:20px; color:var(--ink); margin:8px 0 6px; font-weight:400;">Aspiración (/pʰ/, /tʰ/, /kʰ/)</h4>
+                <p style="font-size:12.5px; color:var(--ink-2); margin:0;">Explosión glotal en consonantes oclusivas iniciales.</p>
+              </div>
+              <div style="margin-top:16px; padding-top:12px; border-top:1px solid var(--rule-soft); font-size:12px; color:var(--sauge); font-weight:700;">10 pares mínimos listos →</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ======================================================================
+             SECCIÓN 3: MEDIATECA DE AUDIO & VIDEO (BIBLIOTECA DE MATERIALES)
+             ====================================================================== -->
+        <section id="section-library" style="display:none;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
+            <p style="font-size:14px; color:var(--ink-2); margin:0;">Audiolibros de actores de voz, podcasts culturales y videos segmentados para shadowing frase a frase.</p>
+            
+            <div style="display:flex; gap:8px;">
+              <button class="filter-pill active" style="padding:6px 14px; border-radius:999px; background:var(--ink); color:#fff; font-size:11.5px; font-weight:700; border:none; cursor:pointer;">Todos</button>
+              <button class="filter-pill" style="padding:6px 14px; border-radius:999px; background:var(--paper); color:var(--ink-2); font-size:11.5px; font-weight:600; border:1px solid var(--rule); cursor:pointer;">Audiolibros</button>
+              <button class="filter-pill" style="padding:6px 14px; border-radius:999px; background:var(--paper); color:var(--ink-2); font-size:11.5px; font-weight:600; border:1px solid var(--rule); cursor:pointer;">YouTube & Podcasts</button>
+            </div>
+          </div>
+
+          <!-- LISTA DE CLIPS REDISEÑADA -->
+          <div>
+            <!-- Clip 1 -->
+            <div class="media-item-card">
+              <div style="display:flex; align-items:center; gap:20px;">
+                <div style="width:52px; height:52px; border-radius:14px; background:var(--sauge-wash); border:1px solid rgba(0,106,100,0.2); display:flex; align-items:center; justify-content:center; color:var(--sauge); flex-shrink:0;">
+                  <i data-lucide="book-headphones" width="24" height="24"></i>
+                </div>
+                <div>
+                  <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                    <span style="font-size:9.5px; text-transform:uppercase; letter-spacing:.12em; font-weight:800; color:var(--sauge); background:var(--sauge-wash); border-radius:999px; padding:2px 8px;">Français · A2</span>
+                    <span style="font-size:11.5px; color:var(--ink-3);">Audiolibro Oficial · Narración de Bernard Giraudeau</span>
+                  </div>
+                  <h4 style="font-family:'Libre Caslon Text',serif; font-size:20px; color:var(--ink); margin:0; font-weight:400;">Le Petit Prince (Capítulos I - IV)</h4>
+                  <p style="font-size:12.5px; color:var(--ink-2); margin:3px 0 0;">42 frases segmentadas · 8 min 24 s · Audio nativo de alta fidelidad</p>
+                </div>
+              </div>
+              <button type="button" onclick="switchSection('shadowing')" class="btn-secondary" style="color:var(--sauge); border-color:rgba(0,106,100,0.3);">
+                <span>Practicar</span>
+                <i data-lucide="arrow-right" width="15" height="15"></i>
+              </button>
+            </div>
+
+            <!-- Clip 2 -->
+            <div class="media-item-card">
+              <div style="display:flex; align-items:center; gap:20px;">
+                <div style="width:52px; height:52px; border-radius:14px; background:var(--bleuet-wash); border:1px solid rgba(123,155,209,0.3); display:flex; align-items:center; justify-content:center; color:var(--bleuet-ink); flex-shrink:0;">
+                  <i data-lucide="film" width="24" height="24"></i>
+                </div>
+                <div>
+                  <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                    <span style="font-size:9.5px; text-transform:uppercase; letter-spacing:.12em; font-weight:800; color:var(--bleuet-ink); background:var(--bleuet-wash); border-radius:999px; padding:2px 8px;">Deutsch · A1-A2</span>
+                    <span style="font-size:11.5px; color:var(--ink-3);">Video YouTube · Easy German #450</span>
+                  </div>
+                  <h4 style="font-family:'Libre Caslon Text',serif; font-size:20px; color:var(--ink); margin:0; font-weight:400;">Ein Tag in Berlin: Alltag und Kultur</h4>
+                  <p style="font-size:12.5px; color:var(--ink-2); margin:3px 0 0;">28 frases segmentadas · 5 min 10 s · Diálogo callejero con subtítulos sincronizados</p>
+                </div>
+              </div>
+              <button type="button" onclick="alert('Cargando sesión de Easy German')" class="btn-secondary" style="color:var(--bleuet-ink); border-color:rgba(123,155,209,0.4);">
+                <span>Practicar</span>
+                <i data-lucide="arrow-right" width="15" height="15"></i>
+              </button>
+            </div>
+
+            <!-- Clip 3 -->
+            <div class="media-item-card">
+              <div style="display:flex; align-items:center; gap:20px;">
+                <div style="width:52px; height:52px; border-radius:14px; background:var(--terre-wash); border:1px solid rgba(196,99,47,0.25); display:flex; align-items:center; justify-content:center; color:var(--terre-ink); flex-shrink:0;">
+                  <i data-lucide="podcast" width="24" height="24"></i>
+                </div>
+                <div>
+                  <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                    <span style="font-size:9.5px; text-transform:uppercase; letter-spacing:.12em; font-weight:800; color:var(--terre-ink); background:var(--terre-wash); border-radius:999px; padding:2px 8px;">Deutsch · B1</span>
+                    <span style="font-size:11.5px; color:var(--ink-3);">Podcast · Slow German con Annik Rubens</span>
+                  </div>
+                  <h4 style="font-family:'Libre Caslon Text',serif; font-size:20px; color:var(--ink); margin:0; font-weight:400;">Die Brüder Grimm und ihre Märchen</h4>
+                  <p style="font-size:12.5px; color:var(--ink-2); margin:3px 0 0;">35 frases segmentadas · 7 min 40 s · Articulación limpia y cadencia pausada</p>
+                </div>
+              </div>
+              <button type="button" onclick="alert('Cargando sesión de Slow German')" class="btn-secondary" style="color:var(--terre-ink); border-color:rgba(196,99,47,0.35);">
+                <span>Practicar</span>
+                <i data-lucide="arrow-right" width="15" height="15"></i>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ======================================================================
+             SECCIÓN 4: SUBIR & IMPORTAR MULTIFUENTE (AUDIO & VIDEO)
+             ====================================================================== -->
+        <section id="section-import" style="display:none;">
+          <div class="shadowing-hero-card">
+            <h3 style="font-family:'Libre Caslon Text',serif; font-size:30px; color:var(--ink); margin:0 0 8px; font-weight:400;">Añadir Nuevo Material de Shadowing</h3>
+            <p style="font-size:14px; color:var(--ink-2); margin:0 0 28px;">Sube tus propios audios/videos o pega un enlace para que el motor segmente el audio y transcriba la fonética automáticamente.</p>
+
+            <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:32px;">
+              
+              <!-- 1. Drag & Drop Local -->
+              <div>
+                <span style="font-size:10.5px; text-transform:uppercase; letter-spacing:.14em; font-weight:800; color:var(--ink-3); display:block; margin-bottom:10px;">1. Subir archivo local (Audio / Video)</span>
+                <div class="dropzone-container" onclick="alert('Selector de archivos abierto: MP3, MP4, WAV, M4A')">
+                  <div style="width:64px; height:64px; border-radius:50%; background:var(--prune-wash); display:flex; align-items:center; justify-content:center; margin:0 auto 14px; color:var(--prune);">
+                    <i data-lucide="upload-cloud" width="30" height="30"></i>
+                  </div>
+                  <p style="font-size:15px; font-weight:700; color:var(--ink); margin:0 0 6px;">Arrastra un archivo aquí o haz clic para explorar</p>
+                  <p style="font-size:12px; color:var(--ink-3); margin:0;">Formatos soportados: MP3, WAV, M4A, MP4, WebM (Máx. 150 MB)</p>
+                </div>
+              </div>
+
+              <!-- 2. Importar por URL -->
+              <div>
+                <span style="font-size:10.5px; text-transform:uppercase; letter-spacing:.14em; font-weight:800; color:var(--ink-3); display:block; margin-bottom:10px;">2. Importar desde YouTube / Podcast / Web</span>
+                <div style="background:var(--paper-warm); padding:26px; border-radius:22px; border:1px solid var(--rule);">
+                  <label style="font-size:12px; color:var(--ink-2); font-weight:700; display:block; margin-bottom:8px;">Enlace del video o audio:</label>
+                  <input type="text" placeholder="https://www.youtube.com/watch?v=..." style="width:100%; padding:13px 16px; border-radius:12px; border:1px solid var(--rule); background:var(--paper); font-size:13.5px; color:var(--ink); margin-bottom:16px; outline:none; box-sizing:border-box;" />
+                  
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; font-size:12.5px; color:var(--ink-2);">
+                    <span>Auto-segmentación con Whisper ASR</span>
+                    <input type="checkbox" checked style="accent-color:var(--prune); width:16px; height:16px;" />
+                  </div>
+
+                  <button type="button" onclick="alert('Descargando e indexando material para shadowing...')" class="btn-record-main" style="width:100%; justify-content:center; padding:14px; font-size:12px;">
+                    Procesar e Importar Frases
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <script>
+    if (window.lucide) lucide.createIcons();
+
+    function switchSection(secId) {
+      const sections = ['shadowing', 'gym', 'library', 'import'];
+      const breadcrumb = document.getElementById('breadcrumb-section');
+
+      sections.forEach(s => {
+        const el = document.getElementById('section-' + s);
+        const btn = document.getElementById('btn-tab-' + s);
+        if (el) el.style.display = (s === secId) ? 'block' : 'none';
+        if (btn) {
+          if (s === secId) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        }
+      });
+
+      if (secId === 'shadowing') breadcrumb.innerText = '1. Estudio de Shadowing';
+      if (secId === 'gym') breadcrumb.innerText = '2. Gimnasio Fonético (Pares Mínimos)';
+      if (secId === 'library') breadcrumb.innerText = '3. Mediateca de Audio & Video';
+      if (secId === 'import') breadcrumb.innerText = '4. Subir & Importar Fuentes';
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    let isRecording = false;
+    function toggleRecording() {
+      const btn = document.getElementById('btn-record');
+      const label = document.getElementById('record-label');
+      
+      isRecording = !isRecording;
+      if (isRecording) {
+        btn.classList.add('recording-active');
+        label.innerText = 'Grabando... Pulsa para terminar';
+      } else {
+        btn.classList.remove('recording-active');
+        label.innerText = 'Grabar tu Voz (Espacio)';
+        alert('Grabación procesada con Whisper ASR y GOP por fonema.');
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function checkPhoneticAnswer(btn, isCorrect) {
+      const feedback = document.getElementById('phonetic-feedback');
+      if (isCorrect) {
+        btn.classList.add('is-correct');
+        feedback.style.display = 'block';
+      } else {
+        alert('Has elegido /tu/. El audio reproducido tenía una vocal /ty/ con formantes anteriores.');
+      }
+    }
+
+    function setTheme(theme) {
+      const body = document.body;
+      const tabPapel = document.getElementById('tab-papel');
+      const tabSepia = document.getElementById('tab-sepia');
+      const tabNoche = document.getElementById('tab-noche');
+
+      [tabPapel, tabSepia, tabNoche].forEach(t => {
+        t.style.background = 'transparent';
+        t.style.color = 'var(--rail-ink-3,#9c92a0)';
+      });
+
+      if (theme === 'papel') {
+        body.removeAttribute('data-theme');
+        tabPapel.style.background = 'var(--soleil,#ffcd11)';
+        tabPapel.style.color = '#463605';
+      } else if (theme === 'sepia') {
+        body.setAttribute('data-theme', 'sepia');
+        tabSepia.style.background = 'var(--soleil,#ffcd11)';
+        tabSepia.style.color = '#463605';
+      } else if (theme === 'noche') {
+        body.setAttribute('data-theme', 'noche');
+        tabNoche.style.background = 'var(--soleil,#ffcd11)';
+        tabNoche.style.color = '#463605';
+      }
+
+      if (window.lucide) lucide.createIcons();
+    }
+  </script>
+</body>
+</html>

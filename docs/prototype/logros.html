@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WonderWord — Logros & Maestría Literaria</title>
+
+  <!-- Fuentes Literarias -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Hanken+Grotesk:wght@400;500;600;700;800;900&family=Charis+SIL:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@0.462.0/dist/umd/lucide.js"></script>
+
+  <style>
+    :root {
+      /* ── Paleta de Pigmentos Literarios ── */
+      --prune: #53335a;
+      --prune-2: #6d4576;
+      --prune-wash: rgba(83, 51, 90, 0.08);
+      --prune-glow: rgba(83, 51, 90, 0.35);
+      
+      --sauge: #006a64;
+      --sauge-2: #0e8880;
+      --sauge-wash: rgba(0, 106, 100, 0.09);
+      --sauge-glow: rgba(0, 106, 100, 0.35);
+      
+      --soleil: #ffcd11;
+      --soleil-ink: #463605;
+      --soleil-wash: rgba(255, 205, 17, 0.18);
+      
+      --terre: #c4632f;
+      --terre-2: #dc7238;
+      --terre-ink: #9c4a1e;
+      --terre-wash: rgba(196, 99, 47, 0.12);
+      --terre-glow: rgba(196, 99, 47, 0.4);
+      
+      --bleuet: #7b9bd1;
+      --bleuet-2: #5b81c2;
+      --bleuet-ink: #32538a;
+      --bleuet-wash: rgba(123, 155, 209, 0.14);
+
+      --canvas: #fbf7ee;
+      --paper: #ffffff;
+      --paper-warm: #fcf9f2;
+      --paper-2: #f4ecdc;
+      --ink: #241d24;
+      --ink-2: #4f4550;
+      --ink-3: #756a77;
+      --rule: rgba(36, 29, 36, 0.12);
+      --rule-soft: rgba(36, 29, 36, 0.06);
+
+      --rail: #282031;
+      --rail-2: #342a3e;
+      --rail-ink: #f2ecf1;
+      --rail-ink-2: #a99fac;
+      --rail-ink-3: #9c92a0;
+      --rail-rule: rgba(255, 255, 255, 0.11);
+      --grain: 0.085;
+      --tooth: 0.5;
+      --vignette-opacity: 0.85;
+    }
+
+    [data-theme="sepia"] {
+      --canvas: #f4ecdb; --paper: #faf4e8; --paper-warm: #f7eedb; --paper-2: #ebdcc2;
+      --ink: #2a2211; --ink-2: #5b4e33; --ink-3: #7b6d4f;
+      --rule: rgba(56, 44, 20, 0.16); --rule-soft: rgba(56, 44, 20, 0.08);
+      --rail: #272014; --rail-2: #33291a; --rail-ink: #f1eade; --rail-ink-2: #ab9f8a; --rail-ink-3: #a0957f;
+      --rail-rule: rgba(255, 255, 255, 0.11); --grain: 0.1; --tooth: 0.6; --vignette-opacity: 0.7;
+    }
+
+    [data-theme="noche"] {
+      --prune: #d7b3de; --prune-2: #e5c8eb; --prune-wash: rgba(215, 179, 222, 0.12);
+      --sauge: #7fd2c9; --sauge-2: #9fe0d8; --sauge-wash: rgba(127, 210, 201, 0.12);
+      --soleil: #ffcd11; --soleil-ink: #ffe9ad; --soleil-wash: rgba(255, 205, 17, 0.16);
+      --terre: #e08a56; --terre-2: #efa172; --terre-ink: #e8996a; --terre-wash: rgba(224, 138, 86, 0.14);
+      --bleuet: #96b0dd; --bleuet-2: #adc2e8; --bleuet-ink: #a6bde5; --bleuet-wash: rgba(150, 176, 221, 0.15);
+      --canvas: #15131a; --paper: #1e1a26; --paper-warm: #231f2c; --paper-2: #2b2536;
+      --ink: #f2ecf3; --ink-2: #b8b0bb; --ink-3: #8e8492;
+      --rule: rgba(236, 230, 237, 0.15); --rule-soft: rgba(236, 230, 237, 0.08);
+      --rail: #100e14; --rail-2: #1b1822; --rail-ink: #ece6ed; --rail-ink-2: #9b929d; --rail-ink-3: #968e99;
+      --rail-rule: rgba(255, 255, 255, 0.1); --grain: 0.06; --tooth: 0.35; --vignette-opacity: 0.35;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      margin: 0;
+      background: var(--canvas);
+      color: var(--ink);
+      font-family: 'Hanken Grotesk', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    a { color: var(--ink); text-decoration: none; }
+    svg.lucide { display: block; stroke-width: 1.6; }
+
+    /* Textura de papel prensado */
+    .paper-texture {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 60;
+      mix-blend-mode: multiply;
+      opacity: var(--grain);
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    /* Marco de acuarela en 4 esquinas */
+    .vignette-container {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      mix-blend-mode: multiply;
+      opacity: var(--vignette-opacity);
+      overflow: hidden;
+    }
+    .corner-top-left {
+      position: absolute; left: -60px; top: -60px; width: 440px; height: 380px;
+      background: radial-gradient(circle at 20% 20%, #4a94e8 0%, #75a7e6 42%, #a8cbfa 70%, transparent 88%);
+      border-radius: 46% 54% 48% 52% / 52% 48% 54% 46%; filter: url(#wc-vignette-heavy); opacity: 0.85;
+    }
+    .corner-top-right {
+      position: absolute; right: -80px; top: -60px; width: 460px; height: 360px;
+      background: radial-gradient(circle at 80% 20%, #e0548a 0%, #eb77a5 40%, #f6aec9 72%, transparent 88%);
+      border-radius: 54% 46% 52% 48% / 48% 54% 46% 54%; filter: url(#wc-vignette-heavy); opacity: 0.82;
+    }
+    .corner-bottom-left {
+      position: absolute; left: -70px; bottom: -70px; width: 480px; height: 380px;
+      background: radial-gradient(circle at 20% 80%, #d8682a 0%, #e88c54 44%, #f5b98f 72%, transparent 88%);
+      border-radius: 50% 50% 46% 54% / 54% 46% 52% 48%; filter: url(#wc-vignette-heavy); opacity: 0.82;
+    }
+    .corner-bottom-right {
+      position: absolute; right: -70px; bottom: -60px; width: 460px; height: 380px;
+      background: radial-gradient(circle at 80% 80%, #f0a818 0%, #f5c448 42%, #fae290 74%, transparent 88%);
+      border-radius: 48% 52% 54% 46% / 46% 54% 48% 52%; filter: url(#wc-vignette-heavy); opacity: 0.84;
+    }
+
+    /* Pestañas Flotantes de Logros */
+    .tab-nav-container {
+      display: inline-flex;
+      background: rgba(36, 29, 36, 0.05);
+      padding: 5px;
+      border-radius: 999px;
+      border: 1px solid var(--rule);
+      box-shadow: inset 0 2px 4px rgba(36, 29, 36, 0.03);
+      gap: 4px;
+    }
+    [data-theme="noche"] .tab-nav-container { background: rgba(255, 255, 255, 0.05); }
+
+    .tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 20px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--ink-2);
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      user-select: none;
+      letter-spacing: 0.02em;
+    }
+    .tab-btn:hover { color: var(--ink); background: rgba(255, 255, 255, 0.6); }
+    [data-theme="noche"] .tab-btn:hover { background: rgba(255, 255, 255, 0.1); }
+    .tab-btn.active {
+      background: var(--paper);
+      color: var(--prune);
+      box-shadow: 0 4px 14px -3px rgba(83, 51, 90, 0.25), 0 1px 3px rgba(36,29,36,0.06);
+    }
+    [data-theme="noche"] .tab-btn.active { background: var(--prune); color: #fff; }
+
+    /* Tarjetas de Logros */
+    .achievement-hero-card {
+      background: var(--paper);
+      border-radius: 28px;
+      padding: 36px 44px;
+      border: 1px solid var(--rule);
+      box-shadow: 0 1px 3px rgba(36,29,36,0.03), 0 20px 48px -20px rgba(36,29,36,0.14);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 28px;
+    }
+
+    /* Grid de Medallas Literarias */
+    .medals-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      margin-top: 18px;
+    }
+    .medal-card {
+      background: var(--paper);
+      border-radius: 22px;
+      border: 1px solid var(--rule);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 4px 14px -6px rgba(36,29,36,0.05);
+    }
+    .medal-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 36px -12px var(--prune-glow);
+      border-color: var(--prune);
+    }
+    .medal-card.unlocked {
+      background: linear-gradient(180deg, var(--paper) 0%, var(--paper-warm) 100%);
+    }
+    .medal-card.locked {
+      opacity: 0.65;
+      background: var(--canvas);
+    }
+
+    /* Insignia / Medallón Circular */
+    .medal-seal {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      box-shadow: 0 6px 16px -4px rgba(0,0,0,0.12);
+      flex-shrink: 0;
+    }
+
+    /* Heatmap de Actividad (28 Días) */
+    .heatmap-grid {
+      display: grid;
+      grid-template-columns: repeat(14, 1fr);
+      gap: 7px;
+      margin-top: 16px;
+    }
+    .heatmap-cell {
+      aspect-ratio: 1 / 1;
+      border-radius: 8px;
+      background: var(--rule-soft);
+      border: 1px solid var(--rule);
+      transition: transform 0.2s ease;
+      cursor: pointer;
+    }
+    .heatmap-cell:hover { transform: scale(1.15); }
+    .heatmap-cell.level-1 { background: var(--sauge-wash); border-color: rgba(0,106,100,0.3); }
+    .heatmap-cell.level-2 { background: var(--sauge-2); border-color: var(--sauge-2); }
+    .heatmap-cell.level-3 { background: var(--soleil); border-color: var(--soleil); }
+
+    @media (max-width: 920px) {
+      [data-rail] { display: none !important; }
+      [data-main] { margin-left: 0 !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PIPELINE DE FILTROS SVG -->
+  <svg aria-hidden="true" width="0" height="0" style="position:absolute; pointer-events:none;">
+    <defs>
+      <filter id="wc-vignette-heavy" x="-35%" y="-35%" width="170%" height="170%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="14" result="blur" />
+        <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="4" seed="31" result="noise" />
+        <feDisplacementMap in="blur" in2="noise" scale="58" xChannelSelector="R" yChannelSelector="G" result="disp" />
+        <feComponentTransfer in="disp"><feFuncA type="table" tableValues="0 0.45 0.78 0.94 1" /></feComponentTransfer>
+      </filter>
+      <filter id="wc4" x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" seed="61" result="n" />
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="9" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </defs>
+  </svg>
+
+  <div class="paper-texture"></div>
+
+  <!-- MARCO DE ACUARELA EN 4 ESQUINAS -->
+  <div class="vignette-container">
+    <div class="corner-top-left"></div>
+    <div class="corner-top-right"></div>
+    <div class="corner-bottom-left"></div>
+    <div class="corner-bottom-right"></div>
+  </div>
+
+  <div style="min-height:100vh; display:flex;">
+
+    <!-- ======================================================================
+         BARRA LATERAL (RAIL 100% CONECTADO E IDÉNTICO)
+         ====================================================================== -->
+    <aside data-rail style="position:fixed; left:0; top:0; height:100%; width:252px; background:var(--rail,#282031); display:flex; flex-direction:column; z-index:40; box-sizing:border-box; overflow:hidden;">
+      <div aria-hidden="true" style="position:absolute; inset:0; pointer-events:none; background:radial-gradient(120% 55% at 12% 0%, rgba(196,99,47,.20), transparent 62%), radial-gradient(100% 48% at 92% 42%, rgba(0,106,100,.20), transparent 66%), radial-gradient(120% 46% at 0% 100%, rgba(123,155,209,.16), transparent 60%);"></div>
+      <div aria-hidden="true" style="position:absolute; inset:0; pointer-events:none; mix-blend-mode:overlay; opacity:var(--tooth,.5); background-image:url(&quot;data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjAiIGhlaWdodD0iMTYwIj48ZmlsdGVyIGlkPSJuIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC44IiBudW1PY3RhdmVzPSI0IiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjE2MCIgaGVpZ2h0PSIxNjAiIGZpbHRlcj0idXJsKCNuKSIvPjwvc3ZnPg==&quot;);"></div>
+
+      <div style="position:relative; padding:26px 26px 22px; border-bottom:1px solid var(--rail-rule,rgba(255,255,255,.11));">
+        <h1 style="font-family:'Libre Caslon Text',serif; font-size:21px; font-weight:400; letter-spacing:-0.02em; color:var(--rail-ink,#f2ecf1); line-height:1; margin:0 0 7px;">WonderWord</h1>
+        <span style="font-size:9px; text-transform:uppercase; letter-spacing:.2em; font-weight:600; color:var(--rail-ink-3,#9c92a0);">Inmersión literaria</span>
+      </div>
+
+            <nav style="position:relative; flex:1; overflow-y:auto; padding:22px 0;">
+        <p style="font-size:9px; text-transform:uppercase; letter-spacing:.2em; font-weight:600; color:var(--rail-ink-3,#9c92a0); margin:0 0 10px; padding:0 26px;">Lectura</p>
+        <a href="index.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="layout-dashboard" width="16" height="16"></i>
+          <span style="flex:1;">Dashboard</span>
+          
+        </a>
+        <a href="biblioteca.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="book-open" width="16" height="16"></i>
+          <span style="flex:1;">Biblioteca</span>
+          
+        </a>
+        <a href="lector.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="book-open-check" width="16" height="16"></i>
+          <span style="flex:1;">Lector & Estudio</span>
+          
+        </a>
+        <p style="font-size:9px; text-transform:uppercase; letter-spacing:.2em; font-weight:600; color:var(--rail-ink-3,#9c92a0); margin:26px 0 10px; padding:0 26px;">Práctica & Memoria</p>
+        <a href="vocabulario.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="brain" width="16" height="16"></i>
+          <span style="flex:1;">Vocabulario & Repaso</span>
+          <span style="font-family:'Libre Caslon Text',serif; font-size:13px; color:var(--soleil,#ffcd11);">18</span>
+        </a>
+        <a href="shadowing.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="mic" width="16" height="16"></i>
+          <span style="flex:1;">Shadowing & Fonética</span>
+          
+        </a>
+        <a href="inmersion.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="film" width="16" height="16"></i>
+          <span style="flex:1;">Inmersión Streaming</span>
+          
+        </a>
+        <p style="font-size:9px; text-transform:uppercase; letter-spacing:.2em; font-weight:600; color:var(--rail-ink-3,#9c92a0); margin:26px 0 10px; padding:0 26px;">Progreso & Exploración</p>
+        <a href="#" style="position:relative; display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:600; color:var(--rail-ink,#f2ecf1);">
+          <span aria-hidden="true" style="position:absolute; inset:1px 16px 1px 0; background:rgba(255,255,255,.10); border-radius:0 999px 999px 0; filter:url(#wc4);"></span>
+          <span aria-hidden="true" style="position:absolute; left:0; top:4px; bottom:4px; width:3px; background:var(--soleil,#ffcd11); filter:url(#wc4);"></span>
+          <i data-lucide="award" width="16" height="16" style="position:relative; color:var(--soleil);"></i>
+          <span style="position:relative; flex:1;">Logros & Maestría</span>
+          
+        </a>
+        <a href="organizador.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="calendar" width="16" height="16"></i>
+          <span style="flex:1;">Organizador</span>
+          
+        </a>
+        <a href="viajes.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="compass" width="16" height="16"></i>
+          <span style="flex:1;">Viajes</span>
+          
+        </a>
+        <a href="tienda.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="shopping-bag" width="16" height="16"></i>
+          <span style="flex:1;">Tienda</span>
+          
+        </a>
+        <a href="ajustes.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="settings" width="16" height="16"></i>
+          <span style="flex:1;">Ajustes</span>
+          
+        </a>
+      </nav>
+
+      <!-- WIDGET INFERIOR IDÉNTICO -->
+      <div style="position:relative; padding:18px 26px 22px; border-top:1px solid var(--rail-rule,rgba(255,255,255,.11)); display:flex; align-items:center; gap:14px;">
+        <span style="position:relative; width:52px; height:52px; flex-shrink:0; display:block;">
+          <svg viewBox="0 0 52 52" width="52" height="52" style="display:block; transform:rotate(-90deg);">
+            <circle cx="26" cy="26" r="22" fill="none" stroke="rgba(255,255,255,.13)" stroke-width="5"></circle>
+            <circle cx="26" cy="26" r="22" fill="none" stroke="var(--sauge-2,#0f8c84)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138.2" stroke-dashoffset="55.2" style="filter:url(#wc4);"></circle>
+          </svg>
+          <span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Libre Caslon Text',serif; font-size:13px; color:var(--rail-ink,#f2ecf1); font-variant-numeric:tabular-nums;">18</span>
+        </span>
+        <div style="min-width:0;">
+          <p style="font-size:11.5px; color:var(--rail-ink-2,#a99fac); margin:0; line-height:1.4;">18 de 30 min hoy</p>
+          <p style="font-size:11px; color:var(--soleil,#ffcd11); margin:4px 0 0; line-height:1.4; font-weight:600;">Racha de 14 días</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ======================================================================
+         CONTENIDO PRINCIPAL: LOGROS & MAESTRÍA
+         ====================================================================== -->
+    <div data-main style="flex:1; display:flex; flex-direction:column; margin-left:252px; min-width:0; position:relative;">
+      
+      <!-- TOPBAR -->
+      <header style="position:sticky; top:0; z-index:30; background:var(--rail,#282031); height:56px; padding:0 40px; display:flex; align-items:center; justify-content:space-between; overflow:hidden;">
+        <div aria-hidden="true" style="position:absolute; inset:0; pointer-events:none; background:radial-gradient(90% 200% at 6% 50%, rgba(196,99,47,.2), transparent 58%), radial-gradient(70% 180% at 74% 50%, rgba(0,106,100,.2), transparent 62%), radial-gradient(60% 160% at 100% 50%, rgba(123,155,209,.16), transparent 60%);"></div>
+        <div style="position:relative; display:flex; align-items:center; gap:10px; font-size:11.5px; color:var(--rail-ink-2,#a99fac); letter-spacing:.02em;">
+          <span>Progreso</span><span style="color:var(--rail-ink-3,#9c92a0);">/</span><span id="breadcrumb-section">Salón de Logros</span>
+        </div>
+        <div style="position:relative; display:flex; align-items:center; gap:22px;">
+          <div style="display:flex; align-items:center; gap:3px; padding:3px; background:rgba(0,0,0,.3); border-radius:999px;">
+            <button type="button" onclick="setTheme('papel')" id="tab-papel" title="Papel" style="display:flex; align-items:center; justify-content:center; width:28px; height:26px; border:none; border-radius:999px; cursor:pointer; background:var(--soleil,#ffcd11); color:#463605;"><i data-lucide="sun" width="14" height="14"></i></button>
+            <button type="button" onclick="setTheme('sepia')" id="tab-sepia" title="Sepia" style="display:flex; align-items:center; justify-content:center; width:28px; height:26px; border:none; border-radius:999px; cursor:pointer; background:transparent; color:var(--rail-ink-3,#9c92a0);"><i data-lucide="book" width="14" height="14"></i></button>
+            <button type="button" onclick="setTheme('noche')" id="tab-noche" title="Noche" style="display:flex; align-items:center; justify-content:center; width:28px; height:26px; border:none; border-radius:999px; cursor:pointer; background:transparent; color:var(--rail-ink-3,#9c92a0);"><i data-lucide="moon" width="14" height="14"></i></button>
+          </div>
+          <span style="width:1px; height:18px; background:var(--rail-rule,rgba(255,255,255,.11));"></span>
+          <span style="font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--rail-ink-2,#a99fac); font-weight:600;">Kevin</span>
+        </div>
+      </header>
+
+      <main style="flex:1; padding:44px 56px 88px; max-width:1300px; margin:0 auto; width:100%; box-sizing:border-box; position:relative; z-index:10;">
+
+        <!-- CABECERA Y NAVEGACIÓN DE LOGROS -->
+        <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:28px; flex-wrap:wrap; margin-bottom:34px;">
+          <div>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+              <span style="width:8px; height:8px; border-radius:50%; background:var(--soleil);"></span>
+              <p style="font-size:9.5px; text-transform:uppercase; letter-spacing:.24em; font-weight:700; color:var(--soleil-ink); margin:0;">Hitos, Medallas & Maestría</p>
+            </div>
+            <h1 style="font-family:'Libre Caslon Text',serif; font-size:46px; line-height:1.05; letter-spacing:-0.03em; color:var(--ink); margin:0; font-weight:400;">Logros & Maestría</h1>
+          </div>
+          
+          <!-- Pestañas de Logros -->
+          <div class="tab-nav-container">
+            <button class="tab-btn active" id="btn-tab-medals" onclick="switchLogrosTab('medals')">
+              <i data-lucide="award" width="14" height="14"></i>
+              <span>1. Medallas Literarias</span>
+            </button>
+            <button class="tab-btn" id="btn-tab-mastery" onclick="switchLogrosTab('mastery')">
+              <i data-lucide="radar" width="14" height="14"></i>
+              <span>2. Mapa de Maestría</span>
+            </button>
+            <button class="tab-btn" id="btn-tab-habit" onclick="switchLogrosTab('habit')">
+              <i data-lucide="flame" width="14" height="14"></i>
+              <span>3. Hábito & Racha</span>
+            </button>
+            <button class="tab-btn" id="btn-tab-exlibris" onclick="switchLogrosTab('exlibris')">
+              <i data-lucide="stamp" width="14" height="14"></i>
+              <span>4. Sello Ex-Libris</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ======================================================================
+             PESTAÑA 1: MEDALLAS LITERARIAS E INSIGNIAS (EL SALÓN DE LOGROS)
+             ====================================================================== -->
+        <section id="logros-section-medals" style="display:block;">
+          
+          <!-- HERO RESUMEN DE LOGROS -->
+          <div class="achievement-hero-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:24px;">
+              <div style="max-width:580px;">
+                <span style="font-size:10px; text-transform:uppercase; letter-spacing:.18em; font-weight:800; color:var(--sauge);">Tu Progreso Global de Logros</span>
+                <h3 style="font-family:'Libre Caslon Text',serif; font-size:28px; color:var(--ink); margin:8px 0 10px; font-weight:400;">7 de 18 Medallas Desbloqueadas</h3>
+                <p style="font-size:13.5px; color:var(--ink-2); line-height:1.6; margin:0;">
+                  Cada medalla conmemora un hito real: libros leídos en versión original, horas de inmersión auditiva, precisión fonética en Shadowing y palabras dominadas en memoria permanente.
+                </p>
+              </div>
+
+              <!-- Anillo Visual de Logros -->
+              <div style="display:flex; align-items:center; gap:20px; background:var(--paper-warm); padding:18px 26px; border-radius:22px; border:1px solid var(--rule);">
+                <span style="position:relative; width:64px; height:64px; display:block;">
+                  <svg viewBox="0 0 64 64" width="64" height="64" style="transform:rotate(-90deg);">
+                    <circle cx="32" cy="32" r="26" fill="none" stroke="var(--rule-soft)" stroke-width="6"></circle>
+                    <circle cx="32" cy="32" r="26" fill="none" stroke="var(--soleil)" stroke-width="6" stroke-linecap="round" stroke-dasharray="163.3" stroke-dashoffset="99.6" style="filter:url(#wc4);"></circle>
+                  </svg>
+                  <span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Libre Caslon Text',serif; font-size:16px; font-weight:700; color:var(--ink);">39%</span>
+                </span>
+                <div>
+                  <p style="font-size:13px; font-weight:700; color:var(--ink); margin:0;">Nivel 4: Lector Consagrado</p>
+                  <p style="font-size:11.5px; color:var(--ink-3); margin:2px 0 0;">Próximo hito: 1.500 palabras</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CUADRÍCULA DE MEDALLAS -->
+          <div class="medals-grid">
+            
+            <!-- Medalla 1: Guardián del Zauberwald (DESBLOQUEADA) -->
+            <div class="medal-card unlocked">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;">
+                  <div class="medal-seal" style="background:var(--sauge-wash); color:var(--sauge); border:2px solid var(--sauge);">
+                    <i data-lucide="trees" width="26" height="26"></i>
+                  </div>
+                  <span style="font-size:9.5px; text-transform:uppercase; letter-spacing:.1em; font-weight:800; background:rgba(0,106,100,0.1); color:var(--sauge); padding:3px 8px; border-radius:999px;">Desbloqueada</span>
+                </div>
+                <h4 style="font-family:'Libre Caslon Text',serif; font-size:18px; color:var(--ink); margin:0 0 4px;">Guardián del Zauberwald</h4>
+                <p style="font-size:12.5px; color:var(--ink-2); line-height:1.5; margin:0 0 14px;">Dominar las primeras 100 palabras del Mazo Oficial de los Hermanos Grimm (Alemán A1).</p>
+              </div>
+              <div style="border-top:1px solid var(--rule-soft); padding-top:10px; font-size:11px; color:var(--ink-3); display:flex; justify-content:space-between;">
+                <span>120 / 100 palabras</span>
+                <span style="color:var(--sauge); font-weight:700;">100% Completado</span>
+              </div>
+            </div>
+
+            <!-- Medalla 2: Oído de Oro (DESBLOQUEADA) -->
+            <div class="medal-card unlocked">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;">
+                  <div class="medal-seal" style="background:var(--soleil-wash); color:var(--soleil-ink); border:2px solid var(--soleil);">
+                    <i data-lucide="mic" width="26" height="26"></i>
+                  </div>
+                  <span style="font-size:9.5px; text-transform:uppercase; letter-spacing:.1em; font-weight:800; background:var(--soleil-wash); color:var(--soleil-ink); padding:3px 8px; border-radius:999px;">Desbloqueada</span>
+                </div>
+                <h4 style="font-family:'Libre Caslon Text',serif; font-size:18px; color:var(--ink); margin:0 0 4px;">Oído de Oro & Prosodia</h4>
+                <p style="font-size:12.5px; color:var(--ink-2); line-height:1.5; margin:0 0 14px;">Alcanzar una precisión fonémica superior al 85% GOP en 15 sesiones consecutivas de Shadowing.</p>
+              </div>
+              <div style="border-top:1px solid var(--rule-soft); padding-top:10px; font-size:11px; color:var(--ink-3); display:flex; justify-content:space-between;">
+                <span>18 / 15 sesiones</span>
+                <span style="color:var(--sauge); font-weight:700;">100% Completado</span>
+              </div>
+            </div>
+
+            <!-- Medalla 3: Racha Imperial de 14 Días (DESBLOQUEADA) -->
+            <div class="medal-card unlocked">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;">
+                  <div class="medal-seal" style="background:var(--terre-wash); color:var(--terre); border:2px solid var(--terre);">
+                    <i data-lucide="flame" width="26" height="26"></i>
+                  </div>
+                  <span style="font-size:9.5px; text-transform:uppercase; letter-spacing:.1em; font-weight:800; background:var(--terre-wash); color:var(--terre); padding:3px 8px; border-radius:999px;">Desbloqueada</span>
+                </div>
+                <h4 style="font-family:'Libre Caslon Text',serif; font-size:18px; color:var(--ink); margin:0 0 4px;">Racha Imperial</h4>
+                <p style="font-size:12.5px; color:var(--ink-2); line-height:1.5; margin:0 0 14px;">Cumplir el objetivo diario de 30 minutos de inmersión y repaso durante 14 días seguidos.</p>
+              </div>
+              <div style="border-top:1px solid var(--rule-soft); padding-top:10px; font-size:11px; color:var(--ink-3); display:flex; justify-content:space-between;">
+                <span>14 / 14 días</span>
+                <span style="color:var(--sauge); font-weight:700;">¡Conseguido hoy!</span>
+              </div>
+            </div>
+
+            <!-- Medalla 4: Cinéfilo V.O. (EN PROGRESO) -->
+            <div class="medal-card locked">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;">
+                  <div class="medal-seal" style="background:var(--rule-soft); color:var(--ink-3); border:2px dashed var(--rule);">
+                    <i data-lucide="clapperboard" width="26" height="26"></i>
+                  </div>
+                  <span style="font-size:9.5px; text-transform:uppercase; letter-spacing:.1em; font-weight:700; background:var(--rule-soft); color:var(--ink-3); padding:3px 8px; border-radius:999px;">En Progreso</span>
+                </div>
+                <h4 style="font-family:'Libre Caslon Text',serif; font-size:18px; color:var(--ink); margin:0 0 4px;">Cinéfilo en Versión Original</h4>
+                <p style="font-size:12.5px; color:var(--ink-2); line-height:1.5; margin:0 0 14px;">Completar 10 horas de películas y series en versión original con subtítulos interactivos.</p>
+              </div>
+              <div style="border-top:1px solid var(--rule-soft); padding-top:10px; font-size:11px; color:var(--ink-3); display:flex; justify-content:space-between;">
+                <span>6.5 / 10 horas</span>
+                <span style="color:var(--prune); font-weight:700;">65%</span>
+              </div>
+            </div>
+
+            <!-- Medalla 5: Erudito del FSRS (EN PROGRESO) -->
+            <div class="medal-card locked">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;">
+                  <div class="medal-seal" style="background:var(--rule-soft); color:var(--ink-3); border:2px dashed var(--rule);">
+                    <i data-lucide="brain" width="26" height="26"></i>
+                  </div>
+                  <span style="font-size:9.5px; text-transform:uppercase; letter-spacing:.1em; font-weight:700; background:var(--rule-soft); color:var(--ink-3); padding:3px 8px; border-radius:999px;">En Progreso</span>
+                </div>
+                <h4 style="font-family:'Libre Caslon Text',serif; font-size:18px; color:var(--ink); margin:0 0 4px;">Erudito de la Memoria</h4>
+                <p style="font-size:12.5px; color:var(--ink-2); line-height:1.5; margin:0 0 14px;">Mantener una retención superior al 90% en más de 500 tarjetas con el algoritmo FSRS.</p>
+              </div>
+              <div style="border-top:1px solid var(--rule-soft); padding-top:10px; font-size:11px; color:var(--ink-3); display:flex; justify-content:space-between;">
+                <span>342 / 500 tarjetas</span>
+                <span style="color:var(--prune); font-weight:700;">68%</span>
+              </div>
+            </div>
+
+            <!-- Medalla 6: Descifrador de Clásicos (BLOQUEADA) -->
+            <div class="medal-card locked">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;">
+                  <div class="medal-seal" style="background:var(--rule-soft); color:var(--ink-3); border:2px dashed var(--rule);">
+                    <i data-lucide="book-marked" width="26" height="26"></i>
+                  </div>
+                  <span style="font-size:9.5px; text-transform:uppercase; letter-spacing:.1em; font-weight:700; background:var(--rule-soft); color:var(--ink-3); padding:3px 8px; border-radius:999px;">Bloqueada</span>
+                </div>
+                <h4 style="font-family:'Libre Caslon Text',serif; font-size:18px; color:var(--ink); margin:0 0 4px;">Descifrador de Clásicos</h4>
+                <p style="font-size:12.5px; color:var(--ink-2); line-height:1.5; margin:0 0 14px;">Completar la lectura íntegra de un texto clásico de nivel C1 (Goethe, Flaubert o Hugo).</p>
+              </div>
+              <div style="border-top:1px solid var(--rule-soft); padding-top:10px; font-size:11px; color:var(--ink-3); display:flex; justify-content:space-between;">
+                <span>0 / 1 libro C1</span>
+                <span>0%</span>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ======================================================================
+             PESTAÑA 2: MAPA DE MAESTRÍA INTEGRAL
+             ====================================================================== -->
+        <section id="logros-section-mastery" style="display:none;">
+          <div class="achievement-hero-card">
+            <h3 style="font-family:'Libre Caslon Text',serif; font-size:30px; color:var(--ink); margin:0 0 6px; font-weight:400;">Los 4 Pilares de tu Maestría</h3>
+            <p style="font-size:13.5px; color:var(--ink-2); margin:0 0 28px;">Equilibrio entre asimilación pasiva, memoria espaciada, articulación oral y consumo cultural.</p>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:20px;">
+              
+              <!-- Pilar 1: Vocabulario Activo -->
+              <div style="background:var(--paper-warm); border-radius:20px; border:1px solid var(--rule); padding:22px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                  <span style="font-size:10px; text-transform:uppercase; letter-spacing:.14em; font-weight:800; color:var(--sauge);">Léxico Activo</span>
+                  <i data-lucide="book-open" width="18" height="18" style="color:var(--sauge);"></i>
+                </div>
+                <h4 style="font-family:'Libre Caslon Text',serif; font-size:32px; color:var(--ink); margin:0 0 4px; font-weight:400;">1.284</h4>
+                <p style="font-size:12px; color:var(--ink-3); margin:0 0 14px;">Palabras asimiladas en contexto</p>
+                <div style="width:100%; height:5px; background:var(--rule-soft); border-radius:999px; overflow:hidden;">
+                  <div style="width:78%; height:100%; background:var(--sauge);"></div>
+                </div>
+              </div>
+
+              <!-- Pilar 2: Retención FSRS -->
+              <div style="background:var(--paper-warm); border-radius:20px; border:1px solid var(--rule); padding:22px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                  <span style="font-size:10px; text-transform:uppercase; letter-spacing:.14em; font-weight:800; color:var(--prune);">Retención FSRS</span>
+                  <i data-lucide="brain" width="18" height="18" style="color:var(--prune);"></i>
+                </div>
+                <h4 style="font-family:'Libre Caslon Text',serif; font-size:32px; color:var(--ink); margin:0 0 4px; font-weight:400;">93.4%</h4>
+                <p style="font-size:12px; color:var(--ink-3); margin:0 0 14px;">Salud de memoria a largo plazo</p>
+                <div style="width:100%; height:5px; background:var(--rule-soft); border-radius:999px; overflow:hidden;">
+                  <div style="width:93%; height:100%; background:var(--prune);"></div>
+                </div>
+              </div>
+
+              <!-- Pilar 3: Precisión Fonética -->
+              <div style="background:var(--paper-warm); border-radius:20px; border:1px solid var(--rule); padding:22px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                  <span style="font-size:10px; text-transform:uppercase; letter-spacing:.14em; font-weight:800; color:var(--soleil-ink);">Fonética GOP</span>
+                  <i data-lucide="mic" width="18" height="18" style="color:var(--soleil-ink);"></i>
+                </div>
+                <h4 style="font-family:'Libre Caslon Text',serif; font-size:32px; color:var(--ink); margin:0 0 4px; font-weight:400;">88.6%</h4>
+                <p style="font-size:12px; color:var(--ink-3); margin:0 0 14px;">Fidelidad acústica nativa</p>
+                <div style="width:100%; height:5px; background:var(--rule-soft); border-radius:999px; overflow:hidden;">
+                  <div style="width:88%; height:100%; background:var(--soleil);"></div>
+                </div>
+              </div>
+
+              <!-- Pilar 4: Inmersión V.O. -->
+              <div style="background:var(--paper-warm); border-radius:20px; border:1px solid var(--rule); padding:22px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                  <span style="font-size:10px; text-transform:uppercase; letter-spacing:.14em; font-weight:800; color:var(--terre);">Inmersión V.O.</span>
+                  <i data-lucide="film" width="18" height="18" style="color:var(--terre);"></i>
+                </div>
+                <h4 style="font-family:'Libre Caslon Text',serif; font-size:32px; color:var(--ink); margin:0 0 4px; font-weight:400;">26.5h</h4>
+                <p style="font-size:12px; color:var(--ink-3); margin:0 0 14px;">Cine, audio y radio oficial</p>
+                <div style="width:100%; height:5px; background:var(--rule-soft); border-radius:999px; overflow:hidden;">
+                  <div style="width:65%; height:100%; background:var(--terre);"></div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- ======================================================================
+             PESTAÑA 3: HÁBITO & RACHA (HEATMAP DE 28 DÍAS)
+             ====================================================================== -->
+        <section id="logros-section-habit" style="display:none;">
+          <div class="achievement-hero-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+              <div>
+                <h3 style="font-family:'Libre Caslon Text',serif; font-size:30px; color:var(--ink); margin:0 0 6px; font-weight:400;">Tu Ritmo de Estudio</h3>
+                <p style="font-size:13.5px; color:var(--ink-2); margin:0;">Registro de tus últimos 28 días de lectura, práctica y repetición.</p>
+              </div>
+              <div style="text-align:right;">
+                <span style="font-family:'Libre Caslon Text',serif; font-size:32px; color:var(--soleil-ink); font-weight:700;">14 Días</span>
+                <span style="font-size:11.5px; color:var(--ink-3); display:block;">Racha Activa Ininterrumpida</span>
+              </div>
+            </div>
+
+            <!-- Matriz Heatmap -->
+            <div class="heatmap-grid">
+              <div class="heatmap-cell level-2" title="Día 1: 35 min"></div>
+              <div class="heatmap-cell level-1" title="Día 2: 20 min"></div>
+              <div class="heatmap-cell level-3" title="Día 3: 45 min"></div>
+              <div class="heatmap-cell level-2" title="Día 4: 30 min"></div>
+              <div class="heatmap-cell level-3" title="Día 5: 50 min"></div>
+              <div class="heatmap-cell level-2" title="Día 6: 30 min"></div>
+              <div class="heatmap-cell level-1" title="Día 7: 25 min"></div>
+              <div class="heatmap-cell level-3" title="Día 8: 60 min"></div>
+              <div class="heatmap-cell level-2" title="Día 9: 30 min"></div>
+              <div class="heatmap-cell level-2" title="Día 10: 30 min"></div>
+              <div class="heatmap-cell level-3" title="Día 11: 45 min"></div>
+              <div class="heatmap-cell level-2" title="Día 12: 30 min"></div>
+              <div class="heatmap-cell level-3" title="Día 13: 40 min"></div>
+              <div class="heatmap-cell level-3" title="Día 14 (Hoy): 18 min"></div>
+
+              <div class="heatmap-cell" title="Día 15"></div>
+              <div class="heatmap-cell" title="Día 16"></div>
+              <div class="heatmap-cell" title="Día 17"></div>
+              <div class="heatmap-cell" title="Día 18"></div>
+              <div class="heatmap-cell" title="Día 19"></div>
+              <div class="heatmap-cell" title="Día 20"></div>
+              <div class="heatmap-cell" title="Día 21"></div>
+              <div class="heatmap-cell" title="Día 22"></div>
+              <div class="heatmap-cell" title="Día 23"></div>
+              <div class="heatmap-cell" title="Día 24"></div>
+              <div class="heatmap-cell" title="Día 25"></div>
+              <div class="heatmap-cell" title="Día 26"></div>
+              <div class="heatmap-cell" title="Día 27"></div>
+              <div class="heatmap-cell" title="Día 28"></div>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; align-items:center; gap:8px; margin-top:14px; font-size:11px; color:var(--ink-3);">
+              <span>Menos tiempo</span>
+              <span style="width:10px; height:10px; border-radius:3px; background:var(--rule-soft);"></span>
+              <span style="width:10px; height:10px; border-radius:3px; background:var(--sauge-wash);"></span>
+              <span style="width:10px; height:10px; border-radius:3px; background:var(--sauge-2);"></span>
+              <span style="width:10px; height:10px; border-radius:3px; background:var(--soleil);"></span>
+              <span>Más tiempo</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ======================================================================
+             PESTAÑA 4: SELLO EX-LIBRIS PERSONALIZADO
+             ====================================================================== -->
+        <section id="logros-section-exlibris" style="display:none;">
+          <div class="achievement-hero-card" style="text-align:center; padding:48px;">
+            <div style="max-width:440px; margin:0 auto; background:var(--paper-warm); border:2px dashed var(--prune); border-radius:26px; padding:36px 30px; box-shadow:0 12px 30px -10px var(--prune-glow);">
+              <div style="width:72px; height:72px; border-radius:50%; background:var(--prune-wash); color:var(--prune); display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+                <i data-lucide="feather" width="36" height="36"></i>
+              </div>
+              <span style="font-size:10px; text-transform:uppercase; letter-spacing:.22em; font-weight:800; color:var(--prune);">Ex-Libris Oficial</span>
+              <h3 style="font-family:'Libre Caslon Text',serif; font-size:26px; color:var(--ink); margin:6px 0 10px;">Kevin · Políglota Consagrado</h3>
+              <p style="font-size:12.5px; color:var(--ink-2); line-height:1.6; margin:0 0 20px;">
+                «Certificado de 1.284 términos dominados, 26 horas de inmersión cultural y fidelidad a la lectura en versión original.»
+              </p>
+              <button type="button" onclick="alert('Exportando Certificado Ex-Libris en alta resolución')" style="background:var(--prune); color:#fff; border:none; border-radius:999px; padding:10px 24px; font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; cursor:pointer;">
+                Descargar Sello Ex-Libris
+              </button>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <script>
+    if (window.lucide) lucide.createIcons();
+
+    function switchLogrosTab(tabId) {
+      const tabs = ['medals', 'mastery', 'habit', 'exlibris'];
+      const breadcrumb = document.getElementById('breadcrumb-section');
+
+      tabs.forEach(t => {
+        const el = document.getElementById('logros-section-' + t);
+        const btn = document.getElementById('btn-tab-' + t);
+        if (el) el.style.display = (t === tabId) ? 'block' : 'none';
+        if (btn) {
+          if (t === tabId) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        }
+      });
+
+      if (tabId === 'medals') breadcrumb.innerText = '1. Medallas Literarias';
+      if (tabId === 'mastery') breadcrumb.innerText = '2. Mapa de Maestría';
+      if (tabId === 'habit') breadcrumb.innerText = '3. Hábito & Racha';
+      if (tabId === 'exlibris') breadcrumb.innerText = '4. Sello Ex-Libris';
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function setTheme(theme) {
+      const body = document.body;
+      const tabPapel = document.getElementById('tab-papel');
+      const tabSepia = document.getElementById('tab-sepia');
+      const tabNoche = document.getElementById('tab-noche');
+
+      [tabPapel, tabSepia, tabNoche].forEach(t => {
+        t.style.background = 'transparent';
+        t.style.color = 'var(--rail-ink-3,#9c92a0)';
+      });
+
+      if (theme === 'papel') {
+        body.removeAttribute('data-theme');
+        tabPapel.style.background = 'var(--soleil,#ffcd11)';
+        tabPapel.style.color = '#463605';
+      } else if (theme === 'sepia') {
+        body.setAttribute('data-theme', 'sepia');
+        tabSepia.style.background = 'var(--soleil,#ffcd11)';
+        tabSepia.style.color = '#463605';
+      } else if (theme === 'noche') {
+        body.setAttribute('data-theme', 'noche');
+        tabNoche.style.background = 'var(--soleil,#ffcd11)';
+        tabNoche.style.color = '#463605';
+      }
+
+      if (window.lucide) lucide.createIcons();
+    }
+  </script>
+</body>
+</html>

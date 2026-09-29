@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WonderWord — Biblioteca Literaria & Catálogo Federado</title>
+
+  <!-- Fuentes Literarias -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Hanken+Grotesk:wght@400;500;600;700&family=Charis+SIL:wght@400;700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@0.462.0/dist/umd/lucide.js"></script>
+
+  <style>
+    :root {
+      /* ── Paleta de Pigmentos Literarios ── */
+      --prune: #53335a;
+      --prune-2: #6f4877;
+      --prune-wash: rgba(83, 51, 90, 0.11);
+      
+      --sauge: #006a64;
+      --sauge-2: #0f8c84;
+      --sauge-wash: rgba(0, 106, 100, 0.10);
+      
+      --soleil: #ffcd11;
+      --soleil-ink: #463605;
+      --soleil-wash: rgba(255, 205, 17, 0.22);
+      
+      --terre: #c4632f;
+      --terre-ink: #9c4a1e;
+      --terre-wash: rgba(196, 99, 47, 0.14);
+      
+      --bleuet: #7b9bd1;
+      --bleuet-ink: #3f5f96;
+      --bleuet-wash: rgba(123, 155, 209, 0.18);
+
+      --canvas: #fdfaf3;
+      --paper: #fffdf8;
+      --paper-2: #f6efe2;
+      --ink: #241d24;
+      --ink-2: #544a54;
+      --ink-3: #6f6570;
+      --rule: rgba(36, 29, 36, 0.15);
+      --rule-soft: rgba(36, 29, 36, 0.08);
+
+      --rail: #282031;
+      --rail-2: #342a3e;
+      --rail-ink: #f2ecf1;
+      --rail-ink-2: #a99fac;
+      --rail-ink-3: #9c92a0;
+      --rail-rule: rgba(255, 255, 255, 0.11);
+      --grain: 0.085;
+      --tooth: 0.5;
+      --vignette-opacity: 0.85;
+    }
+
+    [data-theme="sepia"] {
+      --prune: #5b3b63; --prune-2: #755080; --prune-wash: rgba(91, 59, 99, 0.12);
+      --sauge: #0a6159; --sauge-2: #12857a; --sauge-wash: rgba(10, 97, 89, 0.11);
+      --soleil: #eaa90d; --soleil-ink: #463605; --soleil-wash: rgba(234, 169, 13, 0.22);
+      --terre: #b25a2a; --terre-ink: #8c4318; --terre-wash: rgba(178, 90, 42, 0.14);
+      --bleuet: #7590bd; --bleuet-ink: #3a5788; --bleuet-wash: rgba(117, 144, 189, 0.16);
+      --canvas: #f4ecdb; --paper: #fbf5e8; --paper-2: #ebdfc7; --ink: #2a2211; --ink-2: #5b4e33;
+      --ink-3: #6f6142; --rule: rgba(56, 44, 20, 0.19); --rule-soft: rgba(56, 44, 20, 0.09);
+      --rail: #272014; --rail-2: #33291a; --rail-ink: #f1eade; --rail-ink-2: #ab9f8a; --rail-ink-3: #a0957f;
+      --rail-rule: rgba(255, 255, 255, 0.11); --grain: 0.1; --tooth: 0.6; --vignette-opacity: 0.7;
+    }
+
+    [data-theme="noche"] {
+      --prune: #d7b3de; --prune-2: #c49ecc; --prune-wash: rgba(215, 179, 222, 0.13);
+      --sauge: #7fd2c9; --sauge-2: #9fe0d8; --sauge-wash: rgba(127, 210, 201, 0.13);
+      --soleil: #ffcd11; --soleil-ink: #ffe9ad; --soleil-wash: rgba(255, 205, 17, 0.16);
+      --terre: #e08a56; --terre-ink: #e8996a; --terre-wash: rgba(224, 138, 86, 0.15);
+      --bleuet: #96b0dd; --bleuet-ink: #a6bde5; --bleuet-wash: rgba(150, 176, 221, 0.17);
+      --canvas: #16141a; --paper: #1d1a22; --paper-2: #262230; --ink: #ece6ed; --ink-2: #aaa2ac;
+      --ink-3: #9c939e; --rule: rgba(236, 230, 237, 0.17); --rule-soft: rgba(236, 230, 237, 0.09);
+      --rail: #100e14; --rail-2: #1b1822; --rail-ink: #ece6ed; --rail-ink-2: #9b929d; --rail-ink-3: #968e99;
+      --rail-rule: rgba(255, 255, 255, 0.1); --grain: 0.06; --tooth: 0.35; --vignette-opacity: 0.35;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      margin: 0;
+      background: var(--canvas, #fdfaf3);
+      color: var(--ink, #241d24);
+      font-family: 'Hanken Grotesk', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    a { color: var(--ink); text-decoration: none; }
+    svg.lucide { display: block; stroke-width: 1.5; }
+
+    /* Textura de papel prensado */
+    .paper-texture {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 60;
+      mix-blend-mode: multiply;
+      opacity: var(--grain, 0.085);
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    /* Marco de acuarela en 4 esquinas */
+    .vignette-container {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      mix-blend-mode: multiply;
+      opacity: var(--vignette-opacity);
+      overflow: hidden;
+    }
+    .corner-top-left {
+      position: absolute; left: -60px; top: -60px; width: 440px; height: 380px;
+      background: radial-gradient(circle at 20% 20%, #4a94e8 0%, #75a7e6 42%, #a8cbfa 70%, transparent 88%);
+      border-radius: 46% 54% 48% 52% / 52% 48% 54% 46%; filter: url(#wc-vignette-heavy); opacity: 0.85;
+    }
+    .corner-top-right {
+      position: absolute; right: -80px; top: -60px; width: 460px; height: 360px;
+      background: radial-gradient(circle at 80% 20%, #e0548a 0%, #eb77a5 40%, #f6aec9 72%, transparent 88%);
+      border-radius: 54% 46% 52% 48% / 48% 54% 46% 54%; filter: url(#wc-vignette-heavy); opacity: 0.82;
+    }
+    .corner-bottom-left {
+      position: absolute; left: -70px; bottom: -70px; width: 480px; height: 380px;
+      background: radial-gradient(circle at 20% 80%, #d8682a 0%, #e88c54 44%, #f5b98f 72%, transparent 88%);
+      border-radius: 50% 50% 46% 54% / 54% 46% 52% 48%; filter: url(#wc-vignette-heavy); opacity: 0.82;
+    }
+    .corner-bottom-right {
+      position: absolute; right: -70px; bottom: -60px; width: 460px; height: 380px;
+      background: radial-gradient(circle at 80% 80%, #f0a818 0%, #f5c448 42%, #fae290 74%, transparent 88%);
+      border-radius: 48% 52% 54% 46% / 46% 54% 48% 52%; filter: url(#wc-vignette-heavy); opacity: 0.84;
+    }
+
+    /* Píldoras y botones de navegación de pestañas */
+    .tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 22px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink-2);
+      border: 1px solid var(--rule);
+      background: var(--paper);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+    .tab-btn:hover { border-color: var(--ink); transform: translateY(-1px); }
+    .tab-btn.active {
+      background: var(--prune);
+      color: #fff;
+      border-color: var(--prune);
+      box-shadow: 0 4px 14px -4px rgba(83, 51, 90, 0.4);
+    }
+
+    .filter-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--ink-2);
+      border: 1px solid var(--rule-soft);
+      background: var(--paper);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .filter-pill:hover { border-color: var(--ink); }
+    .filter-pill.active {
+      background: var(--ink);
+      color: #fff;
+      border-color: var(--ink);
+    }
+
+    /* Tarjeta de Libro */
+    .book-card {
+      position: relative;
+      background: var(--paper);
+      border-radius: 20px;
+      padding: 22px;
+      border: 1px solid rgba(36,29,36,0.07);
+      box-shadow: 0 2px 6px rgba(36,29,36,0.03), 0 14px 32px -20px rgba(36,29,36,0.2);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.25s cubic-bezier(0.2,0.8,0.2,1), box-shadow 0.25s ease;
+      cursor: pointer;
+      overflow: hidden;
+    }
+    .book-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 16px rgba(36,29,36,0.05), 0 24px 44px -20px rgba(36,29,36,0.3);
+    }
+
+    .book-cover {
+      aspect-ratio: 2/3;
+      border-radius: 4px 12px 12px 4px;
+      padding: 16px 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 12px 28px -14px rgba(36,29,36,0.45);
+      position: relative;
+    }
+
+    /* Modales */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(36,29,36,0.5);
+      backdrop-filter: blur(6px);
+      z-index: 150;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      animation: fadeIn 0.2s ease;
+    }
+    .modal-content {
+      background: var(--paper);
+      border-radius: 24px;
+      padding: 36px;
+      max-width: 640px;
+      width: 100%;
+      border: 1px solid var(--rule);
+      box-shadow: 0 24px 60px -20px rgba(36,29,36,0.4);
+      position: relative;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+
+    @media (max-width: 920px) {
+      [data-rail] { display: none !important; }
+      [data-main] { margin-left: 0 !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ======================================================================
+       PIPELINE DE FILTROS SVG
+       ====================================================================== -->
+  <svg aria-hidden="true" width="0" height="0" style="position:absolute; pointer-events:none;">
+    <defs>
+      <filter id="wc-vignette-heavy" x="-35%" y="-35%" width="170%" height="170%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="14" result="blur" />
+        <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="4" seed="31" result="noise" />
+        <feDisplacementMap in="blur" in2="noise" scale="58" xChannelSelector="R" yChannelSelector="G" result="disp" />
+        <feComponentTransfer in="disp">
+          <feFuncA type="table" tableValues="0 0.45 0.78 0.94 1" />
+        </feComponentTransfer>
+      </filter>
+
+      <filter id="wc1" x="-25%" y="-25%" width="150%" height="150%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="11" result="b" />
+        <feTurbulence type="fractalNoise" baseFrequency="0.011" numOctaves="4" seed="7" result="n" />
+        <feDisplacementMap in="b" in2="n" scale="40" xChannelSelector="R" yChannelSelector="G" result="d" />
+        <feComponentTransfer in="d">
+          <feFuncA type="table" tableValues="0 .55 .82 .95 1" />
+        </feComponentTransfer>
+      </filter>
+
+      <filter id="wc3" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="7" result="b" />
+        <feTurbulence type="fractalNoise" baseFrequency="0.022" numOctaves="3" seed="41" result="n" />
+        <feDisplacementMap in="b" in2="n" scale="26" xChannelSelector="R" yChannelSelector="G" result="d" />
+        <feComponentTransfer in="d">
+          <feFuncA type="table" tableValues="0 .6 .86 .97 1" />
+        </feComponentTransfer>
+      </filter>
+
+      <filter id="wc4" x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" seed="61" result="n" />
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="9" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+
+      <filter id="wc-brush" x="-20%" y="-40%" width="140%" height="180%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.065" numOctaves="3" seed="85" result="noise" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="5" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </defs>
+  </svg>
+
+  <div class="paper-texture"></div>
+
+  <!-- MARCO DE ACUARELA EN LAS 4 ESQUINAS -->
+  <div class="vignette-container">
+    <div class="corner-top-left"></div>
+    <svg style="position:absolute; left:20px; top:20px; width:360px; height:320px; pointer-events:none;" viewBox="0 0 360 320">
+      <g fill="#4a94e8" opacity="0.75" filter="url(#wc4)">
+        <circle cx="160" cy="190" r="4.5" /><circle cx="185" cy="155" r="6" /><circle cx="210" cy="175" r="3.2" />
+        <circle cx="240" cy="140" r="5" opacity="0.6" /><circle cx="130" cy="240" r="7" /><circle cx="150" cy="270" r="3.8" />
+        <circle cx="95" cy="290" r="5.5" /><circle cx="270" cy="110" r="3.5" /><circle cx="290" cy="85" r="4.2" opacity="0.5" />
+        <circle cx="320" cy="65" r="2.8" />
+      </g>
+    </svg>
+
+    <div class="corner-top-right"></div>
+    <svg style="position:absolute; right:20px; top:20px; width:360px; height:320px; pointer-events:none;" viewBox="0 0 360 320">
+      <g fill="#e0548a" opacity="0.72" filter="url(#wc4)">
+        <circle cx="180" cy="180" r="5" /><circle cx="145" cy="150" r="6.5" /><circle cx="120" cy="190" r="3.4" />
+        <circle cx="90" cy="140" r="5" opacity="0.55" /><circle cx="210" cy="245" r="6.2" /><circle cx="235" cy="280" r="4" />
+        <circle cx="60" cy="110" r="3.6" /><circle cx="40" cy="75" r="4.8" opacity="0.5" />
+      </g>
+    </svg>
+
+    <div class="corner-bottom-left"></div>
+    <svg style="position:absolute; left:20px; bottom:20px; width:360px; height:320px; pointer-events:none;" viewBox="0 0 360 320">
+      <g fill="#d8682a" opacity="0.75" filter="url(#wc4)">
+        <circle cx="170" cy="130" r="5.5" /><circle cx="205" cy="165" r="4" /><circle cx="230" cy="120" r="6" opacity="0.6" />
+        <circle cx="140" cy="80" r="6.8" /><circle cx="270" cy="210" r="4.2" /><circle cx="300" cy="240" r="3.5" opacity="0.5" />
+        <circle cx="110" cy="50" r="4" />
+      </g>
+    </svg>
+
+    <div class="corner-bottom-right"></div>
+    <svg style="position:absolute; right:20px; bottom:20px; width:360px; height:320px; pointer-events:none;" viewBox="0 0 360 320">
+      <g fill="#f0a818" opacity="0.75" filter="url(#wc4)">
+        <circle cx="190" cy="130" r="5" /><circle cx="150" cy="160" r="6.2" /><circle cx="115" cy="120" r="4.5" opacity="0.6" />
+        <circle cx="225" cy="85" r="5.8" /><circle cx="85" cy="200" r="4" /><circle cx="60" cy="235" r="3.2" opacity="0.5" />
+        <circle cx="250" cy="50" r="4.2" />
+      </g>
+    </svg>
+  </div>
+
+  <div style="min-height:100vh; display:flex;">
+
+    <!-- ======================================================================
+         BARRA LATERAL (RAIL 100% IDÉNTICO AL DASHBOARD PRINCIPAL)
+         ====================================================================== -->
+    <aside data-rail style="position:fixed; left:0; top:0; height:100%; width:252px; background:var(--rail,#282031); display:flex; flex-direction:column; z-index:40; box-sizing:border-box; overflow:hidden;">
+      <div aria-hidden="true" style="position:absolute; inset:0; pointer-events:none; background:radial-gradient(120% 55% at 12% 0%, rgba(196,99,47,.20), transparent 62%), radial-gradient(100% 48% at 92% 42%, rgba(0,106,100,.20), transparent 66%), radial-gradient(120% 46% at 0% 100%, rgba(123,155,209,.16), transparent 60%);"></div>
+      <div aria-hidden="true" style="position:absolute; inset:0; pointer-events:none; mix-blend-mode:overlay; opacity:var(--tooth,.5); background-image:url(&quot;data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjAiIGhlaWdodD0iMTYwIj48ZmlsdGVyIGlkPSJuIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC44IiBudW1PY3RhdmVzPSI0IiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjE2MCIgaGVpZ2h0PSIxNjAiIGZpbHRlcj0idXJsKCNuKSIvPjwvc3ZnPg==&quot;);"></div>
+
+      <div style="position:relative; padding:26px 26px 22px; border-bottom:1px solid var(--rail-rule,rgba(255,255,255,.11));">
+        <h1 style="font-family:'Libre Caslon Text',serif; font-size:21px; font-weight:400; letter-spacing:-0.02em; color:var(--rail-ink,#f2ecf1); line-height:1; margin:0 0 7px;">WonderWord</h1>
+        <span style="font-size:9px; text-transform:uppercase; letter-spacing:.2em; font-weight:600; color:var(--rail-ink-3,#9c92a0);">Inmersión literaria</span>
+      </div>
+
+            <nav style="position:relative; flex:1; overflow-y:auto; padding:22px 0;">
+        <p style="font-size:9px; text-transform:uppercase; letter-spacing:.2em; font-weight:600; color:var(--rail-ink-3,#9c92a0); margin:0 0 10px; padding:0 26px;">Lectura</p>
+        <a href="index.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="layout-dashboard" width="16" height="16"></i>
+          <span style="flex:1;">Dashboard</span>
+          
+        </a>
+        <a href="#" style="position:relative; display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:600; color:var(--rail-ink,#f2ecf1);">
+          <span aria-hidden="true" style="position:absolute; inset:1px 16px 1px 0; background:rgba(255,255,255,.10); border-radius:0 999px 999px 0; filter:url(#wc4);"></span>
+          <span aria-hidden="true" style="position:absolute; left:0; top:4px; bottom:4px; width:3px; background:var(--soleil,#ffcd11); filter:url(#wc4);"></span>
+          <i data-lucide="book-open" width="16" height="16" style="position:relative; color:var(--soleil);"></i>
+          <span style="position:relative; flex:1;">Biblioteca</span>
+          
+        </a>
+        <a href="lector.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="book-open-check" width="16" height="16"></i>
+          <span style="flex:1;">Lector & Estudio</span>
+          
+        </a>
+        <p style="font-size:9px; text-transform:uppercase; letter-spacing:.2em; font-weight:600; color:var(--rail-ink-3,#9c92a0); margin:26px 0 10px; padding:0 26px;">Práctica & Memoria</p>
+        <a href="vocabulario.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="brain" width="16" height="16"></i>
+          <span style="flex:1;">Vocabulario & Repaso</span>
+          <span style="font-family:'Libre Caslon Text',serif; font-size:13px; color:var(--soleil,#ffcd11);">18</span>
+        </a>
+        <a href="shadowing.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="mic" width="16" height="16"></i>
+          <span style="flex:1;">Shadowing & Fonética</span>
+          
+        </a>
+        <a href="inmersion.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="film" width="16" height="16"></i>
+          <span style="flex:1;">Inmersión Streaming</span>
+          
+        </a>
+        <p style="font-size:9px; text-transform:uppercase; letter-spacing:.2em; font-weight:600; color:var(--rail-ink-3,#9c92a0); margin:26px 0 10px; padding:0 26px;">Progreso & Exploración</p>
+        <a href="logros.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="award" width="16" height="16"></i>
+          <span style="flex:1;">Logros & Maestría</span>
+          
+        </a>
+        <a href="organizador.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="calendar" width="16" height="16"></i>
+          <span style="flex:1;">Organizador</span>
+          
+        </a>
+        <a href="viajes.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="compass" width="16" height="16"></i>
+          <span style="flex:1;">Viajes</span>
+          
+        </a>
+        <a href="tienda.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="shopping-bag" width="16" height="16"></i>
+          <span style="flex:1;">Tienda</span>
+          
+        </a>
+        <a href="ajustes.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="settings" width="16" height="16"></i>
+          <span style="flex:1;">Ajustes</span>
+          
+        </a>
+      </nav>
+
+      <!-- WIDGET INFERIOR IDÉNTICO -->
+      <div style="position:relative; padding:18px 26px 22px; border-top:1px solid var(--rail-rule,rgba(255,255,255,.11)); display:flex; align-items:center; gap:14px;">
+        <span style="position:relative; width:52px; height:52px; flex-shrink:0; display:block;">
+          <svg viewBox="0 0 52 52" width="52" height="52" style="display:block; transform:rotate(-90deg);">
+            <circle cx="26" cy="26" r="22" fill="none" stroke="rgba(255,255,255,.13)" stroke-width="5"></circle>
+            <circle cx="26" cy="26" r="22" fill="none" stroke="var(--sauge-2,#0f8c84)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138.2" stroke-dashoffset="55.2" style="filter:url(#wc4);"></circle>
+          </svg>
+          <span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Libre Caslon Text',serif; font-size:13px; color:var(--rail-ink,#f2ecf1); font-variant-numeric:tabular-nums;">18</span>
+        </span>
+        <div style="min-width:0;">
+          <p style="font-size:11.5px; color:var(--rail-ink-2,#a99fac); margin:0; line-height:1.4;">18 de 30 min hoy</p>
+          <p style="font-size:11px; color:var(--soleil,#ffcd11); margin:4px 0 0; line-height:1.4; font-weight:600;">Racha de 14 días</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ======================================================================
+         CONTENIDO PRINCIPAL: LA BIBLIOTECA DEFINITIVA
+         ====================================================================== -->
+    <div data-main style="flex:1; display:flex; flex-direction:column; margin-left:252px; min-width:0; position:relative;">
+      
+      <!-- TOPBAR -->
+      <header style="position:sticky; top:0; z-index:30; background:var(--rail,#282031); height:56px; padding:0 40px; display:flex; align-items:center; justify-content:space-between; overflow:hidden;">
+        <div aria-hidden="true" style="position:absolute; inset:0; pointer-events:none; background:radial-gradient(90% 200% at 6% 50%, rgba(196,99,47,.2), transparent 58%), radial-gradient(70% 180% at 74% 50%, rgba(0,106,100,.2), transparent 62%), radial-gradient(60% 160% at 100% 50%, rgba(123,155,209,.16), transparent 60%);"></div>
+        <div style="position:relative; display:flex; align-items:center; gap:10px; font-size:11.5px; color:var(--rail-ink-2,#a99fac); letter-spacing:.02em;">
+          <span>Biblioteca</span><span style="color:var(--rail-ink-3,#9c92a0);">/</span><span id="breadcrumb-tab">Mis Libros</span>
+        </div>
+        <div style="position:relative; display:flex; align-items:center; gap:22px;">
+          <div style="display:flex; align-items:center; gap:3px; padding:3px; background:rgba(0,0,0,.3); border-radius:999px;">
+            <button type="button" onclick="setTheme('papel')" id="tab-papel" title="Papel" style="display:flex; align-items:center; justify-content:center; width:28px; height:26px; border:none; border-radius:999px; cursor:pointer; background:var(--soleil,#ffcd11); color:#463605;"><i data-lucide="sun" width="14" height="14"></i></button>
+            <button type="button" onclick="setTheme('sepia')" id="tab-sepia" title="Sepia" style="display:flex; align-items:center; justify-content:center; width:28px; height:26px; border:none; border-radius:999px; cursor:pointer; background:transparent; color:var(--rail-ink-3,#9c92a0);"><i data-lucide="book" width="14" height="14"></i></button>
+            <button type="button" onclick="setTheme('noche')" id="tab-noche" title="Noche" style="display:flex; align-items:center; justify-content:center; width:28px; height:26px; border:none; border-radius:999px; cursor:pointer; background:transparent; color:var(--rail-ink-3,#9c92a0);"><i data-lucide="moon" width="14" height="14"></i></button>
+          </div>
+          <span style="width:1px; height:18px; background:var(--rail-rule,rgba(255,255,255,.11));"></span>
+          <span style="font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--rail-ink-2,#a99fac); font-weight:600;">Kevin</span>
+        </div>
+      </header>
+
+      <main style="flex:1; padding:52px 56px 88px; max-width:1300px; margin:0 auto; width:100%; box-sizing:border-box; position:relative; z-index:10;">
+
+        <!-- CABECERA DE LA BIBLIOTECA CON BOTÓN DE IMPORTAR -->
+        <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:32px; flex-wrap:wrap; margin-bottom:32px;">
+          <div>
+            <p style="font-size:9.5px; text-transform:uppercase; letter-spacing:.24em; font-weight:600; color:var(--terre-ink,#9c4a1e); margin:0 0 12px;">Santuario de Lectura & Fonética</p>
+            <h1 style="font-family:'Libre Caslon Text',serif; font-size:52px; line-height:1.05; letter-spacing:-0.03em; color:var(--ink,#241d24); margin:0; font-weight:400;">Tu Biblioteca Literaria</h1>
+          </div>
+          
+          <!-- Botón de Importar Libro (Abre Modal de Ingesta) -->
+          <button type="button" onclick="openImportModal()" style="display:flex; align-items:center; gap:10px; background:var(--prune); color:#fff; font-size:11.5px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; padding:14px 26px; border-radius:999px; border:none; cursor:pointer; box-shadow:0 8px 24px -8px rgba(83,51,90,0.4); transition:transform .2s ease;">
+            <i data-lucide="upload" width="16" height="16"></i>
+            <span>Importar Libro (EPUB / PDF)</span>
+          </button>
+        </div>
+
+        <!-- SELECTOR DE LAS 2 GRANDES PESTAÑAS ARQUITECTÓNICAS -->
+        <div style="display:flex; gap:12px; margin-bottom:34px; border-bottom:1px solid var(--rule); padding-bottom:18px;">
+          <button class="tab-btn active" id="btn-tab-mine" onclick="switchMainTab('mine')">
+            <i data-lucide="book-marked" width="16" height="16"></i>
+            <i data-lucide="library" width="14" height="14"></i><span>Mis Libros (Estantería Local)</span>
+          </button>
+          <button class="tab-btn" id="btn-tab-discover" onclick="switchMainTab('discover')">
+            <i data-lucide="globe" width="16" height="16"></i>
+            <i data-lucide="compass" width="14" height="14"></i><span>Descubrir (+70k Catálogo Gutenberg / BNF)</span>
+          </button>
+        </div>
+
+        <!-- ======================================================================
+             PESTAÑA 1: MIS LIBROS (ESTANTERÍA LOCAL)
+             ====================================================================== -->
+        <div id="view-mine">
+          
+          <!-- Filtros de Estado y Buscador -->
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; margin-bottom:32px;">
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="filter-pill active" onclick="setFilter('all', this)">Todos (7)</button>
+              <button class="filter-pill" onclick="setFilter('reading', this)">Lecturas Activas (3)</button>
+              <button class="filter-pill" onclick="setFilter('wishlist', this)">Por leer / Wishlist (2)</button>
+              <button class="filter-pill" onclick="setFilter('completed', this)">Completados (2)</button>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:14px;">
+              <div style="position:relative; width:260px;">
+                <i data-lucide="search" width="14" height="14" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--ink-3);"></i>
+                <input type="text" placeholder="Filtrar estante..." style="width:100%; padding:9px 14px 9px 36px; border-radius:999px; border:1px solid var(--rule); background:var(--paper); font-size:12.5px; color:var(--ink); outline:none;" />
+              </div>
+              <span style="font-size:11.5px; color:var(--ink-3);">Orden: <strong style="color:var(--ink); cursor:pointer;">Reciente ▾</strong></span>
+            </div>
+          </div>
+
+          <!-- 1. VITRINA DEL LIBRO ACTIVO (HERO CARD) -->
+          <section style="position:relative; margin-bottom:48px; background:var(--paper); border-radius:24px; padding:32px 38px; border:1px solid rgba(36,29,36,0.08); box-shadow:0 1px 3px rgba(36,29,36,0.03), 0 18px 40px -20px rgba(36,29,36,0.22); overflow:hidden;">
+            <div aria-hidden="true" style="position:absolute; right:-20px; top:-20px; width:280px; height:220px; border-radius:50%; background:var(--terre-wash); filter:url(#wc1); pointer-events:none; opacity:0.85;"></div>
+
+            <div style="position:relative; display:flex; gap:38px; align-items:center; flex-wrap:wrap;">
+              <!-- Portada -->
+              <div style="width:136px; flex-shrink:0;">
+                <div class="book-cover" style="background:var(--soleil);">
+                  <p style="font-size:7.5px; text-transform:uppercase; letter-spacing:.2em; font-weight:600; color:var(--soleil-ink); opacity:.7; margin:0;">Gallimard</p>
+                  <div>
+                    <span style="display:block; width:100%; height:1px; background:rgba(0,0,0,.2); margin-bottom:8px;"></span>
+                    <p style="font-family:'Libre Caslon Text',serif; font-size:17px; line-height:1.2; color:var(--soleil-ink); margin:0;">Le Petit Prince</p>
+                    <p style="font-size:9px; color:var(--soleil-ink); opacity:.75; margin:6px 0 0;">A. de Saint-Exupéry</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Detalles y Métricas en Vivo -->
+              <div style="flex:1; min-width:280px;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
+                  <span style="font-size:9.5px; text-transform:uppercase; letter-spacing:.14em; font-weight:700; color:var(--sauge); border:1.5px solid var(--sauge); border-radius:999px; padding:2px 8px;">Français · A2</span>
+                  <span style="font-size:9.5px; text-transform:uppercase; letter-spacing:.14em; font-weight:700; color:var(--soleil-ink); background:var(--soleil); border-radius:999px; padding:2px 8px;">Audio Karaoke Listo</span>
+                  <span style="font-size:11px; color:var(--terre-ink); font-weight:600;">94% Vocabulario conocido</span>
+                </div>
+                
+                <h2 style="font-family:'Libre Caslon Text',serif; font-size:34px; font-weight:400; color:var(--ink); margin:0 0 6px;">Le Petit Prince</h2>
+                <p style="font-size:14px; color:var(--ink-2); margin:0 0 20px;">Capítulo IV · «J’ai de sérieuses raisons de croire que la planète…»</p>
+
+                <!-- Barra de progreso en pincelada de acuarela -->
+                <div style="margin-bottom:24px; max-width:440px;">
+                  <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--ink-3); margin-bottom:6px;">
+                    <span>Progreso: 34% (Página 34 de 98)</span>
+                    <span>18 min restantes</span>
+                  </div>
+                  <div style="position:relative; width:100%; height:5px; border-radius:999px; background:var(--rule-soft);">
+                    <div style="position:absolute; left:0; top:-1px; height:7px; border-radius:999px; background:var(--sauge); width:34%; filter:url(#wc-brush);"></div>
+                  </div>
+                </div>
+
+                <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
+                  <a href="#" style="background:var(--prune); color:#fff; font-size:11.5px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; padding:13px 30px; border-radius:999px; display:inline-block;">Continuar Lectura</a>
+                  <button type="button" onclick="openBookWordsModal('Le Petit Prince', 1284, 85)" style="background:none; border:none; font-size:11.5px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--sauge); border-bottom:1px solid var(--sauge); padding-bottom:2px; cursor:pointer;"><i data-lucide="sparkles" width="13" height="13" style="display:inline; vertical-align:middle; margin-right:4px;"></i>Palabras de este libro</button>
+                  <span style="font-size:11.5px; color:var(--ink-3);">· 14 notas al margen</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 2. CUADRÍCULA DE LIBROS EN LA ESTANTERÍA -->
+          <div style="display:flex; align-items:center; gap:14px; margin-bottom:26px;">
+            <span style="font-size:10px; text-transform:uppercase; letter-spacing:.22em; font-weight:700; color:var(--ink-3); white-space:nowrap;">Todos tus Textos Guardados</span>
+            <span style="flex:1; height:1px; background:var(--rule);"></span>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(270px, 1fr)); gap:24px;">
+
+            <!-- LIBRO 1: L'Étranger (Francés B1) -->
+            <div class="book-card">
+              <span aria-hidden="true" style="position:absolute; left:-10px; top:-10px; width:74px; height:54px; border-radius:50%; background:var(--sauge-wash); filter:url(#wc3); pointer-events:none;"></span>
+              <div>
+                <div style="display:flex; gap:16px; margin-bottom:18px;">
+                  <div style="width:78px; flex-shrink:0;">
+                    <div class="book-cover" style="background:#f4ebd9; border:1px solid rgba(0,0,0,0.1);">
+                      <p style="font-size:6px; text-transform:uppercase; letter-spacing:.14em; color:var(--ink-3); margin:0;">Gallimard</p>
+                      <div>
+                        <p style="font-family:'Libre Caslon Text',serif; font-size:11px; line-height:1.1; color:var(--ink); margin:0;">L'Étranger</p>
+                        <p style="font-size:6.5px; color:var(--ink-3); margin:3px 0 0;">Albert Camus</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div style="flex:1; min-width:0;">
+                    <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                      <span style="font-size:8.5px; text-transform:uppercase; letter-spacing:.1em; font-weight:700; color:var(--sauge); border:1px solid var(--sauge); border-radius:999px; padding:1px 6px;">Français · B1</span>
+                      <span style="font-size:8.5px; color:var(--sauge); background:rgba(0,106,100,0.1); padding:1px 5px; border-radius:4px;" title="Texto higienizado sin basura OCR"> Limpio</span>
+                    </div>
+                    <h3 style="font-family:'Libre Caslon Text',serif; font-size:18px; line-height:1.2; color:var(--ink); margin:8px 0 4px;">L'Étranger</h3>
+                    <p style="font-size:12px; color:var(--ink-3); margin:0;">Albert Camus · 1942</p>
+                    <p style="font-size:11px; color:var(--ink-2); margin:8px 0 0;">1.420 palabras · <strong>88% conocido</strong></p>
+                  </div>
+                </div>
+              </div>
+
+              <div style="border-top:1px solid var(--rule-soft); padding-top:14px;">
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--ink-3); margin-bottom:6px;">
+                  <span>Progreso: 12%</span>
+                  <button type="button" onclick="openBookWordsModal('L\'Étranger', 1420, 88)" style="background:none; border:none; color:var(--sauge); font-weight:700; cursor:pointer; font-size:11px;">Palabras ↗</button>
+                </div>
+                <div style="position:relative; width:100%; height:4px; border-radius:999px; background:var(--rule-soft);">
+                  <div style="position:absolute; left:0; top:-1px; height:6px; border-radius:999px; background:var(--sauge); width:12%; filter:url(#wc-brush);"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- LIBRO 2: Die Verwandlung (Alemán B1) -->
+            <div class="book-card">
+              <span aria-hidden="true" style="position:absolute; left:-10px; top:-10px; width:74px; height:54px; border-radius:50%; background:var(--bleuet-wash); filter:url(#wc3); pointer-events:none;"></span>
+              <div>
+                <div style="display:flex; gap:16px; margin-bottom:18px;">
+                  <div style="width:78px; flex-shrink:0;">
+                    <div class="book-cover" style="background:#e8f0fa; border:1px solid rgba(123,155,209,0.3);">
+                      <p style="font-size:6px; text-transform:uppercase; letter-spacing:.14em; color:var(--bleuet-ink); margin:0;">Reclam</p>
+                      <div>
+                        <p style="font-family:'Libre Caslon Text',serif; font-size:10px; line-height:1.1; color:var(--ink); margin:0;">Die Verwandlung</p>
+                        <p style="font-size:6.5px; color:var(--ink-3); margin:3px 0 0;">Franz Kafka</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div style="flex:1; min-width:0;">
+                    <span style="font-size:8.5px; text-transform:uppercase; letter-spacing:.1em; font-weight:700; color:var(--bleuet-ink); border:1px solid var(--bleuet-ink); border-radius:999px; padding:1px 6px;">Deutsch · B1</span>
+                    <h3 style="font-family:'Libre Caslon Text',serif; font-size:18px; line-height:1.2; color:var(--ink); margin:8px 0 4px;">Die Verwandlung</h3>
+                    <p style="font-size:12px; color:var(--ink-3); margin:0;">Franz Kafka · 1915</p>
+                    <p style="font-size:11px; color:var(--ink-2); margin:8px 0 0;">940 palabras · <strong>78% conocido</strong></p>
+                  </div>
+                </div>
+              </div>
+
+              <div style="border-top:1px solid var(--rule-soft); padding-top:14px;">
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--ink-3); margin-bottom:6px;">
+                  <span>Por leer (Wishlist)</span>
+                  <button type="button" onclick="openBookWordsModal('Die Verwandlung', 940, 78)" style="background:none; border:none; color:var(--bleuet-ink); font-weight:700; cursor:pointer; font-size:11px;">Palabras ↗</button>
+                </div>
+                <div style="position:relative; width:100%; height:4px; border-radius:999px; background:var(--rule-soft);"></div>
+              </div>
+            </div>
+
+            <!-- LIBRO 3: Alice in Wonderland (Inglés A2) -->
+            <div class="book-card">
+              <span aria-hidden="true" style="position:absolute; left:-10px; top:-10px; width:74px; height:54px; border-radius:50%; background:var(--terre-wash); filter:url(#wc3); pointer-events:none;"></span>
+              <div>
+                <div style="display:flex; gap:16px; margin-bottom:18px;">
+                  <div style="width:78px; flex-shrink:0;">
+                    <div class="book-cover" style="background:#fceee6; border:1px solid rgba(196,99,47,0.3);">
+                      <p style="font-size:6px; text-transform:uppercase; letter-spacing:.14em; color:var(--terre-ink); margin:0;">Macmillan</p>
+                      <div>
+                        <p style="font-family:'Libre Caslon Text',serif; font-size:10.5px; line-height:1.1; color:var(--ink); margin:0;">Alice in Wonderland</p>
+                        <p style="font-size:6.5px; color:var(--ink-3); margin:3px 0 0;">Lewis Carroll</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div style="flex:1; min-width:0;">
+                    <span style="font-size:8.5px; text-transform:uppercase; letter-spacing:.1em; font-weight:700; color:var(--terre-ink); border:1px solid var(--terre-ink); border-radius:999px; padding:1px 6px;">English · A2</span>
+                    <h3 style="font-family:'Libre Caslon Text',serif; font-size:18px; line-height:1.2; color:var(--ink); margin:8px 0 4px;">Alice in Wonderland</h3>
+                    <p style="font-size:12px; color:var(--ink-3); margin:0;">Lewis Carroll · 1865</p>
+                    <p style="font-size:11px; color:var(--ink-2); margin:8px 0 0;">1.180 palabras · <strong>95% conocido</strong></p>
+                  </div>
+                </div>
+              </div>
+
+              <div style="border-top:1px solid var(--rule-soft); padding-top:14px;">
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--ink-3); margin-bottom:6px;">
+                  <span style="color:var(--sauge); font-weight:700;"><i data-lucide="check-circle-2" width="13" height="13" style="display:inline; vertical-align:middle; margin-right:4px;"></i>¡Completado!</span>
+                  <button type="button" onclick="openBookWordsModal('Alice in Wonderland', 1180, 95)" style="background:none; border:none; color:var(--terre-ink); font-weight:700; cursor:pointer; font-size:11px;">Palabras ↗</button>
+                </div>
+                <div style="position:relative; width:100%; height:4px; border-radius:999px; background:var(--sauge);"></div>
+              </div>
+            </div>
+
+            <!-- TARJETA: CLUB DE LECTURA (EXPORTAR / IMPORTAR ARTEFACTO) -->
+            <div class="book-card" style="background:rgba(255,255,255,0.7); border:1.5px dashed var(--prune);">
+              <span aria-hidden="true" style="position:absolute; left:-10px; top:-10px; width:74px; height:54px; border-radius:50%; background:var(--prune-wash); filter:url(#wc3); pointer-events:none;"></span>
+              <div>
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                  <i data-lucide="users" width="16" height="16" style="color:var(--prune);"></i>
+                  <span style="font-size:9.5px; text-transform:uppercase; letter-spacing:.14em; font-weight:700; color:var(--prune);">Club de Lectura (ADR-002)</span>
+                </div>
+                <h3 style="font-family:'Libre Caslon Text',serif; font-size:18px; color:var(--ink); margin:0 0 6px;">Compartir Libro Anotado</h3>
+                <p style="font-size:12px; color:var(--ink-3); line-height:1.4; margin:0 0 16px;">Exporta o importa un paquete de lectura con notas al margen, subrayados y fonética para estudiar con amigos.</p>
+              </div>
+              <div style="display:flex; gap:10px;">
+                <button type="button" style="flex:1; padding:8px 12px; background:var(--prune); color:#fff; border:none; border-radius:999px; font-size:10.5px; font-weight:700; text-transform:uppercase; cursor:pointer;">Exportar .wwbook</button>
+                <button type="button" style="flex:1; padding:8px 12px; background:none; border:1px solid var(--prune); color:var(--prune); border-radius:999px; font-size:10.5px; font-weight:700; text-transform:uppercase; cursor:pointer;">Importar</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ======================================================================
+             PESTAÑA 2: DESCUBRIR (CATÁLOGO PÚBLICO FEDERADO +70K)
+             ====================================================================== -->
+        <div id="view-discover" style="display:none;">
+          
+          <!-- Buscador Federado en Vivo -->
+          <div style="background:var(--paper); border-radius:24px; padding:28px 32px; border:1px solid var(--rule); margin-bottom:36px; box-shadow:0 12px 32px -16px rgba(36,29,36,0.15);">
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:18px;">
+              <span style="font-size:10px; text-transform:uppercase; letter-spacing:.2em; font-weight:700; color:var(--terre-ink);">Fuentes Federadas Activas:</span>
+              <span style="font-size:11px; background:rgba(0,106,100,0.1); color:var(--sauge); padding:2px 8px; border-radius:999px; font-weight:600;">Project Gutenberg (+70k)</span>
+              <span style="font-size:11px; background:rgba(123,155,209,0.15); color:var(--bleuet-ink); padding:2px 8px; border-radius:999px; font-weight:600;">Wikisource</span>
+              <span style="font-size:11px; background:rgba(83,51,90,0.1); color:var(--prune); padding:2px 8px; border-radius:999px; font-weight:600;">Gallica BNF</span>
+            </div>
+
+            <div style="display:flex; gap:14px; flex-wrap:wrap;">
+              <div style="position:relative; flex:1; min-width:260px;">
+                <i data-lucide="search" width="16" height="16" style="position:absolute; left:16px; top:50%; transform:translateY(-50%); color:var(--ink-3);"></i>
+                <input type="text" placeholder="Buscar entre +70.000 clásicos (ej. Victor Hugo, Kafka, Jane Austen)..." style="width:100%; padding:14px 18px 14px 44px; border-radius:999px; border:1px solid var(--rule); background:var(--canvas); font-size:13.5px; color:var(--ink); outline:none;" />
+              </div>
+              <select style="padding:0 20px; border-radius:999px; border:1px solid var(--rule); background:var(--canvas); font-size:13px; color:var(--ink); font-weight:600; outline:none;">
+                <option>Todos los idiomas</option>
+                <option>Français</option>
+                <option>Deutsch</option>
+                <option>English</option>
+                <option>Español</option>
+                <option>Русский</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Resultados de Descubrimiento con Preview de Dificultad -->
+          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:24px;">
+            
+            <!-- Resultado 1: Les Misérables -->
+            <div class="book-card">
+              <div style="display:flex; gap:16px; margin-bottom:16px;">
+                <div style="width:74px; flex-shrink:0;">
+                  <div class="book-cover" style="background:#eed9c4;">
+                    <p style="font-size:6px; color:var(--ink-3); margin:0;">Gutenberg</p>
+                    <p style="font-family:'Libre Caslon Text',serif; font-size:10px; color:var(--ink); margin:auto 0 0;">Les Misérables</p>
+                  </div>
+                </div>
+                <div style="flex:1;">
+                  <span style="font-size:8.5px; text-transform:uppercase; letter-spacing:.1em; font-weight:700; color:var(--sauge); border:1px solid var(--sauge); border-radius:999px; padding:1px 6px;">Français · B2</span>
+                  <h3 style="font-family:'Libre Caslon Text',serif; font-size:17px; margin:6px 0 2px;">Les Misérables</h3>
+                  <p style="font-size:11.5px; color:var(--ink-3); margin:0;">Victor Hugo</p>
+                  <p style="font-size:11px; color:var(--ink-2); margin:8px 0 0;">5.200 palabras únicas · Dificultad Media</p>
+                </div>
+              </div>
+              <button type="button" onclick="alert('¡Libro descargado, higienizado y añadido a tu estantería!')" style="width:100%; padding:10px; background:var(--sauge); color:#fff; border:none; border-radius:999px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.12em; cursor:pointer;"><i data-lucide="download" width="13" height="13" style="display:inline; vertical-align:middle; margin-right:4px;"></i>Importar en 1 Clic</button>
+            </div>
+
+            <!-- Resultado 2: Faust -->
+            <div class="book-card">
+              <div style="display:flex; gap:16px; margin-bottom:16px;">
+                <div style="width:74px; flex-shrink:0;">
+                  <div class="book-cover" style="background:#e4eaf4;">
+                    <p style="font-size:6px; color:var(--bleuet-ink); margin:0;">Wikisource</p>
+                    <p style="font-family:'Libre Caslon Text',serif; font-size:10px; color:var(--ink); margin:auto 0 0;">Faust I</p>
+                  </div>
+                </div>
+                <div style="flex:1;">
+                  <span style="font-size:8.5px; text-transform:uppercase; letter-spacing:.1em; font-weight:700; color:var(--bleuet-ink); border:1px solid var(--bleuet-ink); border-radius:999px; padding:1px 6px;">Deutsch · C1</span>
+                  <h3 style="font-family:'Libre Caslon Text',serif; font-size:17px; margin:6px 0 2px;">Faust. Eine Tragödie</h3>
+                  <p style="font-size:11.5px; color:var(--ink-3); margin:0;">J. W. von Goethe</p>
+                  <p style="font-size:11px; color:var(--ink-2); margin:8px 0 0;">3.800 palabras · Dificultad Alta</p>
+                </div>
+              </div>
+              <button type="button" onclick="alert('¡Libro descargado, higienizado y añadido a tu estantería!')" style="width:100%; padding:10px; background:var(--bleuet-ink); color:#fff; border:none; border-radius:999px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.12em; cursor:pointer;"><i data-lucide="download" width="13" height="13" style="display:inline; vertical-align:middle; margin-right:4px;"></i>Importar en 1 Clic</button>
+            </div>
+
+            <!-- Resultado 3: Pride and Prejudice -->
+            <div class="book-card">
+              <div style="display:flex; gap:16px; margin-bottom:16px;">
+                <div style="width:74px; flex-shrink:0;">
+                  <div class="book-cover" style="background:#faece4;">
+                    <p style="font-size:6px; color:var(--terre-ink); margin:0;">Gutenberg</p>
+                    <p style="font-family:'Libre Caslon Text',serif; font-size:10px; color:var(--ink); margin:auto 0 0;">Pride & Prejudice</p>
+                  </div>
+                </div>
+                <div style="flex:1;">
+                  <span style="font-size:8.5px; text-transform:uppercase; letter-spacing:.1em; font-weight:700; color:var(--terre-ink); border:1px solid var(--terre-ink); border-radius:999px; padding:1px 6px;">English · B2</span>
+                  <h3 style="font-family:'Libre Caslon Text',serif; font-size:17px; margin:6px 0 2px;">Pride and Prejudice</h3>
+                  <p style="font-size:11.5px; color:var(--ink-3); margin:0;">Jane Austen</p>
+                  <p style="font-size:11px; color:var(--ink-2); margin:8px 0 0;">2.900 palabras · Dificultad Media</p>
+                </div>
+              </div>
+              <button type="button" onclick="alert('¡Libro descargado, higienizado y añadido a tu estantería!')" style="width:100%; padding:10px; background:var(--terre); color:#fff; border:none; border-radius:999px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.12em; cursor:pointer;"><i data-lucide="download" width="13" height="13" style="display:inline; vertical-align:middle; margin-right:4px;"></i>Importar en 1 Clic</button>
+            </div>
+
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 1: INGESTA Y SANEADO DE LIBRO (DRAG & DROP EPUB/PDF)
+       ====================================================================== -->
+  <div id="modal-import" class="modal-backdrop" style="display:none;">
+    <div class="modal-content">
+      <button type="button" onclick="closeImportModal()" style="position:absolute; right:22px; top:22px; background:none; border:none; cursor:pointer; color:var(--ink-3);"><i data-lucide="x" width="20" height="20"></i></button>
+
+      <h2 style="font-family:'Libre Caslon Text',serif; font-size:26px; font-weight:400; color:var(--ink); margin:0 0 6px;">Importar Libro a tu Estantería</h2>
+      <p style="font-size:13px; color:var(--ink-3); margin:0 0 24px;">WonderWord saneará el texto (elimina avisos legales, pies de imprenta y basura OCR) y generará la fonética.</p>
+
+      <!-- Zona Drag & Drop -->
+      <div style="border:2px dashed var(--terre); border-radius:18px; padding:36px 24px; text-align:center; background:rgba(196,99,47,0.04); margin-bottom:20px; cursor:pointer;">
+        <div style="width:48px; height:48px; border-radius:50%; background:var(--terre-wash); display:flex; align-items:center; justify-content:center; margin:0 auto 12px;">
+          <i data-lucide="file-up" width="22" height="22" style="color:var(--terre);"></i>
+        </div>
+        <p style="font-size:14px; font-weight:600; color:var(--ink); margin:0 0 4px;">Arrastra tu archivo EPUB, PDF o TXT aquí</p>
+        <p style="font-size:12px; color:var(--ink-3); margin:0;">o haz clic para explorar en tu ordenador</p>
+      </div>
+
+      <!-- Resumen de Higiene y Saneado -->
+      <div style="background:rgba(0,106,100,0.06); border-radius:12px; padding:12px 16px; display:flex; align-items:center; gap:10px; margin-bottom:24px;">
+        <i data-lucide="shield-check" width="18" height="18" style="color:var(--sauge);"></i>
+        <span style="font-size:12px; color:var(--sauge); font-weight:600;">Sanitizer Activo: Detecta y remueve automáticamente índices rotos y prólogos no literarios.</span>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:12px;">
+        <button type="button" onclick="closeImportModal()" style="padding:10px 20px; border-radius:999px; border:1px solid var(--rule); background:none; font-size:12px; font-weight:600; cursor:pointer;">Cancelar</button>
+        <button type="button" onclick="alert('¡Libro procesado con éxito!'); closeImportModal();" style="padding:10px 24px; border-radius:999px; border:none; background:var(--prune); color:#fff; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; cursor:pointer;">Comenzar Ingesta</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 2: PALABRAS DE ESTE LIBRO (ENDPOINT getBookWords)
+       ====================================================================== -->
+  <div id="modal-book-words" class="modal-backdrop" style="display:none;">
+    <div class="modal-content">
+      <button type="button" onclick="closeBookWordsModal()" style="position:absolute; right:22px; top:22px; background:none; border:none; cursor:pointer; color:var(--ink-3);"><i data-lucide="x" width="20" height="20"></i></button>
+
+      <p style="font-size:9.5px; text-transform:uppercase; letter-spacing:.2em; font-weight:700; color:var(--sauge); margin:0 0 6px;">Análisis Léxico del Libro</p>
+      <h2 id="modal-book-title" style="font-family:'Libre Caslon Text',serif; font-size:28px; font-weight:400; color:var(--ink); margin:0 0 6px;">Le Petit Prince</h2>
+      <p id="modal-book-stats" style="font-size:13px; color:var(--ink-3); margin:0 0 24px;">1.284 palabras únicas · 94% coincidencia con tu mazo FSRS</p>
+
+      <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; margin-bottom:24px;">
+        <div style="background:var(--paper-2); padding:14px; border-radius:14px; text-align:center;">
+          <p style="font-family:'Libre Caslon Text',serif; font-size:24px; color:var(--sauge); margin:0;">820</p>
+          <p style="font-size:10px; text-transform:uppercase; letter-spacing:.12em; font-weight:700; color:var(--ink-3); margin:4px 0 0;">Dominadas</p>
+        </div>
+        <div style="background:var(--paper-2); padding:14px; border-radius:14px; text-align:center;">
+          <p style="font-family:'Libre Caslon Text',serif; font-size:24px; color:var(--soleil-ink); margin:0;">384</p>
+          <p style="font-size:10px; text-transform:uppercase; letter-spacing:.12em; font-weight:700; color:var(--ink-3); margin:4px 0 0;">En Estudio</p>
+        </div>
+        <div style="background:var(--paper-2); padding:14px; border-radius:14px; text-align:center;">
+          <p style="font-family:'Libre Caslon Text',serif; font-size:24px; color:var(--terre-ink); margin:0;">80</p>
+          <p style="font-size:10px; text-transform:uppercase; letter-spacing:.12em; font-weight:700; color:var(--ink-3); margin:4px 0 0;">Nuevas</p>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:12px;">
+        <button type="button" onclick="closeBookWordsModal()" style="padding:10px 22px; border-radius:999px; border:none; background:var(--sauge); color:#fff; font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; cursor:pointer;">Crear Mazo de Repaso</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    if (window.lucide) lucide.createIcons();
+
+    function switchMainTab(tab) {
+      const btnMine = document.getElementById('btn-tab-mine');
+      const btnDiscover = document.getElementById('btn-tab-discover');
+      const viewMine = document.getElementById('view-mine');
+      const viewDiscover = document.getElementById('view-discover');
+      const breadcrumb = document.getElementById('breadcrumb-tab');
+
+      if (tab === 'mine') {
+        btnMine.classList.add('active');
+        btnDiscover.classList.remove('active');
+        viewMine.style.display = 'block';
+        viewDiscover.style.display = 'none';
+        breadcrumb.innerText = 'Mis Libros';
+      } else {
+        btnMine.classList.remove('active');
+        btnDiscover.classList.add('active');
+        viewMine.style.display = 'none';
+        viewDiscover.style.display = 'block';
+        breadcrumb.innerText = 'Descubrir (+70k Clásicos)';
+      }
+    }
+
+    function setFilter(filter, btn) {
+      document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    function openImportModal() {
+      document.getElementById('modal-import').style.display = 'flex';
+    }
+    function closeImportModal() {
+      document.getElementById('modal-import').style.display = 'none';
+    }
+
+    function openBookWordsModal(title, count, match) {
+      document.getElementById('modal-book-title').innerText = title;
+      document.getElementById('modal-book-stats').innerText = `${count} palabras únicas · ${match}% coincidencia con tu mazo FSRS`;
+      document.getElementById('modal-book-words').style.display = 'flex';
+    }
+    function closeBookWordsModal() {
+      document.getElementById('modal-book-words').style.display = 'none';
+    }
+
+    function setTheme(theme) {
+      const body = document.body;
+      const tabPapel = document.getElementById('tab-papel');
+      const tabSepia = document.getElementById('tab-sepia');
+      const tabNoche = document.getElementById('tab-noche');
+
+      [tabPapel, tabSepia, tabNoche].forEach(t => {
+        t.style.background = 'transparent';
+        t.style.color = 'var(--rail-ink-3,#9c92a0)';
+      });
+
+      if (theme === 'papel') {
+        body.removeAttribute('data-theme');
+        tabPapel.style.background = 'var(--soleil,#ffcd11)';
+        tabPapel.style.color = '#463605';
+      } else if (theme === 'sepia') {
+        body.setAttribute('data-theme', 'sepia');
+        tabSepia.style.background = 'var(--soleil,#ffcd11)';
+        tabSepia.style.color = '#463605';
+      } else if (theme === 'noche') {
+        body.setAttribute('data-theme', 'noche');
+        tabNoche.style.background = 'var(--soleil,#ffcd11)';
+        tabNoche.style.color = '#463605';
+      }
+
+      if (window.lucide) lucide.createIcons();
+    }
+  </script>
+</body>
+</html>

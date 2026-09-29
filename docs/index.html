@@ -4,9 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>WonderWord-UNI — Carnet de Bord de Recherche & Développement</title>
-  <meta name="description" content="Carnet de bord du projet WonderWord-UNI - Master Humanités Numériques : parcours NET - Université Paris 8." />
+  <meta name="description" content="Carnet de bord et journal de conception de WonderWord-UNI - Master Humanités Numériques : parcours NET - Université Paris 8." />
 
-  <!-- Polices Éditoriales & Linguistiques -->
+  <!-- Polices Littéraires & Linguistiques -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Charis+SIL:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -56,13 +56,13 @@
       background: var(--canvas);
       color: var(--ink);
       font-family: 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
-      line-height: 1.65;
+      line-height: 1.7;
       -webkit-font-smoothing: antialiased;
       min-height: 100vh;
       position: relative;
     }
 
-    /* Textura sutil de papel prensado */
+    /* Textura de papel prensado */
     .paper-texture {
       position: fixed;
       inset: 0;
@@ -73,16 +73,16 @@
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     }
 
-    /* Encabezado */
+    /* En-tête */
     header.site-header {
       background: var(--rail);
       color: var(--rail-ink);
-      padding: 32px 24px 28px;
+      padding: 38px 24px 32px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       position: relative;
     }
     .header-inner {
-      max-width: 980px;
+      max-width: 1040px;
       margin: 0 auto;
       display: flex;
       flex-direction: column;
@@ -100,25 +100,25 @@
     }
     .site-title {
       font-family: 'Libre Caslon Text', Georgia, serif;
-      font-size: clamp(32px, 5vw, 44px);
+      font-size: clamp(34px, 5.5vw, 48px);
       font-weight: 400;
-      letter-spacing: -0.02em;
+      letter-spacing: -0.025em;
       color: #ffffff;
       line-height: 1.15;
     }
     .site-subtitle {
-      font-size: 15px;
+      font-size: 15.5px;
       color: var(--rail-ink-2);
-      max-width: 720px;
-      line-height: 1.5;
+      max-width: 780px;
+      line-height: 1.55;
     }
     .header-meta {
       display: flex;
       flex-wrap: wrap;
-      gap: 16px;
+      gap: 14px;
       align-items: center;
-      margin-top: 8px;
-      padding-top: 16px;
+      margin-top: 10px;
+      padding-top: 18px;
       border-top: 1px solid rgba(255, 255, 255, 0.1);
       font-size: 12.5px;
     }
@@ -127,63 +127,45 @@
       align-items: center;
       gap: 6px;
       background: rgba(255, 255, 255, 0.08);
-      padding: 5px 12px;
+      padding: 6px 14px;
       border-radius: 999px;
       color: #fff;
     }
+    .meta-tag a { color: var(--soleil); text-decoration: none; }
+    .meta-tag a:hover { text-decoration: underline; }
 
     /* Layout Principal */
     main.content-wrap {
-      max-width: 980px;
+      max-width: 1040px;
       margin: 0 auto;
-      padding: 48px 24px 80px;
+      padding: 52px 24px 90px;
     }
 
-    /* Introducción Académica */
-    .intro-card {
-      background: var(--paper);
-      border-radius: 20px;
-      border: 1px solid var(--rule);
-      padding: 36px 40px;
-      box-shadow: 0 4px 20px -8px rgba(36,29,36,0.08);
-      margin-bottom: 48px;
-      position: relative;
+    /* Sections */
+    section.log-section {
+      margin-bottom: 64px;
     }
-    .intro-card::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 24px;
-      bottom: 24px;
-      width: 4px;
-      background: var(--sauge);
-      border-radius: 0 4px 4px 0;
-    }
-    .intro-title {
-      font-family: 'Libre Caslon Text', serif;
-      font-size: 26px;
-      margin-bottom: 14px;
-      color: var(--ink);
-    }
-    .intro-text {
-      color: var(--ink-2);
-      font-size: 15.5px;
-      line-height: 1.75;
-      margin-bottom: 16px;
-    }
-
-    /* Línea de Tiempo de Bitácora */
-    .timeline-heading {
+    .section-heading {
       display: flex;
       align-items: center;
-      gap: 14px;
-      margin-bottom: 32px;
+      gap: 16px;
+      margin-bottom: 28px;
     }
-    .timeline-heading h2 {
+    .section-number {
       font-family: 'Libre Caslon Text', serif;
-      font-size: 28px;
+      font-size: 14px;
+      color: var(--terre);
+      background: var(--terre-wash);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+    .section-title {
+      font-family: 'Libre Caslon Text', serif;
+      font-size: clamp(24px, 3.5vw, 30px);
       color: var(--ink);
-      white-space: nowrap;
+      font-weight: 400;
     }
     .heading-rule {
       flex: 1;
@@ -191,88 +173,152 @@
       background: var(--rule);
     }
 
-    /* Entradas del Carnet */
-    .log-entries {
-      display: flex;
-      flex-direction: column;
-      gap: 32px;
+    /* Cartes Éditoriales */
+    .editorial-card {
+      background: var(--paper);
+      border-radius: 22px;
+      border: 1px solid var(--rule);
+      padding: 38px 42px;
+      box-shadow: 0 4px 20px -8px rgba(36,29,36,0.07);
+      margin-bottom: 32px;
+      position: relative;
+    }
+    .editorial-card p {
+      color: var(--ink-2);
+      font-size: 15.5px;
+      margin-bottom: 18px;
+    }
+    .editorial-card p:last-child { margin-bottom: 0; }
+    .editorial-card strong { color: var(--ink); }
+
+    /* Vignette de mise en valeur */
+    .callout-box {
+      background: var(--paper-warm);
+      border-left: 4px solid var(--sauge);
+      padding: 20px 24px;
+      border-radius: 0 14px 14px 0;
+      margin: 24px 0;
+      font-size: 15px;
+      color: var(--ink-2);
     }
 
-    .log-card {
+    /* Galerie de Prototypes */
+    .prototype-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 48px;
+      margin-top: 36px;
+    }
+
+    .proto-item {
       background: var(--paper);
-      border-radius: 18px;
+      border-radius: 24px;
       border: 1px solid var(--rule);
-      padding: 32px 36px;
-      box-shadow: 0 2px 12px -4px rgba(36,29,36,0.05);
+      overflow: hidden;
+      box-shadow: 0 8px 30px -10px rgba(36,29,36,0.1);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .proto-item:hover {
+      box-shadow: 0 16px 40px -12px rgba(36,29,36,0.15);
+    }
+
+    .proto-img-wrap {
+      width: 100%;
+      background: #1a1622;
+      border-bottom: 1px solid var(--rule);
       position: relative;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      overflow: hidden;
+      display: block;
     }
-    .log-card:hover {
-      box-shadow: 0 8px 24px -8px rgba(36,29,36,0.1);
+    .proto-img-wrap img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: transform 0.35s ease;
     }
-    .log-header {
+    .proto-img-wrap:hover img {
+      transform: scale(1.015);
+    }
+
+    .proto-details {
+      padding: 32px 36px;
+    }
+    .proto-header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: 16px;
       gap: 16px;
+      margin-bottom: 14px;
       flex-wrap: wrap;
     }
-    .log-date-badge {
+    .proto-badge {
       font-size: 11px;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.12em;
-      padding: 4px 10px;
-      border-radius: 6px;
-      background: var(--prune-wash);
-      color: var(--prune);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
+      letter-spacing: 0.14em;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: var(--soleil-wash);
+      color: var(--soleil-ink);
     }
-    .log-title {
+    .proto-title {
       font-family: 'Libre Caslon Text', serif;
-      font-size: 22px;
+      font-size: 24px;
       color: var(--ink);
-      line-height: 1.3;
-      margin-top: 6px;
+      margin-top: 4px;
     }
-    .log-body {
+    .proto-desc {
       color: var(--ink-2);
       font-size: 15px;
-      line-height: 1.75;
+      line-height: 1.7;
+      margin-bottom: 22px;
     }
-    .log-body p { margin-bottom: 14px; }
-    .log-body p:last-child { margin-bottom: 0; }
 
+    /* Bouton d'action Démo */
+    .btn-demo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 26px;
+      border-radius: 999px;
+      background: var(--prune);
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      box-shadow: 0 4px 14px -3px rgba(83,51,90,0.4);
+      transition: all 0.2s ease;
+    }
+    .btn-demo:hover {
+      background: var(--prune-2);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px -4px rgba(83,51,90,0.5);
+      color: #ffffff;
+    }
+
+    /* Pastilles */
     .tag-pill {
-      font-size: 11px;
-      padding: 3px 9px;
+      font-size: 11.5px;
+      padding: 4px 11px;
       border-radius: 999px;
       background: var(--paper-warm);
       border: 1px solid var(--rule);
       color: var(--ink-3);
+      font-weight: 500;
     }
 
-    /* Bloque de Código / Cita / Fonética */
-    .phonetic-highlight {
-      background: var(--paper-warm);
-      border-left: 3px solid var(--soleil);
-      padding: 16px 20px;
-      border-radius: 0 10px 10px 0;
-      margin: 18px 0;
-      font-size: 14px;
-    }
-    .ipa-badge {
+    .ipa-sample {
       font-family: 'Charis SIL', serif;
-      font-size: 15px;
+      font-size: 16px;
       color: var(--sauge);
       font-weight: 700;
-      background: rgba(0,106,100,0.08);
-      padding: 2px 6px;
+      background: var(--sauge-wash);
+      padding: 2px 7px;
       border-radius: 4px;
     }
+
     ruby { ruby-position: over; padding: 0 2px; }
     rt {
       font-family: 'Charis SIL', serif;
@@ -281,22 +327,13 @@
       font-weight: 700;
     }
 
-    code {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 13px;
-      background: var(--paper-warm);
-      padding: 2px 5px;
-      border-radius: 4px;
-      border: 1px solid var(--rule-soft);
-    }
-
-    /* Pie de página */
+    /* Pied de page */
     footer.site-footer {
       border-top: 1px solid var(--rule);
       background: var(--paper-warm);
-      padding: 36px 24px;
+      padding: 44px 24px;
       text-align: center;
-      font-size: 13px;
+      font-size: 13.5px;
       color: var(--ink-3);
     }
     footer a {
@@ -308,8 +345,8 @@
       text-decoration: underline;
     }
 
-    @media (max-width: 640px) {
-      .intro-card, .log-card { padding: 24px 20px; }
+    @media (max-width: 680px) {
+      .editorial-card, .proto-details { padding: 24px 20px; }
     }
   </style>
 </head>
@@ -322,18 +359,18 @@
     <div class="header-inner">
       <div class="academic-banner">
         <i data-lucide="graduation-cap" width="16" height="16"></i>
-        <span>Université Paris 8 · Master Humanités Numériques (NET)</span>
+        <span>Université Paris 8 · Master Humanités Numériques (parcours NET)</span>
       </div>
       
       <h1 class="site-title">WonderWord-UNI</h1>
       <p class="site-subtitle">
-        Carnet de bord scientifique et technique de recherche & développement. Plateforme universitaire de lecture augmentée, laboratoire phonétique de Shadowing et cercles de lecture sociolinguistiques.
+        Carnet de bord scientifique & technique de recherche-création. Conception d'une plateforme universitaire de lecture augmentée, laboratoire phonétique de Shadowing et cercles littéraires sociolinguistiques.
       </p>
 
       <div class="header-meta">
         <span class="meta-tag"><i data-lucide="user" width="13" height="13"></i> Luis Betancourt D.</span>
-        <span class="meta-tag"><i data-lucide="folder-git-2" width="13" height="13"></i> Dépôt GitHub : <a href="https://github.com/luisbetancourtd/WonderWord-UNI" target="_blank" style="color:var(--soleil); text-decoration:none; margin-left:4px;">luisbetancourtd/WonderWord-UNI</a></span>
-        <span class="meta-tag"><i data-lucide="globe" width="13" height="13"></i> Déploiement : wonderword.luisbetancourt.fr</span>
+        <span class="meta-tag"><i data-lucide="folder-git-2" width="13" height="13"></i> Dépôt : <a href="https://github.com/luisbetancourtd/WonderWord-UNI" target="_blank">github.com/luisbetancourtd/WonderWord-UNI</a></span>
+        <span class="meta-tag"><i data-lucide="globe" width="13" height="13"></i> Production : wonderword.luisbetancourt.fr</span>
       </div>
     </div>
   </header>
@@ -341,110 +378,166 @@
   <!-- Contenu Principal -->
   <main class="content-wrap">
 
-    <!-- Présentation Générale -->
-    <section class="intro-card">
-      <h2 class="intro-title">À propos de ce carnet de recherche</h2>
-      <p class="intro-text">
-        Ce carnet documente pas à pas les expérimentations, la conception d'interfaces, les choix didactiques et les arbitrages techniques du projet <strong>WonderWord-UNI</strong>, développé dans le cadre du <strong>Master Humanités Numériques : parcours NET (Numérique : Enjeux et Technologies)</strong> de l'Université Paris 8 Vincennes – Saint-Denis.
-      </p>
-      <p class="intro-text">
-        L'objectif central est d'explorer comment les humanités numériques peuvent renouveler l'apprentissage des langues par la rencontre entre l'<strong>art éditorial littéraire</strong>, le <strong>traitement automatique des langues (TAL)</strong> et la <strong>phonétique acoustique computationnelle</strong>.
-      </p>
-      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:16px;">
-        <span class="tag-pill">FLE (Français Langue Étrangère)</span>
-        <span class="tag-pill">Phonétique Acoustique & Praat</span>
-        <span class="tag-pill">Shadowing Actif</span>
-        <span class="tag-pill">React & TypeScript</span>
-        <span class="tag-pill">Azure for Students</span>
-      </div>
-    </section>
-
-    <!-- Entrées Chronologiques de la Bitácora -->
-    <section>
-      <div class="timeline-heading">
-        <h2>Journal de Bord & Décisions</h2>
+    <!-- ======================================================================
+         1. ÉLIGIBILITY / CHOIX DU PROJET & GENÈSE
+         ====================================================================== -->
+    <section class="log-section">
+      <div class="section-heading">
+        <span class="section-number">Chapitre 01</span>
+        <h2 class="section-title">Genèse & Évolution du Projet</h2>
         <div class="heading-rule"></div>
       </div>
 
-      <div class="log-entries">
+      <div class="editorial-card">
+        <p>
+          <strong>WonderWord</strong> est né de la passion pour l'apprentissage des langues et d'un amour profond pour la littérature. Le projet a commencé comme une exploration expérimentale menée avec l'aide d'agents d'intelligence artificielle (Claude, Gemini, Antigravity) pour un fonctionnement initialement en <strong>local</strong>.
+        </p>
 
-        <!-- Entrée 03: Architecture Phonétique & Python -->
-        <article class="log-card">
-          <div class="log-header">
-            <div>
-              <div class="log-date-badge">
-                <i data-lucide="calendar" width="13" height="13"></i>
-                29 Septembre 2026 · Entrée #03
-              </div>
-              <h3 class="log-title">Arbitrage Didactique : Souveraineté de l'Analyse Phonétique avec Python & Praat</h3>
-            </div>
-          </div>
-          <div class="log-body">
-            <p>
-              Pour le laboratoire de <em>Shadowing</em>, nous avons confronté deux approches d'analyse acoustique : faire appel à une API commerciale propriétaire (Gemini 2.0 Flash Audio) ou déployer notre propre pipeline d'analyse phonétique ouvert en Python.
-            </p>
-            <p>
-              <strong>Décision retenue :</strong> Abandon de la dépendance exclusive aux API payantes par jetons. Nous adoptons un microservice en <strong>Python</strong> exploitant la bibliothèque <code>parselmouth</code> (portage C++ de <strong>Praat</strong>, standard académique mondial en phonétique) et des modèles de reconnaissance légère (Vosk-FR / Sherpa-ONNX) pour tourner sans GPU sur la machine virtuelle gratuite Linux B1s d'<strong>Azure for Students</strong>.
-            </p>
-            
-            <div class="phonetic-highlight">
-              <strong>Application concrète :</strong> Le calcul en millisecondes des formants acoustiques <code>F1</code> (degré d'aperture) et <code>F2</code> (lieu d'articulation antérieur/postérieur) permet d'attester scientifiquement si un apprenant hispanophone prononce la voyelle fermée antérieure arrondie <span class="ipa-badge">/y/</span> (ex: <em>tu</em>, $F_2 \approx 1900\text{ Hz}$) ou si elle est substituée par la voyelle postérieure <span class="ipa-badge">/u/</span> (ex: <em>tout</em>, $F_2 \approx 800\text{ Hz}$).
-            </div>
+        <p>
+          L'ambition initiale était de tirer le bénéfice maximal des modèles d'IA open-source exécutés sur machine locale : créer un écosystème d'apprentissage <em>libre, souverain, gratuit et entièrement personnalisable</em> par l'utilisateur.
+        </p>
 
-            <p>
-              Cette approche garantit un coût financier nul, une souveraineté totale des données vocales des utilisateurs et une valeur de recherche scientifique déterminante pour le jury du Master à Paris 8.
+        <div class="callout-box">
+          <strong>L'intuition de départ :</strong> Un lecteur universel de livres (PDF, EPUB, etc.) capable de générer une voix de haute fidélité avec sentiment, prosodie et exactitude phonétique grâce à des modèles neuronaux spécialisés comme <em>Chatterbox, XTTS, Qwen, Piper</em>. Le lecteur devait également intégrer le surlignage, les annotations marginales (<em>marginalia</em>), l'Alphabet Phonétique International (API) et tout ce dont un apprenant a besoin pour s'immerger corps et âme dans un texte en langue vivante.
+        </div>
+
+        <p>
+          <strong>La transition vers le Web et le Master HN NET :</strong><br />
+          Si l'exécution locale offrait une grande liberté, elle posait des contraintes techniques majeures (poids des modèles en gigaoctets, besoin de cartes graphiques dédiées). Dans le cadre de mon Master en Humanités Numériques (parcours NET) à l'<strong>Université Paris 8</strong>, le projet s'est réinventé : passer d'un dispositif lourd pour machine individuelle à un <strong>écosystème web léger, accessible instantanément dans le navigateur, fluide et ouvert à tous</strong>.
+        </p>
+
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:20px;">
+          <span class="tag-pill">Génèse Locale → Web</span>
+          <span class="tag-pill">TAL & Synthèse Vocale</span>
+          <span class="tag-pill">Humanités Numériques Paris 8</span>
+          <span class="tag-pill">Accessibilité FLE</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         2. LE DESIGN : AQUARELLE, PAPIER ET PROTOTYPES
+         ====================================================================== -->
+    <section class="log-section">
+      <div class="section-heading">
+        <span class="section-number">Chapitre 02</span>
+        <h2 class="section-title">L'Identité Visuelle : L'Émotion de l'Aquarelle</h2>
+        <div class="heading-rule"></div>
+      </div>
+
+      <div class="editorial-card">
+        <p>
+          J'ai toujours nourri une grande affection pour <strong>l'aquarelle</strong>. Bien que je ne sois pas peintre de métier, j'admire profondément sa transparence et la complexité qu'elle transmet : des couleurs qui, bien qu'étant « lavées » et délicates, possèdent un corps, une matérialité et un caractère inimitables.
+        </p>
+        <p>
+          C'est cette sensibilité tactile qui a guidé l'interface de WonderWord-UNI : rompre définitivement avec les tableaux de bord froids et standardisés pour concevoir une <strong>table de lecture artisanale</strong>, alliant une texture de papier pressé, une typographie éditoriale (<em>Libre Caslon Text</em>, <em>Hanken Grotesk</em>, <em>Charis SIL</em>) et notre boîte de cinq pigments littéraires : <em>Prune</em>, <em>Sauge</em>, <em>Soleil</em>, <em>Terre</em> et <em>Bleuet</em>.
+        </p>
+        <p>
+          Grâce à la collaboration avec des outils génératifs et d'assistance de conception (<strong>Google Stitch</strong>, <strong>Claude Design</strong> et <strong>Antigravity</strong>), nous avons concrétisé cette vision dans une série de prototypes interactifs haute fidélité.
+        </p>
+      </div>
+
+      <!-- Galerie des 3 Écrans Clés avec Captures & Liens Interactifs -->
+      <div class="prototype-grid">
+
+        <!-- Proto 1: Dashboard -->
+        <article class="proto-item">
+          <a href="prototype/index.html" target="_blank" class="proto-img-wrap" title="Ouvrir la démo interactive du Tableau de Bord">
+            <img src="assets/images/dashboard-prototype.png" alt="Tableau de bord WonderWord - Vue d'ensemble avec Le Petit Prince et cadre d'aquarelle" loading="lazy" />
+          </a>
+          <div class="proto-details">
+            <div class="proto-header">
+              <span class="proto-badge">Interface Principale</span>
+              <span style="font-size:12px; color:var(--ink-3);">prototype/index.html</span>
+            </div>
+            <h3 class="proto-title">1. Le Tableau de Bord (Dashboard)</h3>
+            <p class="proto-desc">
+              L'espace d'accueil quotidien de l'apprenant. Il combine la reprise immédiate de la <em>Lecture en cours</em> (avec notation phonétique en direct de <em>Le Petit Prince</em>), le suivi de la régularité (racha de jours, temps lu aujourd'hui), la métrique de révision espacée (SRS) et la <em>Palabra del día</em> mettant en relief les liaisons indispensables du français oral (ex: <code>« les‿hommes »</code>). Le cadre d'aquarelle aux quatre coins est réglable en intensité (Vivo, Suave, Ocultar).
             </p>
+            <a href="prototype/index.html" target="_blank" class="btn-demo">
+              <i data-lucide="external-link" width="15" height="15"></i>
+              Ouvrir la démo interactive du Dashboard
+            </a>
           </div>
         </article>
 
-        <!-- Entrée 02: Design Éditorial & Typographie IPA -->
-        <article class="log-card">
-          <div class="log-header">
-            <div>
-              <div class="log-date-badge">
-                <i data-lucide="calendar" width="13" height="13"></i>
-                25 Septembre 2026 · Entrée #02
-              </div>
-              <h3 class="log-title">Conception Visuelle : Métaphore du Papier Pressé & Gloses Phonétiques</h3>
+        <!-- Proto 2: Lector & Estudio -->
+        <article class="proto-item">
+          <a href="prototype/lector.html" target="_blank" class="proto-img-wrap" title="Ouvrir la démo interactive du Lecteur & Studio">
+            <img src="assets/images/reader-prototype.png" alt="Lecteur interactif WonderWord avec lettrine et Alphabet Phonétique International" loading="lazy" />
+          </a>
+          <div class="proto-details">
+            <div class="proto-header">
+              <span class="proto-badge">Cœur Pédagogique</span>
+              <span style="font-size:12px; color:var(--ink-3);">prototype/lector.html</span>
             </div>
-          </div>
-          <div class="log-body">
-            <p>
-              Rejet des interfaces de lecture stériles et standardisées au profit d'une expérience ancrée dans la tradition de l'imprimerie et de la reliure d'art française.
+            <h3 class="proto-title">2. L'Atelier de Lecture & Studio (Lector)</h3>
+            <p class="proto-desc">
+              Le cœur immersif de la plateforme. Conçu pour le respect de la typographie littéraire avec lettrine historique (drop-cap <code>J</code>), justification soignée et <strong>gloses phonétiques interactives</strong> intégrées par-dessus les mots au moyen de balises HTML sémantiques <code>&lt;ruby&gt;</code> et <code>&lt;rt&gt;</code> (ex: <ruby>Sahara<rt>/sa.a.ʁa/</rt></ruby>, <ruby>réparation<rt>/ʁe.pa.ʁa.sjɔ̃/</rt></ruby>, <ruby>dessine-moi<rt>/de.sin.mwa/</rt></ruby>). Il intègre les bascules de mode (/reader vs /reader/1), les filtres de rétention mémorielle et la barre d'écoute audio.
             </p>
-            <p>
-              Mise en place de la <strong>Caisse de cinq pigments littéraires</strong> : <em>Prune</em> (#53335a), <em>Sauge</em> (#006a64), <em>Soleil</em> (#ffcd11), <em>Terre</em> (#c4632f) et <em>Bleuet</em> (#7b9bd1), associés à un filtre SVG de texture papier pressé (<em>mix-blend-mode: multiply</em>).
-            </p>
-            <p>
-              Intégration de la police de référence mondiale pour la phonétique, <strong>Charis SIL</strong>, et utilisation sémantique des balises HTML :
-              <span style="font-family:'Libre Caslon Text',serif; font-size:18px; margin-left:8px;">
-                <ruby>planète<rt>planɛt</rt></ruby> · <ruby>raisons<rt>ʁɛzɔ̃</rt></ruby>
-              </span>
-            </p>
+            <a href="prototype/lector.html" target="_blank" class="btn-demo">
+              <i data-lucide="external-link" width="15" height="15"></i>
+              Ouvrir la démo interactive du Lecteur
+            </a>
           </div>
         </article>
 
-        <!-- Entrée 01: Genèse & Cadrage Didactique -->
-        <article class="log-card">
-          <div class="log-header">
-            <div>
-              <div class="log-date-badge">
-                <i data-lucide="calendar" width="13" height="13"></i>
-                23 Septembre 2026 · Entrée #01
-              </div>
-              <h3 class="log-title">Genèse : Quand l'Amour de la Littérature Rencontre le Shadowing Vivant</h3>
+        <!-- Proto 3: Biblioteca -->
+        <article class="proto-item">
+          <a href="prototype/biblioteca.html" target="_blank" class="proto-img-wrap" title="Ouvrir la démo interactive de la Bibliothèque">
+            <img src="assets/images/library-prototype.png" alt="Bibliothèque littéraire avec étagères et catalogue Gutenberg" loading="lazy" />
+          </a>
+          <div class="proto-details">
+            <div class="proto-header">
+              <span class="proto-badge">Sanctuaire & Catalogue</span>
+              <span style="font-size:12px; color:var(--ink-3);">prototype/biblioteca.html</span>
             </div>
-          </div>
-          <div class="log-body">
-            <p>
-              La lecture en langue étrangère souffre fréquemment d'une fracture entre la compréhension passive et l'incapacité d'articuler à l'oral les œuvres lues.
+            <h3 class="proto-title">3. La Bibliothèque Littéraire (Biblioteca)</h3>
+            <p class="proto-desc">
+              Gestion de l'étagère de lecture personnelle et passerelle vers plus de 70 000 ouvrages classiques du domaine public (catalogues Gutenberg et Gallica/BNF). Chaque livre affiche son niveau CECRL (ex: <em>Français A2</em>, <em>Deutsch B1</em>), le pourcentage de vocabulaire connu et l'état audio. Elle inaugure également le concept de <strong>Club de Lecture Social</strong> avec export et import de livres enrichis d'annotations (format <code>.wwbook</code>).
             </p>
-            <p>
-              Le projet <strong>WonderWord-UNI</strong> naît de la volonté de combler ce fossé par le <em>Shadowing phonétique</em> : l'apprenant écoute la prosodie littéraire, enregistre sa voix, et reçoit un diagnostic immédiat sur son rythme et les phonèmes critiques (voyelles nasales, <em>liaisons</em> obligatoires).
-            </p>
+            <a href="prototype/biblioteca.html" target="_blank" class="btn-demo">
+              <i data-lucide="external-link" width="15" height="15"></i>
+              Ouvrir la démo interactive de la Bibliothèque
+            </a>
           </div>
         </article>
 
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         3. RECHERCHE EN TAL & LABORATOIRE PHONÉTIQUE
+         ====================================================================== -->
+    <section class="log-section">
+      <div class="section-heading">
+        <span class="section-number">Chapitre 03</span>
+        <h2 class="section-title">Le Laboratoire Phonétique : Souveraineté & Praat</h2>
+        <div class="heading-rule"></div>
+      </div>
+
+      <div class="editorial-card">
+        <p>
+          Un dilemme majeur d'architecture a été résolu lors de cette étape : <em>comment effectuer l'analyse acoustique des enregistrements de Shadowing de l'apprenant sans dépendre d'API commerciales coûteuses (Gemini/OpenAI) qui épuiseraient les crédits et poseraient des problèmes de confidentialité des données vocales ?</em>
+        </p>
+
+        <p>
+          <strong>Choix scientifique retenu pour le Master Paris 8 :</strong><br />
+          Déployer un microservice souverain en <strong>Python</strong> hébergé sur les services gratuits d'Azure (Azure for Students - Machine virtuelle Linux B1s). Ce service s'appuie sur la bibliothèque <code>parselmouth</code> (moteur de <strong>Praat</strong>, référence mondiale en phonétique de laboratoire) couplée à un modèle acoustique léger (<em>Vosk-FR / Sherpa-ONNX</em>).
+        </p>
+
+        <div class="callout-box">
+          <strong>Principe acoustique formantique :</strong><br />
+          Pour détecter si un hispanophone prononce correctement la voyelle fermée antérieure arrondie française <span class="ipa-sample">/y/</span> (comme dans <em>« tu »</em>) ou s'il la remplace par la voyelle fermée postérieure <span class="ipa-sample">/u/</span> (comme dans <em>« tout »</em>), l'algorithme calcule les formants acoustiques $F_1$ et $F_2$ en millisecondes :
+          <ul style="margin: 10px 0 0 20px; font-size: 14.5px;">
+            <li>Pour <span class="ipa-sample">/y/</span> : $F_1 \approx 250\text{ Hz}$, $F_2 \approx 1900\text{ Hz}$ (position linguale antérieure avec projection labiale).</li>
+            <li>Pour <span class="ipa-sample">/u/</span> : $F_1 \approx 250\text{ Hz}$, $F_2 \approx 800\text{ Hz}$ (position linguale postérieure).</li>
+          </ul>
+        </div>
+
+        <p>
+          Ce pipeline open-source s'exécute avec moins de 150 Mo de RAM, sans GPU, garantit la gratuité perpétuelle du système et apporte une réelle valeur de recherche expérimentale pour la soutenance de diplôme.
+        </p>
       </div>
     </section>
 
@@ -453,11 +546,11 @@
   <!-- Pied de page -->
   <footer class="site-footer">
     <p>
-      <strong>WonderWord-UNI</strong> · Projet de recherche-création pour le Master Humanités Numériques (NET) · 
-      <a href="https://www.univ-paris8.fr/" target="_blank">Université Paris 8</a>
+      <strong>WonderWord-UNI</strong> · Carnet de recherche pour le Master Humanités Numériques : parcours NET · 
+      <a href="https://www.univ-paris8.fr/" target="_blank">Université Paris 8 Vincennes – Saint-Denis</a>
     </p>
     <p style="margin-top:6px;">
-      Dépôt officiel : <a href="https://github.com/luisbetancourtd/WonderWord-UNI" target="_blank">luisbetancourtd/WonderWord-UNI</a> · Déployé via GitHub Pages
+      Auteur : <strong>Luis Betancourt D.</strong> · Dépôt GitHub : <a href="https://github.com/luisbetancourtd/WonderWord-UNI" target="_blank">luisbetancourtd/WonderWord-UNI</a>
     </p>
   </footer>
 

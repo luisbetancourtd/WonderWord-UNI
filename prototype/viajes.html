@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WonderWord — Viajes & Expediciones Literarias (WonderWorlds)</title>
+
+  <!-- Fuentes Literarias -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Hanken+Grotesk:wght@400;500;600;700;800;900&family=Charis+SIL:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@0.462.0/dist/umd/lucide.js"></script>
+
+  <style>
+    :root {
+      /* ── Paleta de Pigmentos Literarios ── */
+      --prune: #53335a;
+      --prune-2: #6d4576;
+      --prune-wash: rgba(83, 51, 90, 0.08);
+      --prune-glow: rgba(83, 51, 90, 0.35);
+      
+      --sauge: #006a64;
+      --sauge-2: #0e8880;
+      --sauge-wash: rgba(0, 106, 100, 0.09);
+      --sauge-glow: rgba(0, 106, 100, 0.35);
+      
+      --soleil: #ffcd11;
+      --soleil-ink: #463605;
+      --soleil-wash: rgba(255, 205, 17, 0.18);
+      
+      --terre: #c4632f;
+      --terre-2: #dc7238;
+      --terre-ink: #9c4a1e;
+      --terre-wash: rgba(196, 99, 47, 0.12);
+      
+      --bleuet: #7b9bd1;
+      --bleuet-2: #5b81c2;
+      --bleuet-ink: #32538a;
+      --bleuet-wash: rgba(123, 155, 209, 0.14);
+
+      --canvas: #fbf7ee;
+      --paper: #ffffff;
+      --paper-warm: #fcf9f2;
+      --paper-2: #f4ecdc;
+      --ink: #241d24;
+      --ink-2: #4f4550;
+      --ink-3: #756a77;
+      --rule: rgba(36, 29, 36, 0.12);
+      --rule-soft: rgba(36, 29, 36, 0.06);
+
+      --rail: #282031;
+      --rail-2: #342a3e;
+      --rail-ink: #f2ecf1;
+      --rail-ink-2: #a99fac;
+      --rail-ink-3: #9c92a0;
+      --rail-rule: rgba(255, 255, 255, 0.11);
+      --grain: 0.085;
+      --tooth: 0.5;
+      --vignette-opacity: 0.85;
+    }
+
+    [data-theme="sepia"] {
+      --canvas: #f4ecdb; --paper: #faf4e8; --paper-warm: #f7eedb; --paper-2: #ebdcc2;
+      --ink: #2a2211; --ink-2: #5b4e33; --ink-3: #7b6d4f;
+      --rule: rgba(56, 44, 20, 0.16); --rule-soft: rgba(56, 44, 20, 0.08);
+      --rail: #272014; --rail-2: #33291a; --rail-ink: #f1eade; --rail-ink-2: #ab9f8a; --rail-ink-3: #a0957f;
+      --rail-rule: rgba(255, 255, 255, 0.11); --grain: 0.1; --tooth: 0.6; --vignette-opacity: 0.7;
+    }
+
+    [data-theme="noche"] {
+      --prune: #d7b3de; --prune-2: #e5c8eb; --prune-wash: rgba(215, 179, 222, 0.12);
+      --sauge: #7fd2c9; --sauge-2: #9fe0d8; --sauge-wash: rgba(127, 210, 201, 0.12);
+      --soleil: #ffcd11; --soleil-ink: #ffe9ad; --soleil-wash: rgba(255, 205, 17, 0.16);
+      --terre: #e08a56; --terre-2: #efa172; --terre-ink: #e8996a; --terre-wash: rgba(224, 138, 86, 0.14);
+      --bleuet: #96b0dd; --bleuet-2: #adc2e8; --bleuet-ink: #a6bde5; --bleuet-wash: rgba(150, 176, 221, 0.15);
+      --canvas: #15131a; --paper: #1e1a26; --paper-warm: #231f2c; --paper-2: #2b2536;
+      --ink: #f2ecf3; --ink-2: #b8b0bb; --ink-3: #8e8492;
+      --rule: rgba(236, 230, 237, 0.15); --rule-soft: rgba(236, 230, 237, 0.08);
+      --rail: #100e14; --rail-2: #1b1822; --rail-ink: #ece6ed; --rail-ink-2: #9b929d; --rail-ink-3: #968e99;
+      --rail-rule: rgba(255, 255, 255, 0.1); --grain: 0.06; --tooth: 0.35; --vignette-opacity: 0.35;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      margin: 0;
+      background: var(--canvas);
+      color: var(--ink);
+      font-family: 'Hanken Grotesk', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    a { color: var(--ink); text-decoration: none; }
+    svg.lucide { display: block; stroke-width: 1.6; }
+
+    /* Textura de papel prensado */
+    .paper-texture {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 60;
+      mix-blend-mode: multiply;
+      opacity: var(--grain);
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    /* Marco de acuarela en 4 esquinas */
+    .vignette-container {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      mix-blend-mode: multiply;
+      opacity: var(--vignette-opacity);
+      overflow: hidden;
+    }
+    .corner-top-left {
+      position: absolute; left: -60px; top: -60px; width: 440px; height: 380px;
+      background: radial-gradient(circle at 20% 20%, #4a94e8 0%, #75a7e6 42%, #a8cbfa 70%, transparent 88%);
+      border-radius: 46% 54% 48% 52% / 52% 48% 54% 46%; filter: url(#wc-vignette-heavy); opacity: 0.85;
+    }
+    .corner-top-right {
+      position: absolute; right: -80px; top: -60px; width: 460px; height: 360px;
+      background: radial-gradient(circle at 80% 20%, #e0548a 0%, #eb77a5 40%, #f6aec9 72%, transparent 88%);
+      border-radius: 54% 46% 52% 48% / 48% 54% 46% 54%; filter: url(#wc-vignette-heavy); opacity: 0.82;
+    }
+    .corner-bottom-left {
+      position: absolute; left: -70px; bottom: -70px; width: 480px; height: 380px;
+      background: radial-gradient(circle at 20% 80%, #d8682a 0%, #e88c54 44%, #f5b98f 72%, transparent 88%);
+      border-radius: 50% 50% 46% 54% / 54% 46% 52% 48%; filter: url(#wc-vignette-heavy); opacity: 0.82;
+    }
+    .corner-bottom-right {
+      position: absolute; right: -70px; bottom: -60px; width: 460px; height: 380px;
+      background: radial-gradient(circle at 80% 80%, #f0a818 0%, #f5c448 42%, #fae290 74%, transparent 88%);
+      border-radius: 48% 52% 54% 46% / 46% 54% 48% 52%; filter: url(#wc-vignette-heavy); opacity: 0.84;
+    }
+
+    /* Pestañas de Expedición (Selector de Idiomas) */
+    .journey-selector-bar {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 24px;
+    }
+    .journey-tab-card {
+      background: var(--paper);
+      border: 1px solid var(--rule);
+      border-radius: 18px;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+    .journey-tab-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--sauge);
+    }
+    .journey-tab-card.active {
+      border-color: var(--sauge);
+      background: var(--paper-warm);
+      box-shadow: 0 6px 20px -6px var(--sauge-glow);
+    }
+
+    /* Hero de la Expedición Activa */
+    .journey-hero-card {
+      background: var(--paper);
+      border-radius: 26px;
+      padding: 34px 40px;
+      border: 1px solid var(--rule);
+      box-shadow: 0 1px 3px rgba(36,29,36,0.03), 0 20px 48px -20px rgba(36,29,36,0.14);
+      margin-bottom: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Timeline de la Ruta de Estaciones */
+    .stations-track-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      margin: 32px 0 16px;
+      gap: 12px;
+    }
+    .stations-track-line {
+      position: absolute;
+      top: 26px;
+      left: 40px;
+      right: 40px;
+      height: 4px;
+      background: var(--rule-soft);
+      z-index: 1;
+    }
+    .stations-track-progress {
+      position: absolute;
+      top: 26px;
+      left: 40px;
+      width: 45%;
+      height: 4px;
+      background: var(--sauge);
+      z-index: 2;
+      transition: width 0.4s ease;
+    }
+
+    .station-node-card {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-width: 100px;
+    }
+    .station-node-card:hover { transform: translateY(-3px); }
+    
+    .station-node-bubble {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: var(--paper);
+      border: 2px solid var(--rule);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(36,29,36,0.06);
+      margin-bottom: 8px;
+      transition: all 0.2s ease;
+    }
+    .station-node-card.completed .station-node-bubble {
+      background: var(--sauge);
+      border-color: var(--sauge);
+      color: #fff;
+    }
+    .station-node-card.active .station-node-bubble {
+      background: var(--soleil);
+      border-color: var(--soleil-ink);
+      color: var(--soleil-ink);
+      box-shadow: 0 0 0 6px var(--soleil-wash);
+    }
+    .station-node-card.locked .station-node-bubble {
+      background: var(--paper-warm);
+      border-color: var(--rule-soft);
+      color: var(--ink-3);
+      cursor: not-allowed;
+    }
+
+    /* Visor de Lección Interactiva */
+    .lesson-view-card {
+      background: var(--paper);
+      border-radius: 24px;
+      border: 1px solid var(--rule);
+      padding: 34px 38px;
+      box-shadow: 0 12px 34px -15px rgba(36,29,36,0.1);
+    }
+
+    .character-bubble {
+      background: var(--paper-warm);
+      border: 1px solid var(--rule);
+      border-radius: 20px;
+      padding: 18px 22px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      margin-bottom: 24px;
+      position: relative;
+    }
+    .character-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--prune-wash);
+      color: var(--prune);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      border: 1px solid var(--rule);
+    }
+
+    /* Mini-Reader de la Lección */
+    .mini-reader-box {
+      background: var(--paper-warm);
+      border-left: 3px solid var(--sauge);
+      border-radius: 0 16px 16px 0;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      font-family: 'Libre Caslon Text', serif;
+      font-size: 18px;
+      line-height: 1.8;
+      color: var(--ink);
+    }
+    ruby { ruby-position: over; }
+    rt { font-family: 'Charis SIL', serif; font-size: 11px; color: var(--sauge); font-weight: 700; }
+
+    /* Ejercicios Interactivos */
+    .exercise-box {
+      background: var(--paper-warm);
+      border: 1px solid var(--rule);
+      border-radius: 18px;
+      padding: 20px 24px;
+      margin-bottom: 20px;
+    }
+    .match-pill {
+      background: var(--paper);
+      border: 1px solid var(--rule);
+      border-radius: 999px;
+      padding: 7px 16px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--ink);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .match-pill:hover { border-color: var(--sauge); background: var(--sauge-wash); }
+    .match-pill.selected { background: var(--sauge); color: #fff; border-color: var(--sauge); }
+
+    @media (max-width: 920px) {
+      [data-rail] { display: none !important; }
+      [data-main] { margin-left: 0 !important; }
+      .stations-track-container { flex-direction: column; align-items: stretch; gap: 16px; }
+      .stations-track-line, .stations-track-progress { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PIPELINE DE FILTROS SVG -->
+  <svg aria-hidden="true" width="0" height="0" style="position:absolute; pointer-events:none;">
+    <defs>
+      <filter id="wc-vignette-heavy" x="-35%" y="-35%" width="170%" height="170%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="14" result="blur" />
+        <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="4" seed="31" result="noise" />
+        <feDisplacementMap in="blur" in2="noise" scale="58" xChannelSelector="R" yChannelSelector="G" result="disp" />
+        <feComponentTransfer in="disp"><feFuncA type="table" tableValues="0 0.45 0.78 0.94 1" /></feComponentTransfer>
+      </filter>
+      <filter id="wc4" x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" seed="61" result="n" />
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="9" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </defs>
+  </svg>
+
+  <div class="paper-texture"></div>
+
+  <!-- MARCO DE ACUARELA EN 4 ESQUINAS -->
+  <div class="vignette-container">
+    <div class="corner-top-left"></div>
+    <div class="corner-top-right"></div>
+    <div class="corner-bottom-left"></div>
+    <div class="corner-bottom-right"></div>
+  </div>
+
+  <div style="min-height:100vh; display:flex;">
+
+    <!-- ======================================================================
+         BARRA LATERAL (RAIL 100% CONECTADO E IDÉNTICO)
+         ====================================================================== -->
+    <aside data-rail style="position:fixed; left:0; top:0; height:100%; width:252px; background:var(--rail,#282031); display:flex; flex-direction:column; z-index:40; box-sizing:border-box; overflow:hidden;">
+      <div aria-hidden="true" style="position:absolute; inset:0; pointer-events:none; background:radial-gradient(120% 55% at 12% 0%, rgba(196,99,47,.20), transparent 62%), radial-gradient(100% 48% at 92% 42%, rgba(0,106,100,.20), transparent 66%), radial-gradient(120% 46% at 0% 100%, rgba(123,155,209,.16), transparent 60%);"></div>
+      <div aria-hidden="true" style="position:absolute; inset:0; pointer-events:none; mix-blend-mode:overlay; opacity:var(--tooth,.5); background-image:url(&quot;data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjAiIGhlaWdodD0iMTYwIj48ZmlsdGVyIGlkPSJuIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC44IiBudW1PY3RhdmVzPSI0IiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjE2MCIgaGVpZ2h0PSIxNjAiIGZpbHRlcj0idXJsKCNuKSIvPjwvc3ZnPg==&quot;);"></div>
+
+      <div style="position:relative; padding:26px 26px 22px; border-bottom:1px solid var(--rail-rule,rgba(255,255,255,.11));">
+        <h1 style="font-family:'Libre Caslon Text',serif; font-size:21px; font-weight:400; letter-spacing:-0.02em; color:var(--rail-ink,#f2ecf1); line-height:1; margin:0 0 7px;">WonderWord</h1>
+        <span style="font-size:9px; text-transform:uppercase; letter-spacing:.2em; font-weight:600; color:var(--rail-ink-3,#9c92a0);">Inmersión literaria</span>
+      </div>
+
+            <nav style="position:relative; flex:1; overflow-y:auto; padding:22px 0;">
+        <p style="font-size:9px; text-transform:uppercase; letter-spacing:.2em; font-weight:600; color:var(--rail-ink-3,#9c92a0); margin:0 0 10px; padding:0 26px;">Lectura</p>
+        <a href="index.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="layout-dashboard" width="16" height="16"></i>
+          <span style="flex:1;">Dashboard</span>
+          
+        </a>
+        <a href="biblioteca.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="book-open" width="16" height="16"></i>
+          <span style="flex:1;">Biblioteca</span>
+          
+        </a>
+        <a href="lector.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="book-open-check" width="16" height="16"></i>
+          <span style="flex:1;">Lector & Estudio</span>
+          
+        </a>
+        <p style="font-size:9px; text-transform:uppercase; letter-spacing:.2em; font-weight:600; color:var(--rail-ink-3,#9c92a0); margin:26px 0 10px; padding:0 26px;">Práctica & Memoria</p>
+        <a href="vocabulario.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="brain" width="16" height="16"></i>
+          <span style="flex:1;">Vocabulario & Repaso</span>
+          <span style="font-family:'Libre Caslon Text',serif; font-size:13px; color:var(--soleil,#ffcd11);">18</span>
+        </a>
+        <a href="shadowing.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="mic" width="16" height="16"></i>
+          <span style="flex:1;">Shadowing & Fonética</span>
+          
+        </a>
+        <a href="inmersion.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="film" width="16" height="16"></i>
+          <span style="flex:1;">Inmersión Streaming</span>
+          
+        </a>
+        <p style="font-size:9px; text-transform:uppercase; letter-spacing:.2em; font-weight:600; color:var(--rail-ink-3,#9c92a0); margin:26px 0 10px; padding:0 26px;">Progreso & Exploración</p>
+        <a href="logros.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="award" width="16" height="16"></i>
+          <span style="flex:1;">Logros & Maestría</span>
+          
+        </a>
+        <a href="organizador.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="calendar" width="16" height="16"></i>
+          <span style="flex:1;">Organizador</span>
+          
+        </a>
+        <a href="#" style="position:relative; display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:600; color:var(--rail-ink,#f2ecf1);">
+          <span aria-hidden="true" style="position:absolute; inset:1px 16px 1px 0; background:rgba(255,255,255,.10); border-radius:0 999px 999px 0; filter:url(#wc4);"></span>
+          <span aria-hidden="true" style="position:absolute; left:0; top:4px; bottom:4px; width:3px; background:var(--soleil,#ffcd11); filter:url(#wc4);"></span>
+          <i data-lucide="compass" width="16" height="16" style="position:relative; color:var(--soleil);"></i>
+          <span style="position:relative; flex:1;">Viajes</span>
+          
+        </a>
+        <a href="tienda.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="shopping-bag" width="16" height="16"></i>
+          <span style="flex:1;">Tienda</span>
+          
+        </a>
+        <a href="ajustes.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="settings" width="16" height="16"></i>
+          <span style="flex:1;">Ajustes</span>
+          
+        </a>
+      </nav>
+
+      <!-- WIDGET INFERIOR IDÉNTICO -->
+      <div style="position:relative; padding:18px 26px 22px; border-top:1px solid var(--rail-rule,rgba(255,255,255,.11)); display:flex; align-items:center; gap:14px;">
+        <span style="position:relative; width:52px; height:52px; flex-shrink:0; display:block;">
+          <svg viewBox="0 0 52 52" width="52" height="52" style="display:block; transform:rotate(-90deg);">
+            <circle cx="26" cy="26" r="22" fill="none" stroke="rgba(255,255,255,.13)" stroke-width="5"></circle>
+            <circle cx="26" cy="26" r="22" fill="none" stroke="var(--sauge-2,#0f8c84)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138.2" stroke-dashoffset="55.2" style="filter:url(#wc4);"></circle>
+          </svg>
+          <span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Libre Caslon Text',serif; font-size:13px; color:var(--rail-ink,#f2ecf1); font-variant-numeric:tabular-nums;">18</span>
+        </span>
+        <div style="min-width:0;">
+          <p style="font-size:11.5px; color:var(--rail-ink-2,#a99fac); margin:0; line-height:1.4;">18 de 30 min hoy</p>
+          <p style="font-size:11px; color:var(--soleil,#ffcd11); margin:4px 0 0; line-height:1.4; font-weight:600;">Racha de 14 días</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ======================================================================
+         CONTENIDO PRINCIPAL: VIAJES (WONDERWORLDS)
+         ====================================================================== -->
+    <div data-main style="flex:1; display:flex; flex-direction:column; margin-left:252px; min-width:0; position:relative;">
+      
+      <!-- TOPBAR -->
+      <header style="position:sticky; top:0; z-index:30; background:var(--rail,#282031); height:56px; padding:0 40px; display:flex; align-items:center; justify-content:space-between; overflow:hidden;">
+        <div aria-hidden="true" style="position:absolute; inset:0; pointer-events:none; background:radial-gradient(90% 200% at 6% 50%, rgba(196,99,47,.2), transparent 58%), radial-gradient(70% 180% at 74% 50%, rgba(0,106,100,.2), transparent 62%), radial-gradient(60% 160% at 100% 50%, rgba(123,155,209,.16), transparent 60%);"></div>
+        <div style="position:relative; display:flex; align-items:center; gap:10px; font-size:11.5px; color:var(--rail-ink-2,#a99fac); letter-spacing:.02em;">
+          <span>Progreso & Rutina</span><span style="color:var(--rail-ink-3,#9c92a0);">/</span><span style="color:#fff; font-weight:600;">Viajes (WonderWorlds)</span>
+        </div>
+        <div style="position:relative; display:flex; align-items:center; gap:22px;">
+          <div style="display:flex; align-items:center; gap:3px; padding:3px; background:rgba(0,0,0,.3); border-radius:999px;">
+            <button type="button" onclick="setTheme('papel')" id="tab-papel" title="Papel" style="display:flex; align-items:center; justify-content:center; width:28px; height:26px; border:none; border-radius:999px; cursor:pointer; background:var(--soleil,#ffcd11); color:#463605;"><i data-lucide="sun" width="14" height="14"></i></button>
+            <button type="button" onclick="setTheme('sepia')" id="tab-sepia" title="Sepia" style="display:flex; align-items:center; justify-content:center; width:28px; height:26px; border:none; border-radius:999px; cursor:pointer; background:transparent; color:var(--rail-ink-3,#9c92a0);"><i data-lucide="book" width="14" height="14"></i></button>
+            <button type="button" onclick="setTheme('noche')" id="tab-noche" title="Noche" style="display:flex; align-items:center; justify-content:center; width:28px; height:26px; border:none; border-radius:999px; cursor:pointer; background:transparent; color:var(--rail-ink-3,#9c92a0);"><i data-lucide="moon" width="14" height="14"></i></button>
+          </div>
+          <span style="width:1px; height:18px; background:var(--rail-rule,rgba(255,255,255,.11));"></span>
+          <span style="font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--rail-ink-2,#a99fac); font-weight:600;">Kevin</span>
+        </div>
+      </header>
+
+      <main style="flex:1; padding:44px 56px 88px; max-width:1340px; margin:0 auto; width:100%; box-sizing:border-box; position:relative; z-index:10;">
+
+        <!-- CABECERA PRINCIPAL -->
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:24px; margin-bottom:28px; flex-wrap:wrap;">
+          <div>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+              <span style="width:8px; height:8px; border-radius:50%; background:var(--sauge);"></span>
+              <p style="font-size:9.5px; text-transform:uppercase; letter-spacing:.22em; font-weight:700; color:var(--sauge); margin:0;">Expediciones Literarias & Culturales</p>
+            </div>
+            <h1 style="font-family:'Libre Caslon Text',serif; font-size:44px; line-height:1.05; letter-spacing:-0.03em; color:var(--ink); margin:0; font-weight:400;">Viajes</h1>
+          </div>
+          <p style="font-size:13px; color:var(--ink-2); max-width:420px; text-align:right; margin:0;">
+            Aprende cada nivel a través de una expedición viva guiada por un personaje nativo en su universo cultural.
+          </p>
+        </div>
+
+        <!-- SELECTOR DE EXPEDICIONES POR IDIOMA -->
+        <div class="journey-selector-bar">
+          <div class="journey-tab-card active" onclick="selectJourney('fr')">
+            <span style="font-size:18px;">🇫🇷</span>
+            <div>
+              <h4 style="font-family:'Libre Caslon Text',serif; font-size:14px; color:var(--ink); margin:0;">París con Camille</h4>
+              <p style="font-size:11px; color:var(--sauge); font-weight:700; margin:0;">Francés A1 · 68% Completado</p>
+            </div>
+          </div>
+
+          <div class="journey-tab-card" onclick="selectJourney('de')">
+            <span style="font-size:18px;">🇩🇪</span>
+            <div>
+              <h4 style="font-family:'Libre Caslon Text',serif; font-size:14px; color:var(--ink); margin:0;">El Zauberwald de Grimm</h4>
+              <p style="font-size:11px; color:var(--ink-3); margin:0;">Alemán A1 · 80% Completado</p>
+            </div>
+          </div>
+
+          <div class="journey-tab-card" onclick="selectJourney('en')">
+            <span style="font-size:18px;">🇬🇧</span>
+            <div>
+              <h4 style="font-family:'Libre Caslon Text',serif; font-size:14px; color:var(--ink); margin:0;">El Londres Victoriano</h4>
+              <p style="font-size:11px; color:var(--ink-3); margin:0;">Inglés B1 · 12% Comenzado</p>
+            </div>
+          </div>
+
+          <div class="journey-tab-card" onclick="selectJourney('ru')">
+            <span style="font-size:18px;">🇷🇺</span>
+            <div>
+              <h4 style="font-family:'Libre Caslon Text',serif; font-size:14px; color:var(--ink); margin:0;">Noches Blancas de San Petersburgo</h4>
+              <p style="font-size:11px; color:var(--ink-3); margin:0;">Ruso A1 · Nuevo</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ======================================================================
+             HERO: MAPA DE RUTA DE LA EXPEDICIÓN ACTIVA
+             ====================================================================== -->
+        <section class="journey-hero-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:20px; border-bottom:1px solid var(--rule-soft); padding-bottom:18px;">
+            <div>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span style="font-size:10px; text-transform:uppercase; letter-spacing:.14em; font-weight:800; color:var(--sauge); background:var(--sauge-wash); padding:2px 8px; border-radius:999px;">Módulo 3 en Curso</span>
+                <span style="font-size:12px; color:var(--ink-3);">25 Lecciones Progresivas · Camille como guía</span>
+              </div>
+              <h2 id="journey-title" style="font-family:'Libre Caslon Text',serif; font-size:28px; color:var(--ink); margin:6px 0 2px; font-weight:400;">Francés A1 — Descubriendo París</h2>
+              <p style="font-size:13px; color:var(--ink-2); margin:0;">Un viaje desde <em>«Bonjour»</em> hasta tus primeras conversaciones en los cafés de Montmartre.</p>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:14px;">
+              <div style="text-align:right;">
+                <span style="font-size:11px; color:var(--ink-3);">Progreso del Viaje</span>
+                <p style="font-family:'Libre Caslon Text',serif; font-size:20px; font-weight:700; color:var(--ink); margin:0;">17 de 25 lecciones</p>
+              </div>
+              <div style="width:48px; height:48px; border-radius:50%; background:var(--sauge-wash); display:flex; align-items:center; justify-content:center; color:var(--sauge); font-weight:800; font-size:13px;">
+                68%
+              </div>
+            </div>
+          </div>
+
+          <!-- RUTA DE ESTACIONES INTERACTIVAS -->
+          <div class="stations-track-container">
+            <div class="stations-track-line"></div>
+            <div class="stations-track-progress"></div>
+
+            <!-- Estación 1: Montmartre -->
+            <div class="station-node-card completed" onclick="selectStation(1, 'Montmartre: Salutations & Présentation', '5/5 Lecciones')">
+              <div class="station-node-bubble">
+                <i data-lucide="check" width="20" height="20"></i>
+              </div>
+              <span style="font-size:12px; font-weight:700; color:var(--ink);">1. Montmartre</span>
+              <span style="font-size:10px; color:var(--sauge); font-weight:700;">5/5 Hechas</span>
+            </div>
+
+            <!-- Estación 2: Café de Flore -->
+            <div class="station-node-card completed" onclick="selectStation(2, 'Café de Flore: Le Présent & Boissons', '5/5 Lecciones')">
+              <div class="station-node-bubble">
+                <i data-lucide="check" width="20" height="20"></i>
+              </div>
+              <span style="font-size:12px; font-weight:700; color:var(--ink);">2. Café de Flore</span>
+              <span style="font-size:10px; color:var(--sauge); font-weight:700;">5/5 Hechas</span>
+            </div>
+
+            <!-- Estación 3: Quais de Seine (Activa) -->
+            <div class="station-node-card active" onclick="selectStation(3, 'Quais de Seine: Verbes en -er & Promenade', '2/5 Lecciones')">
+              <div class="station-node-bubble">
+                <i data-lucide="compass" width="22" height="22"></i>
+              </div>
+              <span style="font-size:12px; font-weight:800; color:var(--prune);">3. Quais de Seine</span>
+              <span style="font-size:10px; color:var(--soleil-ink); font-weight:800; background:var(--soleil); padding:1px 6px; border-radius:4px; margin-top:2px;">Activa (Lecc. 3)</span>
+            </div>
+
+            <!-- Estación 4: Le Marais -->
+            <div class="station-node-card locked" onclick="alert('Estación bloqueada. Completa primero el Módulo 3 en Quais de Seine.')">
+              <div class="station-node-bubble">
+                <i data-lucide="lock" width="18" height="18"></i>
+              </div>
+              <span style="font-size:12px; font-weight:600; color:var(--ink-3);">4. Le Marais</span>
+              <span style="font-size:10px; color:var(--ink-3);">Bloqueada</span>
+            </div>
+
+            <!-- Estación 5: Tour Eiffel -->
+            <div class="station-node-card locked" onclick="alert('Estación final bloqueada.')">
+              <div class="station-node-bubble">
+                <i data-lucide="award" width="18" height="18"></i>
+              </div>
+              <span style="font-size:12px; font-weight:600; color:var(--ink-3);">5. Tour Eiffel</span>
+              <span style="font-size:10px; color:var(--ink-3);">Examen Final</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ======================================================================
+             PANEL DE DETALLE: LA LECCIÓN EN CURSO CON CAMILLE
+             ====================================================================== -->
+        <div style="display:grid; grid-template-columns: 1fr 1.15fr; gap:32px; align-items:start;">
+          
+          <!-- COLUMNA IZQUIERDA: ÍNDICE DE LECCIONES DEL MÓDULO 3 -->
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+              <div>
+                <span style="font-size:9.5px; text-transform:uppercase; letter-spacing:.18em; font-weight:800; color:var(--sauge);">Estación Seleccionada</span>
+                <h3 id="station-detail-title" style="font-family:'Libre Caslon Text',serif; font-size:22px; color:var(--ink); margin:2px 0 0;">Módulo 3: Quais de Seine</h3>
+              </div>
+              <span style="font-size:11px; font-weight:700; color:var(--ink-3);">45 min estimados</span>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              
+              <!-- Lección 1 (Completada) -->
+              <div style="background:var(--paper); border:1px solid var(--rule); border-radius:16px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                  <div style="width:28px; height:28px; border-radius:50%; background:var(--sauge); color:#fff; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800;">
+                    <i data-lucide="check" width="14" height="14"></i>
+                  </div>
+                  <div>
+                    <h4 style="font-size:13.5px; font-weight:700; color:var(--ink); margin:0 0 2px;">1. Les verbes en -er au présent</h4>
+                    <p style="font-size:11px; color:var(--ink-3); margin:0;">Marcher, parler, regarder · 10 min</p>
+                  </div>
+                </div>
+                <span style="font-size:10px; font-weight:700; color:var(--sauge); background:var(--sauge-wash); padding:2px 6px; border-radius:4px;">Completada</span>
+              </div>
+
+              <!-- Lección 2 (Completada) -->
+              <div style="background:var(--paper); border:1px solid var(--rule); border-radius:16px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                  <div style="width:28px; height:28px; border-radius:50%; background:var(--sauge); color:#fff; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800;">
+                    <i data-lucide="check" width="14" height="14"></i>
+                  </div>
+                  <div>
+                    <h4 style="font-size:13.5px; font-weight:700; color:var(--ink); margin:0 0 2px;">2. Demander son chemin</h4>
+                    <p style="font-size:11px; color:var(--ink-3); margin:0;">Où est la gare ? Tournez à gauche · 10 min</p>
+                  </div>
+                </div>
+                <span style="font-size:10px; font-weight:700; color:var(--sauge); background:var(--sauge-wash); padding:2px 6px; border-radius:4px;">Completada</span>
+              </div>
+
+              <!-- Lección 3 (ACTIVA) -->
+              <div style="background:var(--paper); border:2px solid var(--soleil); border-radius:16px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; box-shadow:0 6px 18px -4px var(--soleil-wash);">
+                <div style="display:flex; align-items:center; gap:12px;">
+                  <div style="width:28px; height:28px; border-radius:50%; background:var(--soleil); color:var(--soleil-ink); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800;">
+                    3
+                  </div>
+                  <div>
+                    <h4 style="font-size:13.5px; font-weight:800; color:var(--ink); margin:0 0 2px;">3. Au bord de la Seine</h4>
+                    <p style="font-size:11px; color:var(--prune); font-weight:600; margin:0;">Lección Activa · Mini-Reader & Fonética</p>
+                  </div>
+                </div>
+                <span style="font-size:10px; font-weight:800; color:var(--soleil-ink); background:var(--soleil); padding:2px 8px; border-radius:4px;">En Curso</span>
+              </div>
+
+              <!-- Lección 4 (Bloqueada) -->
+              <div style="background:var(--paper-warm); border:1px solid var(--rule-soft); border-radius:16px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; opacity:0.65;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                  <div style="width:28px; height:28px; border-radius:50%; background:var(--rule-soft); color:var(--ink-3); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">
+                    4
+                  </div>
+                  <div>
+                    <h4 style="font-size:13.5px; font-weight:600; color:var(--ink-3); margin:0 0 2px;">4. Les bouquinistes de Paris</h4>
+                    <p style="font-size:11px; color:var(--ink-3); margin:0;">Vocabulario literario · 10 min</p>
+                  </div>
+                </div>
+                <i data-lucide="lock" width="16" height="16" style="color:var(--ink-3);"></i>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- COLUMNA DERECHA: EXPERIENCIA DE LA LECCIÓN ACTIVA -->
+          <div class="lesson-view-card">
+            
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px;">
+              <div>
+                <span style="font-size:9.5px; text-transform:uppercase; letter-spacing:.12em; font-weight:800; color:var(--sauge);">Lección 3 de 5 · Teoría & Inmersión</span>
+                <h3 style="font-family:'Libre Caslon Text',serif; font-size:24px; color:var(--ink); margin:4px 0 0;">Au bord de la Seine</h3>
+              </div>
+              <span style="font-size:11.5px; color:var(--ink-3); display:flex; align-items:center; gap:4px;">
+                <i data-lucide="clock" width="13" height="13"></i> 10 min
+              </span>
+            </div>
+
+            <!-- Discurso de Camille (Guía Nativa) -->
+            <div class="character-bubble">
+              <div class="character-avatar">
+                <i data-lucide="user-check" width="22" height="22"></i>
+              </div>
+              <div>
+                <h5 style="font-size:12px; font-weight:800; color:var(--prune); margin:0 0 2px;">Camille · Tu Guía en París</h5>
+                <p style="font-size:12.5px; color:var(--ink); line-height:1.45; margin:0;">
+                  «¡Bonjour! Hoy caminamos junto al Sena. Mira los puestos de libros antiguos (<em>les bouquinistes</em>). Vamos a leer un breve pasaje y aprender cómo conjugar verbos para describir lo que hacemos en la ciudad.»
+                </p>
+              </div>
+            </div>
+
+            <!-- Mini-Reader con IPA -->
+            <div class="mini-reader-box">
+              <p style="margin:0;">
+                Nous <ruby>marchons<rt>/maʁ.ʃɔ̃/</rt></ruby> tranquillement sur les quais. J'<ruby>écoute<rt>/e.kut/</rt></ruby> les artistes et je <ruby>regarde<rt>/ʁə.gaʁd/</rt></ruby> les péniches sur le fleuve. C'est magnifique !
+              </p>
+            </div>
+
+            <!-- Desafío Interactivo (Cloze / Fill blank) -->
+            <div class="exercise-box">
+              <span style="font-size:10px; text-transform:uppercase; letter-spacing:.12em; font-weight:800; color:var(--terre);">Desafío Rápido</span>
+              <p style="font-size:13.5px; font-weight:700; color:var(--ink); margin:6px 0 12px;">Completa con la forma correcta del verbo <em>regarder</em>:</p>
+              
+              <p style="font-size:14px; font-family:'Libre Caslon Text',serif; color:var(--ink); margin-bottom:12px;">
+                «Je _______ les tableaux des bouquinistes.»
+              </p>
+
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button class="match-pill selected" onclick="alert('¡Correcto! Je regarde (1ª persona singular en -er termina en -e).')">regarde</button>
+                <button class="match-pill" onclick="alert('Incorrecto: regardons es para Nous.')">regardons</button>
+                <button class="match-pill" onclick="alert('Incorrecto: regardez es para Vous.')">regardez</button>
+              </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div style="display:flex; gap:12px; margin-top:24px;">
+              <button type="button" onclick="alert('Palabras de la lección añadidas al Mazo FSRS de Francés A1')" style="flex:1; background:var(--paper-warm); border:1px solid var(--rule); color:var(--ink); border-radius:999px; padding:12px; font-size:11.5px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+                <i data-lucide="bookmark-plus" width="14" height="14"></i>
+                <span>Guardar Vocabulario (8)</span>
+              </button>
+
+              <button type="button" onclick="alert('¡Lección 3 completada con éxito! Has ganado 20 puntos de Maestría.')" style="flex:1.2; background:var(--sauge); color:#fff; border:none; border-radius:999px; padding:12px; font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 6px 18px -4px var(--sauge-glow);">
+                <span>Completar & Siguiente</span>
+                <i data-lucide="arrow-right" width="15" height="15"></i>
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script>
+    if (window.lucide) lucide.createIcons();
+
+    function selectStation(num, title, lessons) {
+      document.getElementById('station-detail-title').innerText = `Módulo ${num}: ${title.split(':')[0]}`;
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function selectJourney(lang) {
+      const cards = document.querySelectorAll('.journey-tab-card');
+      cards.forEach(c => c.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+
+      const title = document.getElementById('journey-title');
+      if (lang === 'fr') {
+        title.innerText = 'Francés A1 — Descubriendo París';
+      } else if (lang === 'de') {
+        title.innerText = 'Alemán A1 — El Zauberwald de Grimm';
+      } else if (lang === 'en') {
+        title.innerText = 'Inglés B1 — El Londres Victoriano de Holmes';
+      } else if (lang === 'ru') {
+        title.innerText = 'Ruso A1 — Las Noches Blancas de San Petersburgo';
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function setTheme(theme) {
+      const body = document.body;
+      const tabPapel = document.getElementById('tab-papel');
+      const tabSepia = document.getElementById('tab-sepia');
+      const tabNoche = document.getElementById('tab-noche');
+
+      [tabPapel, tabSepia, tabNoche].forEach(t => {
+        t.style.background = 'transparent';
+        t.style.color = 'var(--rail-ink-3,#9c92a0)';
+      });
+
+      if (theme === 'papel') {
+        body.removeAttribute('data-theme');
+        tabPapel.style.background = 'var(--soleil,#ffcd11)';
+        tabPapel.style.color = '#463605';
+      } else if (theme === 'sepia') {
+        body.setAttribute('data-theme', 'sepia');
+        tabSepia.style.background = 'var(--soleil,#ffcd11)';
+        tabSepia.style.color = '#463605';
+      } else if (theme === 'noche') {
+        body.setAttribute('data-theme', 'noche');
+        tabNoche.style.background = 'var(--soleil,#ffcd11)';
+        tabNoche.style.color = '#463605';
+      }
+
+      if (window.lucide) lucide.createIcons();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WonderWord — Inmersión Streaming & Cine V.O.</title>
+
+  <!-- Fuentes Literarias y de Cine -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Hanken+Grotesk:wght@400;500;600;700;800;900&family=Charis+SIL:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@0.462.0/dist/umd/lucide.js"></script>
+
+  <style>
+    :root {
+      /* ── Paleta Cinema & WonderWord ── */
+      --cinema-bg: #0d0a12;
+      --cinema-panel: #16121f;
+      --cinema-card: #1c1726;
+      --cinema-border: rgba(255, 255, 255, 0.09);
+      --cinema-text: #f5eff6;
+      --cinema-muted: #a399ab;
+      
+      --prune: #7c4886;
+      --prune-2: #9b5ea7;
+      --prune-glow: rgba(124, 72, 134, 0.45);
+      
+      --sauge: #008f87;
+      --sauge-2: #14b8ae;
+      --sauge-wash: rgba(0, 143, 135, 0.15);
+      --sauge-glow: rgba(0, 143, 135, 0.4);
+      
+      --soleil: #ffcd11;
+      --soleil-ink: #2b2103;
+      
+      --terre: #d8682a;
+      --terre-glow: rgba(216, 104, 42, 0.4);
+
+      --canvas: #0e0c14;
+      --paper: #181422;
+      --paper-warm: #201b2c;
+      --ink: #f7f2f8;
+      --ink-2: #b8afbd;
+      --ink-3: #8a8090;
+      --rule: rgba(255, 255, 255, 0.1);
+
+      --rail: #0b0910;
+      --rail-ink: #f2ecf1;
+      --rail-ink-2: #9c92a0;
+      --rail-ink-3: #6b6370;
+      --rail-rule: rgba(255, 255, 255, 0.08);
+      --grain: 0.04;
+      --tooth: 0.35;
+      --vignette-opacity: 0.45;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      margin: 0;
+      background: var(--cinema-bg);
+      color: var(--cinema-text);
+      font-family: 'Hanken Grotesk', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    svg.lucide { display: block; stroke-width: 1.6; }
+
+    /* Textura de papel prensado */
+    .paper-texture {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 60;
+      mix-blend-mode: overlay;
+      opacity: var(--grain);
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    /* Marco de acuarela */
+    .vignette-container {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      mix-blend-mode: screen;
+      opacity: var(--vignette-opacity);
+      overflow: hidden;
+    }
+    .corner-top-left {
+      position: absolute; left: -60px; top: -60px; width: 440px; height: 380px;
+      background: radial-gradient(circle at 20% 20%, #4a94e8 0%, #75a7e6 42%, transparent 75%);
+      border-radius: 46% 54% 48% 52%; filter: url(#wc-vignette-heavy); opacity: 0.6;
+    }
+    .corner-top-right {
+      position: absolute; right: -80px; top: -60px; width: 460px; height: 360px;
+      background: radial-gradient(circle at 80% 20%, #e0548a 0%, #eb77a5 40%, transparent 75%);
+      border-radius: 54% 46% 52% 48%; filter: url(#wc-vignette-heavy); opacity: 0.55;
+    }
+
+    /* Billboard Hero Banner */
+    .hero-billboard {
+      position: relative;
+      height: 440px;
+      border-radius: 28px;
+      overflow: hidden;
+      margin-bottom: 38px;
+      display: flex;
+      align-items: flex-end;
+      padding: 40px 48px;
+      box-shadow: 0 24px 60px -20px rgba(0,0,0,0.7);
+      border: 1px solid var(--cinema-border);
+      background: radial-gradient(circle at 75% 35%, rgba(124, 72, 134, 0.25), transparent 60%),
+                  linear-gradient(180deg, rgba(13,10,18,0.2) 0%, rgba(13,10,18,0.95) 90%),
+                  url("data:image/svg+xml,%3Csvg viewBox='0 0 1200 600' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3CradialGradient id='g1' cx='50%25' cy='50%25' r='60%25'%3E%3Cstop offset='0%25' stop-color='%23381a3d'/%3E%3Cstop offset='100%25' stop-color='%230e0c14'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23g1)'/%3E%3Ccircle cx='750' cy='220' r='180' fill='%237c4886' opacity='0.25' filter='blur(60px)'/%3E%3Ccircle cx='950' cy='320' r='140' fill='%23d8682a' opacity='0.2' filter='blur(50px)'/%3E%3C/svg%3E");
+      background-size: cover;
+      background-position: center;
+    }
+
+    .btn-play-hero {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 28px;
+      border-radius: 999px;
+      background: #ffffff;
+      color: #110e17;
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 10px 28px -6px rgba(255,255,255,0.4);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .btn-play-hero:hover {
+      transform: scale(1.04);
+      background: var(--soleil);
+      box-shadow: 0 14px 34px -6px rgba(255,205,17,0.5);
+    }
+
+    .btn-info-hero {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 24px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(12px);
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 700;
+      border: 1px solid rgba(255,255,255,0.2);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-info-hero:hover {
+      background: rgba(255, 255, 255, 0.22);
+      transform: scale(1.03);
+    }
+
+    /* Rails de contenido */
+    .content-rail-section { margin-bottom: 38px; }
+    .rail-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding: 0 4px; }
+    .rail-title { font-family: 'Libre Caslon Text', serif; font-size: 24px; font-weight: 400; color: var(--cinema-text); display: flex; align-items: center; gap: 10px; }
+
+    .horizontal-scroll-row {
+      display: flex; gap: 18px; overflow-x: auto; padding: 8px 4px 20px 4px; scroll-snap-type: x mandatory; scrollbar-width: none;
+    }
+    .horizontal-scroll-row::-webkit-scrollbar { display: none; }
+
+    .netflix-card {
+      flex: 0 0 210px; scroll-snap-align: start; border-radius: 18px; overflow: hidden; background: var(--cinema-card); border: 1px solid var(--cinema-border); position: relative; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 6px 18px -6px rgba(0,0,0,0.4);
+    }
+    .netflix-card:hover {
+      transform: scale(1.06) translateY(-6px); border-color: var(--prune-2); box-shadow: 0 18px 40px -10px var(--prune-glow); z-index: 20;
+    }
+    .poster-img-container {
+      width: 100%; aspect-ratio: 2 / 3; position: relative; background: #231d2e; display: flex; flex-direction: column; justify-content: space-between; padding: 12px; box-sizing: border-box; overflow: hidden;
+    }
+
+    .badge-vo {
+      font-size: 9.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; padding: 3px 8px; border-radius: 6px; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; display: inline-flex; align-items: center; gap: 4px; width: fit-content;
+    }
+    .badge-hd {
+      font-size: 9px; font-weight: 800; padding: 2px 5px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.85);
+    }
+
+    .filter-bar {
+      display: flex; align-items: center; gap: 12px; overflow-x: auto; padding-bottom: 18px; margin-bottom: 24px; scrollbar-width: none;
+    }
+    .genre-tab {
+      padding: 8px 18px; border-radius: 999px; font-size: 12.5px; font-weight: 700; color: var(--cinema-muted); background: rgba(255, 255, 255, 0.05); border: 1px solid var(--cinema-border); cursor: pointer; white-space: nowrap; transition: all 0.2s ease;
+    }
+    .genre-tab:hover { background: rgba(255, 255, 255, 0.12); color: #fff; }
+    .genre-tab.active { background: #ffffff; color: #0d0a12; border-color: #fff; box-shadow: 0 4px 14px rgba(255,255,255,0.25); }
+
+    /* Modales */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(8, 6, 12, 0.9); backdrop-filter: blur(14px); z-index: 150; display: flex; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.2s ease; overflow-y: auto;
+    }
+    .movie-detail-sheet {
+      background: #15111c; border-radius: 26px; max-width: 900px; width: 100%; border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 24px 70px -15px rgba(0,0,0,0.9); overflow: hidden; position: relative; max-height: 90vh; display: flex; flex-direction: column;
+    }
+
+    /* REPRODUCTOR MASTER MULTIPANEL CON LANGUAGE REACTOR SIDEBAR */
+    .cinema-player-master {
+      background: #0f0c15; border-radius: 26px; max-width: 1280px; width: 100%; border: 1px solid rgba(255, 255, 255, 0.14); box-shadow: 0 30px 80px -20px rgba(0,0,0,0.95); overflow: hidden; position: relative; display: flex; flex-direction: column; height: 86vh;
+    }
+
+    /* Subtítulo difuminado (Active Recall) */
+    .blurred-translation {
+      filter: blur(4.5px);
+      transition: filter 0.25s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+    .blurred-translation:hover, .blurred-translation.revealed {
+      filter: blur(0px);
+    }
+
+    /* Panel de Transcripción Lateral */
+    .transcript-line {
+      padding: 12px 16px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .transcript-line:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+    .transcript-line.active {
+      background: rgba(255, 205, 17, 0.08);
+      border-color: var(--soleil);
+      box-shadow: 0 4px 16px -4px rgba(255,205,17,0.25);
+    }
+
+    /* Inspector de Palabra Clicada */
+    .word-inspector-popup {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      width: 320px;
+      background: #1c1626;
+      border: 1px solid var(--soleil);
+      border-radius: 18px;
+      box-shadow: 0 16px 40px -10px rgba(0,0,0,0.8);
+      padding: 18px 20px;
+      z-index: 40;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+
+    @media (max-width: 920px) {
+      [data-rail] { display: none !important; }
+      [data-main] { margin-left: 0 !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PIPELINE DE FILTROS SVG -->
+  <svg aria-hidden="true" width="0" height="0" style="position:absolute; pointer-events:none;">
+    <defs>
+      <filter id="wc-vignette-heavy" x="-35%" y="-35%" width="170%" height="170%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="14" result="blur" />
+        <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="4" seed="31" result="noise" />
+        <feDisplacementMap in="blur" in2="noise" scale="58" xChannelSelector="R" yChannelSelector="G" result="disp" />
+        <feComponentTransfer in="disp"><feFuncA type="table" tableValues="0 0.45 0.78 0.94 1" /></feComponentTransfer>
+      </filter>
+      <filter id="wc4" x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" seed="61" result="n" />
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="9" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </defs>
+  </svg>
+
+  <div class="paper-texture"></div>
+
+  <!-- MARCO DE ACUARELA -->
+  <div class="vignette-container">
+    <div class="corner-top-left"></div>
+    <div class="corner-top-right"></div>
+  </div>
+
+  <div style="min-height:100vh; display:flex;">
+
+    <!-- ======================================================================
+         BARRA LATERAL (RAIL 100% CONECTADO E IDÉNTICO)
+         ====================================================================== -->
+    <aside data-rail style="position:fixed; left:0; top:0; height:100%; width:252px; background:var(--rail,#282031); display:flex; flex-direction:column; z-index:40; box-sizing:border-box; overflow:hidden;">
+      <div aria-hidden="true" style="position:absolute; inset:0; pointer-events:none; background:radial-gradient(120% 55% at 12% 0%, rgba(196,99,47,.20), transparent 62%), radial-gradient(100% 48% at 92% 42%, rgba(0,106,100,.20), transparent 66%), radial-gradient(120% 46% at 0% 100%, rgba(123,155,209,.16), transparent 60%);"></div>
+      <div aria-hidden="true" style="position:absolute; inset:0; pointer-events:none; mix-blend-mode:overlay; opacity:var(--tooth,.5); background-image:url(&quot;data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjAiIGhlaWdodD0iMTYwIj48ZmlsdGVyIGlkPSJuIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC44IiBudW1PY3RhdmVzPSI0IiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjE2MCIgaGVpZ2h0PSIxNjAiIGZpbHRlcj0idXJsKCNuKSIvPjwvc3ZnPg==&quot;);"></div>
+
+      <div style="position:relative; padding:26px 26px 22px; border-bottom:1px solid var(--rail-rule,rgba(255,255,255,.11));">
+        <h1 style="font-family:'Libre Caslon Text',serif; font-size:21px; font-weight:400; letter-spacing:-0.02em; color:var(--rail-ink,#f2ecf1); line-height:1; margin:0 0 7px;">WonderWord</h1>
+        <span style="font-size:9px; text-transform:uppercase; letter-spacing:.2em; font-weight:600; color:var(--rail-ink-3,#9c92a0);">Inmersión literaria</span>
+      </div>
+
+            <nav style="position:relative; flex:1; overflow-y:auto; padding:22px 0;">
+        <p style="font-size:9px; text-transform:uppercase; letter-spacing:.2em; font-weight:600; color:var(--rail-ink-3,#9c92a0); margin:0 0 10px; padding:0 26px;">Lectura</p>
+        <a href="index.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="layout-dashboard" width="16" height="16"></i>
+          <span style="flex:1;">Dashboard</span>
+          
+        </a>
+        <a href="biblioteca.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="book-open" width="16" height="16"></i>
+          <span style="flex:1;">Biblioteca</span>
+          
+        </a>
+        <a href="lector.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="book-open-check" width="16" height="16"></i>
+          <span style="flex:1;">Lector & Estudio</span>
+          
+        </a>
+        <p style="font-size:9px; text-transform:uppercase; letter-spacing:.2em; font-weight:600; color:var(--rail-ink-3,#9c92a0); margin:26px 0 10px; padding:0 26px;">Práctica & Memoria</p>
+        <a href="vocabulario.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="brain" width="16" height="16"></i>
+          <span style="flex:1;">Vocabulario & Repaso</span>
+          <span style="font-family:'Libre Caslon Text',serif; font-size:13px; color:var(--soleil,#ffcd11);">18</span>
+        </a>
+        <a href="shadowing.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="mic" width="16" height="16"></i>
+          <span style="flex:1;">Shadowing & Fonética</span>
+          
+        </a>
+        <a href="#" style="position:relative; display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:600; color:var(--rail-ink,#f2ecf1);">
+          <span aria-hidden="true" style="position:absolute; inset:1px 16px 1px 0; background:rgba(255,255,255,.10); border-radius:0 999px 999px 0; filter:url(#wc4);"></span>
+          <span aria-hidden="true" style="position:absolute; left:0; top:4px; bottom:4px; width:3px; background:var(--soleil,#ffcd11); filter:url(#wc4);"></span>
+          <i data-lucide="film" width="16" height="16" style="position:relative; color:var(--soleil);"></i>
+          <span style="position:relative; flex:1;">Inmersión Streaming</span>
+          
+        </a>
+        <p style="font-size:9px; text-transform:uppercase; letter-spacing:.2em; font-weight:600; color:var(--rail-ink-3,#9c92a0); margin:26px 0 10px; padding:0 26px;">Progreso & Exploración</p>
+        <a href="logros.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="award" width="16" height="16"></i>
+          <span style="flex:1;">Logros & Maestría</span>
+          
+        </a>
+        <a href="organizador.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="calendar" width="16" height="16"></i>
+          <span style="flex:1;">Organizador</span>
+          
+        </a>
+        <a href="viajes.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="compass" width="16" height="16"></i>
+          <span style="flex:1;">Viajes</span>
+          
+        </a>
+        <a href="tienda.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="shopping-bag" width="16" height="16"></i>
+          <span style="flex:1;">Tienda</span>
+          
+        </a>
+        <a href="ajustes.html" style="display:flex; align-items:center; gap:12px; padding:9px 26px; font-size:13.5px; font-weight:500; color:var(--rail-ink-2,#a99fac);">
+          <i data-lucide="settings" width="16" height="16"></i>
+          <span style="flex:1;">Ajustes</span>
+          
+        </a>
+      </nav>
+
+      <!-- WIDGET INFERIOR IDÉNTICO -->
+      <div style="position:relative; padding:18px 26px 22px; border-top:1px solid var(--rail-rule,rgba(255,255,255,.11)); display:flex; align-items:center; gap:14px;">
+        <span style="position:relative; width:52px; height:52px; flex-shrink:0; display:block;">
+          <svg viewBox="0 0 52 52" width="52" height="52" style="display:block; transform:rotate(-90deg);">
+            <circle cx="26" cy="26" r="22" fill="none" stroke="rgba(255,255,255,.13)" stroke-width="5"></circle>
+            <circle cx="26" cy="26" r="22" fill="none" stroke="var(--sauge-2,#0f8c84)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138.2" stroke-dashoffset="55.2" style="filter:url(#wc4);"></circle>
+          </svg>
+          <span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Libre Caslon Text',serif; font-size:13px; color:var(--rail-ink,#f2ecf1); font-variant-numeric:tabular-nums;">18</span>
+        </span>
+        <div style="min-width:0;">
+          <p style="font-size:11.5px; color:var(--rail-ink-2,#a99fac); margin:0; line-height:1.4;">18 de 30 min hoy</p>
+          <p style="font-size:11px; color:var(--soleil,#ffcd11); margin:4px 0 0; line-height:1.4; font-weight:600;">Racha de 14 días</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ======================================================================
+         CONTENIDO PRINCIPAL: STREAMING V.O. NETFLIX & PRIME VIDEO
+         ====================================================================== -->
+    <div data-main style="flex:1; display:flex; flex-direction:column; margin-left:252px; min-width:0; position:relative;">
+      
+      <!-- TOPBAR CON BUSCADOR CINEMATOGRÁFICO -->
+      <header style="position:sticky; top:0; z-index:30; background:rgba(13,10,18,0.92); backdrop-filter:blur(16px); height:64px; padding:0 44px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--cinema-border);">
+        <div style="display:flex; align-items:center; gap:16px; flex:1; max-width:500px;">
+          <div style="position:relative; width:100%;">
+            <i data-lucide="search" width="16" height="16" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--cinema-muted);"></i>
+            <input type="text" placeholder="Buscar películas, series, documentales, directores..." style="width:100%; padding:10px 16px 10px 42px; border-radius:999px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); color:#fff; font-size:13px; outline:none;" />
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:20px;">
+          <div style="display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.06); padding:4px 6px; border-radius:999px; border:1px solid var(--cinema-border);">
+            <button type="button" class="genre-tab active" style="padding:4px 12px; font-size:11px;">Todos los idiomas</button>
+            <button type="button" class="genre-tab" style="padding:4px 12px; font-size:11px;">Français</button>
+            <button type="button" class="genre-tab" style="padding:4px 12px; font-size:11px;">Deutsch</button>
+            <button type="button" class="genre-tab" style="padding:4px 12px; font-size:11px;">English</button>
+          </div>
+
+          <span style="width:1px; height:20px; background:var(--cinema-border);"></span>
+          
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg, var(--prune), var(--terre)); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:13px;">K</div>
+            <span style="font-size:12px; font-weight:700; color:var(--cinema-text);">Kevin</span>
+          </div>
+        </div>
+      </header>
+
+      <main style="flex:1; padding:32px 48px 80px; max-width:1440px; width:100%; box-sizing:border-box; margin:0 auto;">
+
+        <!-- 1. CINTA DE GÉNEROS -->
+        <div class="filter-bar">
+          <button class="genre-tab active">Todo el Catálogo</button>
+          <button class="genre-tab">Películas</button>
+          <button class="genre-tab">Series</button>
+          <button class="genre-tab">Drama</button>
+          <button class="genre-tab">Misterio & Thriller</button>
+          <button class="genre-tab">Comedia</button>
+          <button class="genre-tab">Ciencia Ficción</button>
+          <button class="genre-tab">Romance</button>
+          <button class="genre-tab">Documentales</button>
+          <button class="genre-tab">Clásicos Inolvidables</button>
+        </div>
+
+        <!-- 2. BILLBOARD HERO BANNER -->
+        <div class="hero-billboard">
+          <div style="max-width:680px; z-index:10;">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+              <span class="badge-vo" style="background:var(--soleil); color:var(--soleil-ink); font-weight:900;"><i data-lucide="trending-up" width="12" height="12" style="color:var(--soleil-ink);"></i> <span>TENDENCIA #1 EN FRANCIA</span></span>
+              <span class="badge-vo">FRANÇAIS [V.O.]</span>
+              <span class="badge-hd">4K ULTRA HD</span>
+              <span style="font-size:12px; color:rgba(255,255,255,0.7); font-weight:600;">2h 02m · 2001</span>
+            </div>
+
+            <h2 style="font-family:'Libre Caslon Text',serif; font-size:52px; line-height:1.05; color:#ffffff; margin:0 0 14px; font-weight:400; text-shadow:0 4px 20px rgba(0,0,0,0.8);">
+              Le Fabuleux Destin d'Amélie Poulain
+            </h2>
+
+            <p style="font-size:14px; line-height:1.6; color:rgba(255,255,255,0.85); margin:0 0 24px;">
+              Amélie, una camarera de Montmartre con una imaginación desbordante, decide dedicar su vida a cambiar discretamente el destino de quienes la rodean mientras busca su propio amor por las calles de París.
+            </p>
+
+            <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+              <button class="btn-play-hero" onclick="openCinemaPlayer('Amélie Poulain', 'Français [V.O.]')">
+                <i data-lucide="play" width="16" height="16" fill="currentColor"></i>
+                <span>Reproducir V.O.</span>
+              </button>
+              
+              <button class="btn-info-hero" onclick="openMovieDetailSheet('amelie')">
+                <i data-lucide="info" width="16" height="16"></i>
+                <span>Ver Ficha & Léxico</span>
+              </button>
+
+              <button class="btn-info-hero" onclick="alert('Añadido a tu lista de inmersión')">
+                <i data-lucide="plus" width="16" height="16"></i>
+                <span>Mi Lista</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ======================================================================
+             3. FILAS HORIZONTALES DE CONTENIDO
+             ====================================================================== -->
+
+        <!-- FILA 1: CONTINUAR VIENDO -->
+        <section class="content-rail-section">
+          <div class="rail-header">
+            <h3 class="rail-title">
+              <i data-lucide="history" width="20" height="20" style="color:var(--soleil);"></i>
+              <span>Continuar Viendo en Versión Original</span>
+            </h3>
+            <span style="font-size:12px; color:var(--cinema-muted); font-weight:600; cursor:pointer;">Ver todo →</span>
+          </div>
+
+          <div class="horizontal-scroll-row">
+            
+            <div class="netflix-card" onclick="openMovieDetailSheet('amelie')">
+              <div class="poster-img-container" style="background:linear-gradient(135deg, #421c24, #732a37);">
+                <div style="display:flex; justify-content:space-between;">
+                  <span class="badge-vo">FR [V.O.]</span>
+                  <span class="badge-hd">4K</span>
+                </div>
+                <i data-lucide="play-circle" width="48" height="48" style="color:#fff; opacity:0.8; margin:auto;"></i>
+                <div style="width:100%; height:4px; background:rgba(255,255,255,0.2); border-radius:999px; overflow:hidden;">
+                  <div style="width:45%; height:100%; background:var(--soleil);"></div>
+                </div>
+              </div>
+              <div style="padding:14px;">
+                <h4 style="font-family:'Libre Caslon Text',serif; font-size:16px; margin:0 0 4px; color:#fff;">Amélie</h4>
+                <p style="font-size:11.5px; color:var(--cinema-muted); margin:0;">Quedan 42 min · Subtítulos FR/ES</p>
+              </div>
+            </div>
+
+            <div class="netflix-card" onclick="openMovieDetailSheet('dark')">
+              <div class="poster-img-container" style="background:linear-gradient(135deg, #162423, #1e4540);">
+                <div style="display:flex; justify-content:space-between;">
+                  <span class="badge-vo">DE [V.O.]</span>
+                  <span class="badge-hd">HD</span>
+                </div>
+                <i data-lucide="play-circle" width="48" height="48" style="color:#fff; opacity:0.8; margin:auto;"></i>
+                <div style="width:100%; height:4px; background:rgba(255,255,255,0.2); border-radius:999px; overflow:hidden;">
+                  <div style="width:70%; height:100%; background:var(--sauge);"></div>
+                </div>
+              </div>
+              <div style="padding:14px;">
+                <h4 style="font-family:'Libre Caslon Text',serif; font-size:16px; margin:0 0 4px; color:#fff;">Dark (T1:E4)</h4>
+                <p style="font-size:11.5px; color:var(--cinema-muted); margin:0;">Quedan 18 min · Subtítulos DE/ES</p>
+              </div>
+            </div>
+
+            <div class="netflix-card" onclick="openMovieDetailSheet('lupin')">
+              <div class="poster-img-container" style="background:linear-gradient(135deg, #281938, #452163);">
+                <div style="display:flex; justify-content:space-between;">
+                  <span class="badge-vo">FR [V.O.]</span>
+                  <span class="badge-hd">4K</span>
+                </div>
+                <i data-lucide="play-circle" width="48" height="48" style="color:#fff; opacity:0.8; margin:auto;"></i>
+                <div style="width:100%; height:4px; background:rgba(255,255,255,0.2); border-radius:999px; overflow:hidden;">
+                  <div style="width:25%; height:100%; background:var(--prune-2);"></div>
+                </div>
+              </div>
+              <div style="padding:14px;">
+                <h4 style="font-family:'Libre Caslon Text',serif; font-size:16px; margin:0 0 4px; color:#fff;">Lupin (Capítulo 2)</h4>
+                <p style="font-size:11.5px; color:var(--cinema-muted); margin:0;">Quedan 34 min · Subtítulos FR/ES</p>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- FILA 2: JOYAS DEL CINE FRANCÉS -->
+        <section class="content-rail-section">
+          <div class="rail-header">
+            <h3 class="rail-title"><i data-lucide="film" width="20" height="20" style="color:var(--bleuet-ink);"></i><span>Joyas del Cine Francés</span></h3>
+            <span style="font-size:12px; color:var(--cinema-muted); font-weight:600; cursor:pointer;">Explorar Francia →</span>
+          </div>
+
+          <div class="horizontal-scroll-row">
+            
+            <div class="netflix-card" onclick="openMovieDetailSheet('intouchables')">
+              <div class="poster-img-container" style="background:linear-gradient(135deg, #2b231c, #483525);">
+                <div style="display:flex; justify-content:space-between;">
+                  <span class="badge-vo">FR [V.O.]</span>
+                  <span class="badge-hd">HD</span>
+                </div>
+                <div style="margin:auto; text-align:center;">
+                  <span style="font-family:'Libre Caslon Text',serif; font-size:20px; font-weight:700; color:#fff;">INTOUCHABLES</span>
+                </div>
+                <span style="font-size:10px; color:rgba(255,255,255,0.7);">1h 52m · Comedia</span>
+              </div>
+              <div style="padding:14px;">
+                <h4 style="font-family:'Libre Caslon Text',serif; font-size:16px; margin:0 0 4px; color:#fff;">Intouchables</h4>
+                <p style="font-size:11.5px; color:var(--cinema-muted); margin:0;">François Cluzet, Omar Sy</p>
+              </div>
+            </div>
+
+            <div class="netflix-card" onclick="openMovieDetailSheet('lahaine')">
+              <div class="poster-img-container" style="background:linear-gradient(135deg, #1c1c1c, #383838);">
+                <div style="display:flex; justify-content:space-between;">
+                  <span class="badge-vo">FR [V.O.]</span>
+                  <span class="badge-hd">HD</span>
+                </div>
+                <div style="margin:auto; text-align:center;">
+                  <span style="font-family:'Libre Caslon Text',serif; font-size:22px; font-weight:700; color:#fff; letter-spacing:.1em;">LA HAINE</span>
+                </div>
+                <span style="font-size:10px; color:rgba(255,255,255,0.7);">1h 38m · Culto</span>
+              </div>
+              <div style="padding:14px;">
+                <h4 style="font-family:'Libre Caslon Text',serif; font-size:16px; margin:0 0 4px; color:#fff;">La Haine</h4>
+                <p style="font-size:11.5px; color:var(--cinema-muted); margin:0;">Vincent Cassel · Argot</p>
+              </div>
+            </div>
+
+            <div class="netflix-card" onclick="openMovieDetailSheet('portrait')">
+              <div class="poster-img-container" style="background:linear-gradient(135deg, #381a28, #59253c);">
+                <div style="display:flex; justify-content:space-between;">
+                  <span class="badge-vo">FR [V.O.]</span>
+                  <span class="badge-hd">4K</span>
+                </div>
+                <div style="margin:auto; text-align:center;">
+                  <span style="font-family:'Libre Caslon Text',serif; font-size:17px; font-weight:700; color:#fff;">Portrait de la jeune fille</span>
+                </div>
+                <span style="font-size:10px; color:rgba(255,255,255,0.7);">2h 02m · Época</span>
+              </div>
+              <div style="padding:14px;">
+                <h4 style="font-family:'Libre Caslon Text',serif; font-size:16px; margin:0 0 4px; color:#fff;">Portrait de la jeune fille</h4>
+                <p style="font-size:11.5px; color:var(--cinema-muted); margin:0;">Céline Sciamma</p>
+              </div>
+            </div>
+
+            <div class="netflix-card" onclick="openMovieDetailSheet('amelie')">
+              <div class="poster-img-container" style="background:linear-gradient(135deg, #421c24, #732a37);">
+                <div style="display:flex; justify-content:space-between;">
+                  <span class="badge-vo">FR [V.O.]</span>
+                  <span class="badge-hd">4K</span>
+                </div>
+                <div style="margin:auto; text-align:center;">
+                  <span style="font-family:'Libre Caslon Text',serif; font-size:22px; font-weight:700; color:#fff;">AMÉLIE</span>
+                </div>
+                <span style="font-size:10px; color:rgba(255,255,255,0.7);">2h 02m · Comedia</span>
+              </div>
+              <div style="padding:14px;">
+                <h4 style="font-family:'Libre Caslon Text',serif; font-size:16px; margin:0 0 4px; color:#fff;">Amélie Poulain</h4>
+                <p style="font-size:11.5px; color:var(--cinema-muted); margin:0;">Audrey Tautou</p>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- FILA 3: GRANDES PRODUCCIONES ALEMANAS -->
+        <section class="content-rail-section">
+          <div class="rail-header">
+            <h3 class="rail-title"><i data-lucide="film" width="20" height="20" style="color:var(--terre);"></i><span>Grandes Producciones Alemanas</span></h3>
+            <span style="font-size:12px; color:var(--cinema-muted); font-weight:600; cursor:pointer;">Explorar Alemania →</span>
+          </div>
+
+          <div class="horizontal-scroll-row">
+            
+            <div class="netflix-card" onclick="openMovieDetailSheet('babylon')">
+              <div class="poster-img-container" style="background:linear-gradient(135deg, #311c33, #4f2853);">
+                <div style="display:flex; justify-content:space-between;">
+                  <span class="badge-vo">DE [V.O.]</span>
+                  <span class="badge-hd">4K</span>
+                </div>
+                <div style="margin:auto; text-align:center;">
+                  <span style="font-family:'Libre Caslon Text',serif; font-size:19px; font-weight:700; color:#fff;">BABYLON BERLIN</span>
+                </div>
+                <span style="font-size:10px; color:rgba(255,255,255,0.7);">4 Temporadas</span>
+              </div>
+              <div style="padding:14px;">
+                <h4 style="font-family:'Libre Caslon Text',serif; font-size:16px; margin:0 0 4px; color:#fff;">Babylon Berlin</h4>
+                <p style="font-size:11.5px; color:var(--cinema-muted); margin:0;">Berlín años 20</p>
+              </div>
+            </div>
+
+            <div class="netflix-card" onclick="openMovieDetailSheet('leben')">
+              <div class="poster-img-container" style="background:linear-gradient(135deg, #242526, #3d4144);">
+                <div style="display:flex; justify-content:space-between;">
+                  <span class="badge-vo">DE [V.O.]</span>
+                  <span class="badge-hd">HD</span>
+                </div>
+                <div style="margin:auto; text-align:center;">
+                  <span style="font-family:'Libre Caslon Text',serif; font-size:17px; font-weight:700; color:#fff;">Das Leben der Anderen</span>
+                </div>
+                <span style="font-size:10px; color:rgba(255,255,255,0.7);">2h 17m · Óscar</span>
+              </div>
+              <div style="padding:14px;">
+                <h4 style="font-family:'Libre Caslon Text',serif; font-size:16px; margin:0 0 4px; color:#fff;">La vida de los otros</h4>
+                <p style="font-size:11.5px; color:var(--cinema-muted); margin:0;">Ulrich Mühe</p>
+              </div>
+            </div>
+
+            <div class="netflix-card" onclick="openMovieDetailSheet('lenin')">
+              <div class="poster-img-container" style="background:linear-gradient(135deg, #3d1c1a, #692925);">
+                <div style="display:flex; justify-content:space-between;">
+                  <span class="badge-vo">DE [V.O.]</span>
+                  <span class="badge-hd">HD</span>
+                </div>
+                <div style="margin:auto; text-align:center;">
+                  <span style="font-family:'Libre Caslon Text',serif; font-size:19px; font-weight:700; color:#fff;">GOOD BYE LENIN!</span>
+                </div>
+                <span style="font-size:10px; color:rgba(255,255,255,0.7);">2h 01m</span>
+              </div>
+              <div style="padding:14px;">
+                <h4 style="font-family:'Libre Caslon Text',serif; font-size:16px; margin:0 0 4px; color:#fff;">Good Bye Lenin!</h4>
+                <p style="font-size:11.5px; color:var(--cinema-muted); margin:0;">Daniel Brühl</p>
+              </div>
+            </div>
+
+            <div class="netflix-card" onclick="openMovieDetailSheet('1899')">
+              <div class="poster-img-container" style="background:linear-gradient(135deg, #191c28, #2a3147);">
+                <div style="display:flex; justify-content:space-between;">
+                  <span class="badge-vo">DE [V.O.]</span>
+                  <span class="badge-hd">4K</span>
+                </div>
+                <div style="margin:auto; text-align:center;">
+                  <span style="font-family:'Libre Caslon Text',serif; font-size:26px; font-weight:700; color:#fff; letter-spacing:.1em;">1899</span>
+                </div>
+                <span style="font-size:10px; color:rgba(255,255,255,0.7);">8 Episodios</span>
+              </div>
+              <div style="padding:14px;">
+                <h4 style="font-family:'Libre Caslon Text',serif; font-size:16px; margin:0 0 4px; color:#fff;">1899</h4>
+                <p style="font-size:11.5px; color:var(--cinema-muted); margin:0;">Creadores de Dark</p>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 1: FICHA DETALLADA DE LA PELÍCULA / SERIE
+       ====================================================================== -->
+  <div id="modal-movie-sheet" class="modal-backdrop" style="display:none;">
+    <div class="movie-detail-sheet">
+      
+      <div style="position:relative; height:300px; background:radial-gradient(circle at 70% 30%, rgba(124, 72, 134, 0.4), transparent 70%), linear-gradient(180deg, rgba(21,17,28,0.2) 0%, #15111c 95%), #2a1936; display:flex; align-items:flex-end; padding:32px 38px;">
+        <button type="button" onclick="closeMovieDetailSheet()" style="position:absolute; right:20px; top:20px; width:36px; height:36px; border-radius:50%; background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.2); color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+          <i data-lucide="x" width="18" height="18"></i>
+        </button>
+
+        <div style="position:relative; z-index:10; max-width:640px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <span id="sheet-lang-badge" class="badge-vo" style="background:var(--soleil); color:var(--soleil-ink); font-weight:900;">FRANÇAIS [V.O.]</span>
+            <span class="badge-hd">4K ULTRA HD</span>
+            <span style="font-size:12px; color:rgba(255,255,255,0.7); font-weight:600;" id="sheet-meta-info">2h 02m · 2001 · Comedia</span>
+          </div>
+
+          <h2 id="sheet-title" style="font-family:'Libre Caslon Text',serif; font-size:38px; color:#fff; margin:0 0 16px; font-weight:400; line-height:1.1;">
+            Le Fabuleux Destin d'Amélie Poulain
+          </h2>
+
+          <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+            <button class="btn-play-hero" style="padding:11px 26px; font-size:12.5px;" onclick="closeMovieDetailSheet(); openCinemaPlayer(document.getElementById('sheet-title').innerText, document.getElementById('sheet-lang-badge').innerText);">
+              <i data-lucide="play" width="16" height="16" fill="currentColor"></i>
+              <span>Reproducir V.O.</span>
+            </button>
+            <button class="btn-info-hero" style="padding:11px 20px; font-size:12.5px;" onclick="alert('Frases clave exportadas al módulo de Shadowing')">
+              <i data-lucide="mic" width="16" height="16" style="color:var(--sauge);"></i>
+              <span>Practicar Shadowing</span>
+            </button>
+            <button class="btn-info-hero" style="padding:11px 16px;" title="Añadir a mi lista">
+              <i data-lucide="plus" width="16" height="16"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding:28px 38px; overflow-y:auto; flex:1;">
+        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:36px; margin-bottom:20px;">
+          <div>
+            <p id="sheet-synopsis" style="font-size:14px; line-height:1.7; color:var(--ink-2); margin:0 0 20px;">
+              Amélie, una camarera de Montmartre con una imaginación desbordante, decide dedicar su vida a cambiar discretamente el destino de quienes la rodean mientras busca su propio amor por las calles de París.
+            </p>
+
+            <div style="background:rgba(255,255,255,0.04); border-radius:18px; border:1px solid var(--cinema-border); padding:18px 22px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <span style="font-size:10px; text-transform:uppercase; letter-spacing:.14em; font-weight:800; color:var(--soleil);">Léxico & Modismos Destacados</span>
+                <button type="button" onclick="alert('Vocabulario importado a tu Mazo FSRS')" style="background:none; border:none; color:var(--sauge); font-size:11px; font-weight:700; cursor:pointer;">
+                  + Añadir a mi Mazo (32 palabras)
+                </button>
+              </div>
+
+              <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                <span style="padding:4px 10px; border-radius:999px; background:rgba(255,255,255,0.06); font-size:12px; color:#fff;"><strong>cultiver</strong> /kyl.ti.ve/</span>
+                <span style="padding:4px 10px; border-radius:999px; background:rgba(255,255,255,0.06); font-size:12px; color:#fff;"><strong>un ricochet</strong> /ʁi.kɔ.ʃɛ/</span>
+                <span style="padding:4px 10px; border-radius:999px; background:rgba(255,255,255,0.06); font-size:12px; color:#fff;"><strong>le destin</strong> /dɛs.tɛ̃/</span>
+                <span style="padding:4px 10px; border-radius:999px; background:rgba(255,255,255,0.06); font-size:12px; color:#fff;"><strong>l'engrenage</strong> /ɑ̃.ɡʁə.naʒ/</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="font-size:12px; color:var(--cinema-muted); display:flex; flex-direction:column; gap:12px;">
+            <div><span style="color:#fff; font-weight:700; display:block; margin-bottom:2px;">Director:</span><span id="sheet-director">Jean-Pierre Jeunet</span></div>
+            <div><span style="color:#fff; font-weight:700; display:block; margin-bottom:2px;">Reparto principal:</span><span id="sheet-cast">Audrey Tautou, Mathieu Kassovitz, Rufus, Jamel Debbouze</span></div>
+            <div><span style="color:#fff; font-weight:700; display:block; margin-bottom:2px;">Audio V.O.:</span><span>Français [5.1 Original]</span></div>
+            <div><span style="color:#fff; font-weight:700; display:block; margin-bottom:2px;">Subtítulos:</span><span style="color:var(--sauge);">Verbatim Francés + Español Dual</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 2: REPRODUCTOR MASTER CON TRANSCRIBCIÓN LATERAL Y TRADUCCIÓN DIFUMINADA
+       (ARQUITECTURA SUPERIOR A LANGUAGE REACTOR)
+       ====================================================================== -->
+  <div id="modal-cinema-player" class="modal-backdrop" style="display:none;">
+    <div class="cinema-player-master">
+      
+      <!-- Topbar del Reproductor Master -->
+      <div style="padding:14px 24px; background:#14101c; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.08); flex-shrink:0;">
+        <div style="display:flex; align-items:center; gap:14px;">
+          <span id="player-lang-badge" class="badge-vo" style="background:var(--soleil); color:var(--soleil-ink);">FRANÇAIS [V.O.]</span>
+          <h3 id="player-movie-title" style="font-family:'Libre Caslon Text',serif; font-size:18px; color:#fff; margin:0;">Amélie Poulain</h3>
+          <span style="color:rgba(255,255,255,0.2);">|</span>
+          <!-- Toggle de Pausa Automática (Q) -->
+          <button type="button" id="btn-auto-pause" onclick="toggleAutoPause()" style="background:rgba(255,205,17,0.15); border:1px solid rgba(255,205,17,0.3); color:var(--soleil); padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700; cursor:pointer;" title="Pausar automáticamente al final de cada frase (Tecla Q)">
+            <i data-lucide="pause-circle" width="13" height="13"></i> <span id="txt-ap">Auto-Pausa (Q): ON</span>
+          </button>
+          <!-- Toggle de Blur / Active Recall (E) -->
+          <button type="button" id="btn-blur-mode" onclick="toggleBlurMode()" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#fff; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700; cursor:pointer;" title="Difuminar la traducción en español para autoevaluación (Tecla E)">
+            <i data-lucide="eye-off" width="13" height="13"></i> <span id="txt-blur">Blur Español (E): ON</span>
+          </button>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:16px;">
+          <!-- Atajos de Teclado Info -->
+          <span style="font-size:11px; color:var(--cinema-muted);">Atajos: <kbd style="background:rgba(255,255,255,0.1); padding:2px 5px; border-radius:4px;">A</kbd> Ant · <kbd style="background:rgba(255,255,255,0.1); padding:2px 5px; border-radius:4px;">S</kbd> Repetir · <kbd style="background:rgba(255,255,255,0.1); padding:2px 5px; border-radius:4px;">D</kbd> Sig</span>
+          <button type="button" onclick="closeCinemaPlayer()" style="background:none; border:none; color:#fff; cursor:pointer; font-size:13px; display:flex; align-items:center; gap:6px;">
+            <span>Salir</span> <i data-lucide="x" width="18" height="18"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Cuerpo del Reproductor (Video a la Izquierda + Transcripción a la Derecha) -->
+      <div style="flex:1; display:flex; min-height:0; position:relative;">
+        
+        <!-- ZONA 1: PANTALLA DE VIDEO (65% del ancho) -->
+        <div style="flex:1.8; background:#08060c; display:flex; flex-direction:column; justify-content:space-between; padding:22px; box-sizing:border-box; position:relative; overflow:hidden;">
+          
+          <!-- POPUP DEL DICCIONARIO CONTEXTUAL (LEXA AI STYLE) -->
+          <div id="word-inspector" class="word-inspector-popup" style="display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+              <div>
+                <h4 id="inspect-lemma" style="font-family:'Libre Caslon Text',serif; font-size:20px; color:#fff; margin:0;">cultiver</h4>
+                <span id="inspect-ipa" style="font-family:'Charis SIL',serif; font-size:12.5px; color:var(--soleil);">/kyl.ti.ve/ · Verbo transitivo</span>
+              </div>
+              <button type="button" onclick="closeWordInspector()" style="background:none; border:none; color:rgba(255,255,255,0.5); cursor:pointer;"><i data-lucide="x" width="16" height="16"></i></button>
+            </div>
+
+            <p id="inspect-def" style="font-size:12.5px; line-height:1.5; color:var(--ink-2); margin:0 0 12px;">
+              <strong>En este contexto:</strong> Dedicar tiempo y cuidado a una costumbre o preferencia particular («mimarla con afecto»).
+            </p>
+
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <button type="button" onclick="alert('Palabra y frase de la película guardadas en tu Mazo FSRS')" style="background:linear-gradient(135deg, var(--sauge), var(--sauge-2)); color:#fff; border:none; border-radius:999px; padding:7px 14px; font-size:11.5px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+                <i data-lucide="bookmark-plus" width="14" height="14"></i>
+                <span>Guardar en Mazo FSRS</span>
+              </button>
+              
+              <div style="display:flex; justify-content:space-between; font-size:10.5px; color:var(--cinema-muted); padding-top:4px;">
+                <span style="cursor:pointer; text-decoration:underline;">Reverso</span>
+                <span style="cursor:pointer; text-decoration:underline;">WordReference</span>
+                <span style="cursor:pointer; text-decoration:underline;">Wiktionary</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Video Viewport Ambient -->
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; background:radial-gradient(circle at center, #24192b 0%, #08060c 80%); border-radius:18px; border:1px solid rgba(255,255,255,0.05); position:relative; overflow:hidden;">
+            
+            <i data-lucide="film" width="56" height="56" style="color:rgba(255,255,255,0.15); margin-bottom:12px;"></i>
+            <span style="font-size:11px; text-transform:uppercase; letter-spacing:.18em; color:rgba(255,255,255,0.4); font-weight:700;">Amélie · Escena 04 (00:14:32)</span>
+
+            <!-- SUBTÍTULO OVERLAY EN PANTALLA -->
+            <div style="position:absolute; bottom:20px; left:20px; right:20px; text-align:center; background:rgba(10, 8, 14, 0.88); backdrop-filter:blur(12px); padding:14px 22px; border-radius:16px; border:1px solid rgba(255,255,255,0.12); max-width:680px; margin:0 auto;">
+              
+              <!-- Línea en Idioma Meta (Palabras Clicables) -->
+              <p style="font-family:'Libre Caslon Text',serif; font-size:22px; color:#fff; margin:0 0 6px; letter-spacing:0.02em;">
+                «Elle <span style="border-bottom:2px solid var(--soleil); color:var(--soleil); cursor:pointer; font-weight:700;" onclick="inspectWord('cultive', 'cultiver', '/kyl.ti.ve/', 'Dedicar tiempo y mimo a un placer íntimo o hábito singular.')">cultive</span> un <span style="cursor:pointer;" onclick="inspectWord('goût', 'le goût', '/ɡu/', 'Preferencia o inclinación estética/sensorial.')">goût</span> particulier pour les petits <span style="cursor:pointer;" onclick="inspectWord('plaisirs', 'le plaisir', '/plɛ.ziʁ/', 'Placeres cotidianos sencillos.')">plaisirs</span>.»
+              </p>
+              
+              <!-- Línea Secundaria en Español (con efecto Blur para Active Recall) -->
+              <p id="overlay-translation" class="blurred-translation" style="font-size:13.5px; color:rgba(255,255,255,0.75); margin:0;" title="Pasa el ratón o pulsa 'E' para revelar">
+                (Ella cultiva un gusto particular por los pequeños placeres.)
+              </p>
+            </div>
+          </div>
+
+          <!-- Barra de Controles Inferior -->
+          <div style="margin-top:14px;">
+            <div style="width:100%; height:5px; background:rgba(255,255,255,0.15); border-radius:999px; margin-bottom:10px; cursor:pointer;">
+              <div style="width:34%; height:100%; background:var(--soleil); border-radius:999px;"></div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; color:#fff; font-size:12px;">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <button type="button" style="background:none; border:none; color:#fff; cursor:pointer;"><i data-lucide="play" width="18" height="18"></i></button>
+                <button type="button" onclick="replayCurrentLine()" style="background:none; border:none; color:var(--soleil); cursor:pointer;" title="Repetir frase actual (Tecla S)"><i data-lucide="rotate-ccw" width="16" height="16"></i></button>
+                <button type="button" onclick="alert('Frase anterior (Tecla A)')" style="background:none; border:none; color:rgba(255,255,255,0.7); cursor:pointer;" title="Frase anterior (Tecla A)"><i data-lucide="skip-back" width="16" height="16"></i></button>
+                <button type="button" onclick="alert('Frase siguiente (Tecla D)')" style="background:none; border:none; color:rgba(255,255,255,0.7); cursor:pointer;" title="Frase siguiente (Tecla D)"><i data-lucide="skip-forward" width="16" height="16"></i></button>
+                <span style="font-variant-numeric:tabular-nums; color:rgba(255,255,255,0.7);">00:14:32 / 02:02:10</span>
+              </div>
+
+              <div style="display:flex; align-items:center; gap:12px;">
+                <button type="button" onclick="alert('Frase capturada y enviada al Estudio de Shadowing')" style="background:var(--sauge); color:#fff; border:none; border-radius:999px; padding:5px 14px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; cursor:pointer; display:flex; align-items:center; gap:6px;">
+                  <i data-lucide="mic" width="13" height="13"></i>
+                  <span>Enviar a Shadowing</span>
+                </button>
+                <button type="button" style="background:none; border:none; color:#fff; cursor:pointer;"><i data-lucide="volume-2" width="16" height="16"></i></button>
+                <button type="button" style="background:none; border:none; color:#fff; cursor:pointer;"><i data-lucide="maximize" width="16" height="16"></i></button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ZONA 2: PANEL LATERAL DE TRANSCRIPCIÓN SINCRONIZADA (ESTILO LANGUAGE REACTOR) -->
+        <div style="flex:1.2; background:#120e1a; border-left:1px solid rgba(255,255,255,0.08); display:flex; flex-direction:column; min-height:0;">
+          
+          <div style="padding:14px 20px; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <i data-lucide="align-left" width="16" height="16" style="color:var(--soleil);"></i>
+              <span style="font-size:12.5px; font-weight:700; color:#fff;">Guion Sincronizado (Línea por Línea)</span>
+            </div>
+            <button type="button" onclick="alert('Exportando guion completo a formato Anki .apkg con marcas de tiempo')" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:var(--cinema-muted); border-radius:6px; padding:3px 8px; font-size:10.5px; font-weight:600; cursor:pointer;">
+              Exportar a Anki
+            </button>
+          </div>
+
+          <!-- Lista de Diálogos Sincronizados -->
+          <div style="flex:1; overflow-y:auto; padding:16px 20px;">
+            
+            <!-- Línea 1 -->
+            <div class="transcript-line" onclick="jumpToScene('00:14:20')">
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:10.5px; color:rgba(255,255,255,0.4);">
+                <span>00:14:20</span>
+                <span>NARRATEUR</span>
+              </div>
+              <p style="font-family:'Libre Caslon Text',serif; font-size:14px; color:#fff; margin:0;">
+                Amélie n'a pas d'homme dans sa vie. Elle a essayé, mais le résultat n'a pas été à la hauteur de ses espérances.
+              </p>
+              <p class="blurred-translation" style="font-size:11.5px; color:rgba(255,255,255,0.6); margin:0;">
+                (Amélie no tiene ningún hombre en su vida. Lo ha intentado, pero el resultado no ha estado a la altura...)
+              </p>
+            </div>
+
+            <!-- Línea 2: ACTIVA -->
+            <div class="transcript-line active" onclick="jumpToScene('00:14:32')">
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:10.5px; color:var(--soleil);">
+                <span><i data-lucide="play" width="10" height="10" fill="currentColor"></i> <span>00:14:32 (LÍNEA ACTUAL)</span></span>
+                <span style="font-weight:700;">NARRATEUR</span>
+              </div>
+              <p style="font-family:'Libre Caslon Text',serif; font-size:15px; color:#fff; margin:0; font-weight:600;">
+                Elle cultive un goût particulier pour les petits plaisirs : plonger la main dans un sac de grains...
+              </p>
+              <p id="transcript-line-2-trans" class="blurred-translation" style="font-size:12px; color:rgba(255,255,255,0.75); margin:0;">
+                (Ella cultiva un gusto particular por los pequeños placeres: hundir la mano en un saco de legumbres...)
+              </p>
+            </div>
+
+            <!-- Línea 3 -->
+            <div class="transcript-line" onclick="jumpToScene('00:14:45')">
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:10.5px; color:rgba(255,255,255,0.4);">
+                <span>00:14:45</span>
+                <span>NARRATEUR</span>
+              </div>
+              <p style="font-family:'Libre Caslon Text',serif; font-size:14px; color:#fff; margin:0;">
+                ...briser la croûte des crèmes brûlées avec la pointe de la petite cuillère...
+              </p>
+              <p class="blurred-translation" style="font-size:11.5px; color:rgba(255,255,255,0.6); margin:0;">
+                (...romper la costra de las cremas catalanas con la punta de la cucharilla...)
+              </p>
+            </div>
+
+            <!-- Línea 4 -->
+            <div class="transcript-line" onclick="jumpToScene('00:14:58')">
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:10.5px; color:rgba(255,255,255,0.4);">
+                <span>00:14:58</span>
+                <span>NARRATEUR</span>
+              </div>
+              <p style="font-family:'Libre Caslon Text',serif; font-size:14px; color:#fff; margin:0;">
+                ...et faire des ricochets sur le canal Saint-Martin.
+              </p>
+              <p class="blurred-translation" style="font-size:11.5px; color:rgba(255,255,255,0.6); margin:0;">
+                (...y hacer rebotar piedras en el canal Saint-Martin.)
+              </p>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    if (window.lucide) lucide.createIcons();
+
+    let isAutoPause = true;
+    let isBlurMode = true;
+
+    const MOVIES_DATABASE = {
+      amelie: {
+        title: "Le Fabuleux Destin d'Amélie Poulain",
+        lang: "FRANÇAIS [V.O.]",
+        meta: "2h 02m · 2001 · Comedia / Romance",
+        director: "Jean-Pierre Jeunet",
+        cast: "Audrey Tautou, Mathieu Kassovitz, Rufus, Jamel Debbouze",
+        synopsis: "Amélie, una camarera de Montmartre con una imaginación desbordante, decide dedicar su vida a cambiar discretamente el destino de quienes la rodean mientras busca su propio amor por las calles de París."
+      },
+      dark: {
+        title: "Dark",
+        lang: "DEUTSCH [V.O.]",
+        meta: "3 Temporadas · 2017 · Misterio / Ciencia Ficción",
+        director: "Baran bo Odar",
+        cast: "Louis Hofmann, Oliver Masucci, Jördis Triebel, Maja Schöne",
+        synopsis: "La desaparición de dos niños en la pequeña ciudad alemana de Winden desentierra oscuros secretos, dobles vidas y relaciones rotas entre cuatro familias a lo largo de varias generaciones vinculadas por viajes en el tiempo."
+      },
+      lupin: {
+        title: "Lupin",
+        lang: "FRANÇAIS [V.O.]",
+        meta: "3 Partes · 2021 · Acción / Crimen",
+        director: "Louis Leterrier, Marcela Said",
+        cast: "Omar Sy, Ludivine Sagnier, Clotilde Hesme",
+        synopsis: "Inspirado por las legendarias aventuras de Arsène Lupin, el ladrón de guante blanco Assane Diop se propone vengar a su padre de las injusticias cometidas por una acaudalada dinastía familiar."
+      },
+      intouchables: {
+        title: "Intouchables",
+        lang: "FRANÇAIS [V.O.]",
+        meta: "1h 52m · 2011 · Comedia / Drama",
+        director: "Olivier Nakache, Éric Toledano",
+        cast: "François Cluzet, Omar Sy, Anne Le Ny",
+        synopsis: "Tras un grave accidente de parapente, un aristócrata millonario contrata como cuidador a domicilio a un joven de los suburbios parisinos recién salido de prisión, dando lugar a una insólita y transformadora amistad."
+      },
+      lahaine: {
+        title: "La Haine",
+        lang: "FRANÇAIS [V.O.]",
+        meta: "1h 38m · 1995 · Drama / Culto",
+        director: "Mathieu Kassovitz",
+        cast: "Vincent Cassel, Hubert Koundé, Saïd Taghmaoui",
+        synopsis: "Un día en la vida de tres jóvenes amigos en los suburbios marginados de París tras una noche de violentos disturbios desencadenados por la brutalidad policial."
+      },
+      portrait: {
+        title: "Portrait de la jeune fille en feu",
+        lang: "FRANÇAIS [V.O.]",
+        meta: "2h 02m · 2019 · Drama Romántico de Época",
+        director: "Céline Sciamma",
+        cast: "Noémie Merlant, Adèle Haenel, Luàna Bajrami",
+        synopsis: "En la Francia del siglo XVIII, una joven pintora recibe el encargo de realizar en secreto el retrato de bodas de una dama aristocrática, forjando entre ambas una intensa intimidad."
+      },
+      babylon: {
+        title: "Babylon Berlin",
+        lang: "DEUTSCH [V.O.]",
+        meta: "4 Temporadas · 2017 · Crimen Histórico / Neo-noir",
+        director: "Tom Tykwer, Achim von Borries, Henk Handloegten",
+        cast: "Volker Bruch, Liv Lisa Fries, Peter Kurth",
+        synopsis: "En la efervescente y turbulenta República de Weimar de 1929, un joven comisario de Colonia llega a Berlín para investigar una red de extorsión vinculada a la mafia y a las conspiraciones políticas."
+      },
+      leben: {
+        title: "Das Leben der Anderen",
+        lang: "DEUTSCH [V.O.]",
+        meta: "2h 17m · 2006 · Drama Histórico / Ganadora del Óscar",
+        director: "Florian Henckel von Donnersmarck",
+        cast: "Ulrich Mühe, Sebastian Koch, Martina Gedeck",
+        synopsis: "En el Berlín Oriental de 1984, un oficial de la Stasi asignado a espiar y vigilar la vida de un dramaturgo disidente y su amante empieza a sentirse conmovido por sus vidas y su arte."
+      },
+      lenin: {
+        title: "Good Bye Lenin!",
+        lang: "DEUTSCH [V.O.]",
+        meta: "2h 01m · 2003 · Comedia Dramática",
+        director: "Wolfgang Becker",
+        cast: "Daniel Brühl, Katrin Sass, Chulpan Khamatova",
+        synopsis: "Para proteger a su frágil madre comunista tras despertar de un coma después de la caída del Muro de Berlín, un joven intenta recrear la extinta República Democrática Alemana dentro de su apartamento."
+      },
+      "1899": {
+        title: "1899",
+        lang: "DEUTSCH [V.O.]",
+        meta: "8 Episodios · 2022 · Misterio Sobrenatural",
+        director: "Jantje Friese, Baran bo Odar",
+        cast: "Emily Beecham, Aneurin Barnard, Andreas Pietschmann",
+        synopsis: "Un barco de vapor lleno de inmigrantes europeos rumbo a Nueva York se topa con un misterioso navío a la deriva en alta mar, desatando una pesadilla inexplicable."
+      }
+    };
+
+    function openMovieDetailSheet(movieId) {
+      const data = MOVIES_DATABASE[movieId] || MOVIES_DATABASE.amelie;
+      document.getElementById('sheet-title').innerText = data.title;
+      document.getElementById('sheet-lang-badge').innerText = data.lang;
+      document.getElementById('sheet-meta-info').innerText = data.meta;
+      document.getElementById('sheet-director').innerText = data.director;
+      document.getElementById('sheet-cast').innerText = data.cast;
+      document.getElementById('sheet-synopsis').innerText = data.synopsis;
+
+      document.getElementById('modal-movie-sheet').style.display = 'flex';
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeMovieDetailSheet() {
+      document.getElementById('modal-movie-sheet').style.display = 'none';
+    }
+
+    function openCinemaPlayer(title, lang) {
+      document.getElementById('player-movie-title').innerText = title;
+      document.getElementById('player-lang-badge').innerText = lang;
+      document.getElementById('modal-cinema-player').style.display = 'flex';
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeCinemaPlayer() {
+      document.getElementById('modal-cinema-player').style.display = 'none';
+      closeWordInspector();
+    }
+
+    /* Funcionalidad Language Reactor */
+    function inspectWord(word, lemma, ipa, def) {
+      document.getElementById('inspect-lemma').innerText = lemma;
+      document.getElementById('inspect-ipa').innerText = ipa;
+      document.getElementById('inspect-def').innerHTML = '<strong>En este contexto:</strong> ' + def;
+      document.getElementById('word-inspector').style.display = 'block';
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeWordInspector() {
+      document.getElementById('word-inspector').style.display = 'none';
+    }
+
+    function toggleAutoPause() {
+      isAutoPause = !isAutoPause;
+      const btn = document.getElementById('btn-auto-pause');
+      btn.innerText = isAutoPause ? '<i data-lucide="pause-circle" width="13" height="13"></i> <span id="txt-ap">Auto-Pausa (Q): ON</span>' : '<i data-lucide="pause-circle" width="13" height="13"></i> <span id="txt-ap">Auto-Pausa (Q): OFF</span>';
+      btn.style.color = isAutoPause ? 'var(--soleil)' : 'rgba(255,255,255,0.5)';
+    }
+
+    function toggleBlurMode() {
+      isBlurMode = !isBlurMode;
+      const btn = document.getElementById('btn-blur-mode');
+      btn.innerText = isBlurMode ? '<i data-lucide="eye-off" width="13" height="13"></i> <span id="txt-blur">Blur Español (E): ON</span>' : '<i data-lucide="eye-off" width="13" height="13"></i> <span id="txt-blur">Blur Español (E): OFF</span>';
+      
+      const elements = document.querySelectorAll('.blurred-translation');
+      elements.forEach(el => {
+        if (isBlurMode) {
+          el.classList.remove('revealed');
+        } else {
+          el.classList.add('revealed');
+        }
+      });
+    }
+
+    function replayCurrentLine() {
+      alert('Repitiendo la frase actual en bucle (Tecla S)');
+    }
+
+    function jumpToScene(timestamp) {
+      alert('Saltando video a ' + timestamp + ' con subtítulo sincronizado');
+    }
+
+    /* Hotkeys de Language Reactor (A, S, D, Q, E) */
+    document.addEventListener('keydown', function(e) {
+      const playerModal = document.getElementById('modal-cinema-player');
+      if (playerModal.style.display !== 'flex') return;
+
+      const key = e.key.toLowerCase();
+      if (key === 'q') {
+        toggleAutoPause();
+      } else if (key === 'e') {
+        toggleBlurMode();
+      } else if (key === 's' || e.key === 'ArrowDown') {
+        replayCurrentLine();
+      } else if (key === 'a' || e.key === 'ArrowLeft') {
+        alert('Frase anterior (Tecla A)');
+      } else if (key === 'd' || e.key === 'ArrowRight') {
+        alert('Frase siguiente (Tecla D)');
+      } else if (e.key === 'Escape') {
+        closeCinemaPlayer();
+      }
+    });
+  </script>
+</body>
+</html>
