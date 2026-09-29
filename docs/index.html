@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WonderWord-UNI — Carnet de Bord de Recherche & Développement</title>
+  <meta name="description" content="Carnet de bord du projet WonderWord-UNI - Master Humanités Numériques : parcours NET - Université Paris 8." />
+
+  <!-- Polices Éditoriales & Linguistiques -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Charis+SIL:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@0.462.0/dist/umd/lucide.js"></script>
+
+  <style>
+    :root {
+      /* ── Les Cinq Pigments Littéraires ── */
+      --prune: #53335a;
+      --prune-2: #6f4877;
+      --prune-wash: rgba(83, 51, 90, 0.08);
+      
+      --sauge: #006a64;
+      --sauge-2: #0f8c84;
+      --sauge-wash: rgba(0, 106, 100, 0.09);
+      
+      --soleil: #ffcd11;
+      --soleil-ink: #463605;
+      --soleil-wash: rgba(255, 205, 17, 0.22);
+      
+      --terre: #c4632f;
+      --terre-ink: #9c4a1e;
+      --terre-wash: rgba(196, 99, 47, 0.12);
+      
+      --bleuet: #7b9bd1;
+      --bleuet-ink: #3f5f96;
+      --bleuet-wash: rgba(123, 155, 209, 0.16);
+
+      --canvas: #fbf7ee;
+      --paper: #ffffff;
+      --paper-warm: #fcf9f2;
+      --paper-2: #f4ecdc;
+      --ink: #241d24;
+      --ink-2: #4f4550;
+      --ink-3: #756a77;
+      --rule: rgba(36, 29, 36, 0.12);
+      --rule-soft: rgba(36, 29, 36, 0.06);
+
+      --rail: #282031;
+      --rail-ink: #f2ecf1;
+      --rail-ink-2: #a99fac;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--canvas);
+      color: var(--ink);
+      font-family: 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* Textura sutil de papel prensado */
+    .paper-texture {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 50;
+      mix-blend-mode: multiply;
+      opacity: 0.07;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    /* Encabezado */
+    header.site-header {
+      background: var(--rail);
+      color: var(--rail-ink);
+      padding: 32px 24px 28px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      position: relative;
+    }
+    .header-inner {
+      max-width: 980px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .academic-banner {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--soleil);
+      font-weight: 700;
+    }
+    .site-title {
+      font-family: 'Libre Caslon Text', Georgia, serif;
+      font-size: clamp(32px, 5vw, 44px);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+      line-height: 1.15;
+    }
+    .site-subtitle {
+      font-size: 15px;
+      color: var(--rail-ink-2);
+      max-width: 720px;
+      line-height: 1.5;
+    }
+    .header-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      margin-top: 8px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 12.5px;
+    }
+    .meta-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 5px 12px;
+      border-radius: 999px;
+      color: #fff;
+    }
+
+    /* Layout Principal */
+    main.content-wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    /* Introducción Académica */
+    .intro-card {
+      background: var(--paper);
+      border-radius: 20px;
+      border: 1px solid var(--rule);
+      padding: 36px 40px;
+      box-shadow: 0 4px 20px -8px rgba(36,29,36,0.08);
+      margin-bottom: 48px;
+      position: relative;
+    }
+    .intro-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 24px;
+      bottom: 24px;
+      width: 4px;
+      background: var(--sauge);
+      border-radius: 0 4px 4px 0;
+    }
+    .intro-title {
+      font-family: 'Libre Caslon Text', serif;
+      font-size: 26px;
+      margin-bottom: 14px;
+      color: var(--ink);
+    }
+    .intro-text {
+      color: var(--ink-2);
+      font-size: 15.5px;
+      line-height: 1.75;
+      margin-bottom: 16px;
+    }
+
+    /* Línea de Tiempo de Bitácora */
+    .timeline-heading {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+    .timeline-heading h2 {
+      font-family: 'Libre Caslon Text', serif;
+      font-size: 28px;
+      color: var(--ink);
+      white-space: nowrap;
+    }
+    .heading-rule {
+      flex: 1;
+      height: 1px;
+      background: var(--rule);
+    }
+
+    /* Entradas del Carnet */
+    .log-entries {
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    .log-card {
+      background: var(--paper);
+      border-radius: 18px;
+      border: 1px solid var(--rule);
+      padding: 32px 36px;
+      box-shadow: 0 2px 12px -4px rgba(36,29,36,0.05);
+      position: relative;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .log-card:hover {
+      box-shadow: 0 8px 24px -8px rgba(36,29,36,0.1);
+    }
+    .log-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .log-date-badge {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: var(--prune-wash);
+      color: var(--prune);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .log-title {
+      font-family: 'Libre Caslon Text', serif;
+      font-size: 22px;
+      color: var(--ink);
+      line-height: 1.3;
+      margin-top: 6px;
+    }
+    .log-body {
+      color: var(--ink-2);
+      font-size: 15px;
+      line-height: 1.75;
+    }
+    .log-body p { margin-bottom: 14px; }
+    .log-body p:last-child { margin-bottom: 0; }
+
+    .tag-pill {
+      font-size: 11px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: var(--paper-warm);
+      border: 1px solid var(--rule);
+      color: var(--ink-3);
+    }
+
+    /* Bloque de Código / Cita / Fonética */
+    .phonetic-highlight {
+      background: var(--paper-warm);
+      border-left: 3px solid var(--soleil);
+      padding: 16px 20px;
+      border-radius: 0 10px 10px 0;
+      margin: 18px 0;
+      font-size: 14px;
+    }
+    .ipa-badge {
+      font-family: 'Charis SIL', serif;
+      font-size: 15px;
+      color: var(--sauge);
+      font-weight: 700;
+      background: rgba(0,106,100,0.08);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    ruby { ruby-position: over; padding: 0 2px; }
+    rt {
+      font-family: 'Charis SIL', serif;
+      font-size: 11px;
+      color: var(--sauge);
+      font-weight: 700;
+    }
+
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      background: var(--paper-warm);
+      padding: 2px 5px;
+      border-radius: 4px;
+      border: 1px solid var(--rule-soft);
+    }
+
+    /* Pie de página */
+    footer.site-footer {
+      border-top: 1px solid var(--rule);
+      background: var(--paper-warm);
+      padding: 36px 24px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--ink-3);
+    }
+    footer a {
+      color: var(--prune);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 640px) {
+      .intro-card, .log-card { padding: 24px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="paper-texture"></div>
+
+  <!-- En-tête Académique -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="academic-banner">
+        <i data-lucide="graduation-cap" width="16" height="16"></i>
+        <span>Université Paris 8 · Master Humanités Numériques (NET)</span>
+      </div>
+      
+      <h1 class="site-title">WonderWord-UNI</h1>
+      <p class="site-subtitle">
+        Carnet de bord scientifique et technique de recherche & développement. Plateforme universitaire de lecture augmentée, laboratoire phonétique de Shadowing et cercles de lecture sociolinguistiques.
+      </p>
+
+      <div class="header-meta">
+        <span class="meta-tag"><i data-lucide="user" width="13" height="13"></i> Luis Betancourt D.</span>
+        <span class="meta-tag"><i data-lucide="folder-git-2" width="13" height="13"></i> Dépôt GitHub : <a href="https://github.com/luisbetancourtd/WonderWord-UNI" target="_blank" style="color:var(--soleil); text-decoration:none; margin-left:4px;">luisbetancourtd/WonderWord-UNI</a></span>
+        <span class="meta-tag"><i data-lucide="globe" width="13" height="13"></i> Déploiement : wonderword.luisbetancourt.fr</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenu Principal -->
+  <main class="content-wrap">
+
+    <!-- Présentation Générale -->
+    <section class="intro-card">
+      <h2 class="intro-title">À propos de ce carnet de recherche</h2>
+      <p class="intro-text">
+        Ce carnet documente pas à pas les expérimentations, la conception d'interfaces, les choix didactiques et les arbitrages techniques du projet <strong>WonderWord-UNI</strong>, développé dans le cadre du <strong>Master Humanités Numériques : parcours NET (Numérique : Enjeux et Technologies)</strong> de l'Université Paris 8 Vincennes – Saint-Denis.
+      </p>
+      <p class="intro-text">
+        L'objectif central est d'explorer comment les humanités numériques peuvent renouveler l'apprentissage des langues par la rencontre entre l'<strong>art éditorial littéraire</strong>, le <strong>traitement automatique des langues (TAL)</strong> et la <strong>phonétique acoustique computationnelle</strong>.
+      </p>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:16px;">
+        <span class="tag-pill">FLE (Français Langue Étrangère)</span>
+        <span class="tag-pill">Phonétique Acoustique & Praat</span>
+        <span class="tag-pill">Shadowing Actif</span>
+        <span class="tag-pill">React & TypeScript</span>
+        <span class="tag-pill">Azure for Students</span>
+      </div>
+    </section>
+
+    <!-- Entrées Chronologiques de la Bitácora -->
+    <section>
+      <div class="timeline-heading">
+        <h2>Journal de Bord & Décisions</h2>
+        <div class="heading-rule"></div>
+      </div>
+
+      <div class="log-entries">
+
+        <!-- Entrée 03: Architecture Phonétique & Python -->
+        <article class="log-card">
+          <div class="log-header">
+            <div>
+              <div class="log-date-badge">
+                <i data-lucide="calendar" width="13" height="13"></i>
+                29 Septembre 2026 · Entrée #03
+              </div>
+              <h3 class="log-title">Arbitrage Didactique : Souveraineté de l'Analyse Phonétique avec Python & Praat</h3>
+            </div>
+          </div>
+          <div class="log-body">
+            <p>
+              Pour le laboratoire de <em>Shadowing</em>, nous avons confronté deux approches d'analyse acoustique : faire appel à une API commerciale propriétaire (Gemini 2.0 Flash Audio) ou déployer notre propre pipeline d'analyse phonétique ouvert en Python.
+            </p>
+            <p>
+              <strong>Décision retenue :</strong> Abandon de la dépendance exclusive aux API payantes par jetons. Nous adoptons un microservice en <strong>Python</strong> exploitant la bibliothèque <code>parselmouth</code> (portage C++ de <strong>Praat</strong>, standard académique mondial en phonétique) et des modèles de reconnaissance légère (Vosk-FR / Sherpa-ONNX) pour tourner sans GPU sur la machine virtuelle gratuite Linux B1s d'<strong>Azure for Students</strong>.
+            </p>
+            
+            <div class="phonetic-highlight">
+              <strong>Application concrète :</strong> Le calcul en millisecondes des formants acoustiques <code>F1</code> (degré d'aperture) et <code>F2</code> (lieu d'articulation antérieur/postérieur) permet d'attester scientifiquement si un apprenant hispanophone prononce la voyelle fermée antérieure arrondie <span class="ipa-badge">/y/</span> (ex: <em>tu</em>, $F_2 \approx 1900\text{ Hz}$) ou si elle est substituée par la voyelle postérieure <span class="ipa-badge">/u/</span> (ex: <em>tout</em>, $F_2 \approx 800\text{ Hz}$).
+            </div>
+
+            <p>
+              Cette approche garantit un coût financier nul, une souveraineté totale des données vocales des utilisateurs et une valeur de recherche scientifique déterminante pour le jury du Master à Paris 8.
+            </p>
+          </div>
+        </article>
+
+        <!-- Entrée 02: Design Éditorial & Typographie IPA -->
+        <article class="log-card">
+          <div class="log-header">
+            <div>
+              <div class="log-date-badge">
+                <i data-lucide="calendar" width="13" height="13"></i>
+                25 Septembre 2026 · Entrée #02
+              </div>
+              <h3 class="log-title">Conception Visuelle : Métaphore du Papier Pressé & Gloses Phonétiques</h3>
+            </div>
+          </div>
+          <div class="log-body">
+            <p>
+              Rejet des interfaces de lecture stériles et standardisées au profit d'une expérience ancrée dans la tradition de l'imprimerie et de la reliure d'art française.
+            </p>
+            <p>
+              Mise en place de la <strong>Caisse de cinq pigments littéraires</strong> : <em>Prune</em> (#53335a), <em>Sauge</em> (#006a64), <em>Soleil</em> (#ffcd11), <em>Terre</em> (#c4632f) et <em>Bleuet</em> (#7b9bd1), associés à un filtre SVG de texture papier pressé (<em>mix-blend-mode: multiply</em>).
+            </p>
+            <p>
+              Intégration de la police de référence mondiale pour la phonétique, <strong>Charis SIL</strong>, et utilisation sémantique des balises HTML :
+              <span style="font-family:'Libre Caslon Text',serif; font-size:18px; margin-left:8px;">
+                <ruby>planète<rt>planɛt</rt></ruby> · <ruby>raisons<rt>ʁɛzɔ̃</rt></ruby>
+              </span>
+            </p>
+          </div>
+        </article>
+
+        <!-- Entrée 01: Genèse & Cadrage Didactique -->
+        <article class="log-card">
+          <div class="log-header">
+            <div>
+              <div class="log-date-badge">
+                <i data-lucide="calendar" width="13" height="13"></i>
+                23 Septembre 2026 · Entrée #01
+              </div>
+              <h3 class="log-title">Genèse : Quand l'Amour de la Littérature Rencontre le Shadowing Vivant</h3>
+            </div>
+          </div>
+          <div class="log-body">
+            <p>
+              La lecture en langue étrangère souffre fréquemment d'une fracture entre la compréhension passive et l'incapacité d'articuler à l'oral les œuvres lues.
+            </p>
+            <p>
+              Le projet <strong>WonderWord-UNI</strong> naît de la volonté de combler ce fossé par le <em>Shadowing phonétique</em> : l'apprenant écoute la prosodie littéraire, enregistre sa voix, et reçoit un diagnostic immédiat sur son rythme et les phonèmes critiques (voyelles nasales, <em>liaisons</em> obligatoires).
+            </p>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Pied de page -->
+  <footer class="site-footer">
+    <p>
+      <strong>WonderWord-UNI</strong> · Projet de recherche-création pour le Master Humanités Numériques (NET) · 
+      <a href="https://www.univ-paris8.fr/" target="_blank">Université Paris 8</a>
+    </p>
+    <p style="margin-top:6px;">
+      Dépôt officiel : <a href="https://github.com/luisbetancourtd/WonderWord-UNI" target="_blank">luisbetancourtd/WonderWord-UNI</a> · Déployé via GitHub Pages
+    </p>
+  </footer>
+
+  <script>
+    // Initialisation des icônes Lucide
+    lucide.createIcons();
+  </script>
+</body>
+</html>
