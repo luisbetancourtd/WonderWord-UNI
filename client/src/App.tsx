@@ -1,15 +1,39 @@
 import { useState, useEffect } from 'react';
-import type { ViewType, ThemeType } from './types';
+import type { ViewType, ThemeType, User } from './types';
+import { apiFetch } from './lib/api';
 import { PaperBackground } from './components/common/PaperBackground';
 import { RailSidebar } from './components/layout/RailSidebar';
 import { TopBar } from './components/layout/TopBar';
 import { DashboardView } from './components/dashboard/DashboardView';
 import { ReaderView } from './components/reader/ReaderView';
 import { ShadowingView } from './components/shadowing/ShadowingView';
+import { AuthView } from './components/auth/AuthView';
 
 export function App() {
   const [currentView, setCurrentView] = useState<ViewType>('dashboard');
   const [currentTheme, setCurrentTheme] = useState<ThemeType>('papel');
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  // Vérifier le token JWT au chargement
+  useEffect(() => {
+    const token = localStorage.getItem('wonderword_token');
+    if (!token) {
+      setAuthLoading(false);
+      return;
+    }
+
+    apiFetch<User>('/auth/me')
+      .then((userData) => {
+        setUser(userData);
+      })
+      .catch(() => {
+        localStorage.removeItem('wonderword_token');
+      })
+      .finally(() => {
+        setAuthLoading(false);
+      });
+  }, []);
 
   // Appliquer l'attribut data-theme au document racine
   useEffect(() => {
@@ -19,6 +43,11 @@ export function App() {
       document.documentElement.setAttribute('data-theme', currentTheme);
     }
   }, [currentTheme]);
+
+  const handleAuthSuccess = (token: string, userData: User) => {
+    localStorage.setItem('wonderword_token', token);
+    setUser(userData);
+  };
 
   const getBreadcrumb = () => {
     switch (currentView) {
@@ -34,6 +63,23 @@ export function App() {
         return 'WonderWord-UNI';
     }
   };
+
+  // Écran de chargement initial
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-canvas">
+        <div className="text-center space-y-4">
+          <h1 className="font-serif text-4xl text-ink">WonderWord</h1>
+          <p className="text-ink-2 animate-pulse">Chargement...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Écran d'authentification
+  if (!user) {
+    return <AuthView onAuthSuccess={handleAuthSuccess} />;
+  }
 
   return (
     <div className="min-h-screen flex text-ink bg-canvas transition-colors duration-300 relative">
