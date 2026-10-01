@@ -1,0 +1,232 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* ── Les Cinq Pigments Littéraires ── */
+  --prune: #53335a;
+  --prune-2: #6f4877;
+  --prune-wash: rgba(83, 51, 90, 0.11);
+  --prune-glow: rgba(83, 51, 90, 0.35);
+
+  --sauge: #006a64;
+  --sauge-2: #0f8c84;
+  --sauge-wash: rgba(0, 106, 100, 0.10);
+  --sauge-glow: rgba(0, 106, 100, 0.35);
+
+  --soleil: #ffcd11;
+  --soleil-ink: #463605;
+  --soleil-wash: rgba(255, 205, 17, 0.22);
+
+  --terre: #c4632f;
+  --terre-2: #dc7238;
+  --terre-ink: #9c4a1e;
+  --terre-wash: rgba(196, 99, 47, 0.14);
+  --terre-glow: rgba(196, 99, 47, 0.40);
+
+  --bleuet: #7b9bd1;
+  --bleuet-2: #5b81c2;
+  --bleuet-ink: #3f5f96;
+  --bleuet-wash: rgba(123, 155, 209, 0.18);
+
+  --canvas: #fdfaf3;
+  --paper: #fffdf8;
+  --paper-warm: #fcf9f2;
+  --paper-2: #f6efe2;
+  --ink: #241d24;
+  --ink-2: #544a54;
+  --ink-3: #6f6570;
+  --rule: rgba(36, 29, 36, 0.15);
+  --rule-soft: rgba(36, 29, 36, 0.08);
+
+  --rail: #282031;
+  --rail-2: #342a3e;
+  --rail-ink: #f2ecf1;
+  --rail-ink-2: #a99fac;
+  --rail-ink-3: #9c92a0;
+  --rail-rule: rgba(255, 255, 255, 0.11);
+
+  --grain: 0.085;
+  --tooth: 0.5;
+  --vignette-opacity: 0.85;
+}
+
+[data-theme="sepia"] {
+  --prune: #5b3b63;
+  --prune-2: #755080;
+  --prune-wash: rgba(91, 59, 99, 0.12);
+
+  --sauge: #0a6159;
+  --sauge-2: #12857a;
+  --sauge-wash: rgba(10, 97, 89, 0.11);
+
+  --soleil: #eaa90d;
+  --soleil-ink: #463605;
+  --soleil-wash: rgba(234, 169, 13, 0.22);
+
+  --terre: #b25a2a;
+  --terre-2: #ca6a35;
+  --terre-ink: #8c4318;
+  --terre-wash: rgba(178, 90, 42, 0.14);
+
+  --bleuet: #7590bd;
+  --bleuet-2: #5877aa;
+  --bleuet-ink: #3a5788;
+  --bleuet-wash: rgba(117, 144, 189, 0.16);
+
+  --canvas: #f4ecdb;
+  --paper: #fbf5e8;
+  --paper-warm: #f7eedb;
+  --paper-2: #ebdfc7;
+  --ink: #2a2211;
+  --ink-2: #5b4e33;
+  --ink-3: #6f6142;
+  --rule: rgba(56, 44, 20, 0.19);
+  --rule-soft: rgba(56, 44, 20, 0.09);
+
+  --rail: #272014;
+  --rail-2: #33291a;
+  --rail-ink: #f1eade;
+  --rail-ink-2: #ab9f8a;
+  --rail-ink-3: #a0957f;
+  --rail-rule: rgba(255, 255, 255, 0.11);
+  --grain: 0.1;
+  --tooth: 0.6;
+  --vignette-opacity: 0.7;
+}
+
+[data-theme="noche"] {
+  --prune: #d7b3de;
+  --prune-2: #c49ecc;
+  --prune-wash: rgba(215, 179, 222, 0.13);
+
+  --sauge: #7fd2c9;
+  --sauge-2: #9fe0d8;
+  --sauge-wash: rgba(127, 210, 201, 0.13);
+
+  --soleil: #ffcd11;
+  --soleil-ink: #ffe9ad;
+  --soleil-wash: rgba(255, 205, 17, 0.16);
+
+  --terre: #e08a56;
+  --terre-2: #efa172;
+  --terre-ink: #e8996a;
+  --terre-wash: rgba(224, 138, 86, 0.15);
+
+  --bleuet: #96b0dd;
+  --bleuet-2: #adc2e8;
+  --bleuet-ink: #a6bde5;
+  --bleuet-wash: rgba(150, 176, 221, 0.17);
+
+  --canvas: #16141a;
+  --paper: #1e1a26;
+  --paper-warm: #231f2c;
+  --paper-2: #2b2536;
+  --ink: #f2ecf3;
+  --ink-2: #b8b0bb;
+  --ink-3: #8e8492;
+  --rule: rgba(236, 230, 237, 0.15);
+  --rule-soft: rgba(236, 230, 237, 0.08);
+
+  --rail: #100e14;
+  --rail-2: #1b1822;
+  --rail-ink: #ece6ed;
+  --rail-ink-2: #9b929d;
+  --rail-ink-3: #968e99;
+  --rail-rule: rgba(255, 255, 255, 0.1);
+  --grain: 0.06;
+  --tooth: 0.35;
+  --vignette-opacity: 0.35;
+}
+
+body {
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+  min-height: 100vh;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Typographie Phonétique API & Ruby ── */
+ruby {
+  ruby-position: over;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 0 2px;
+  transition: background 0.15s ease;
+}
+ruby:hover {
+  background: var(--soleil-wash);
+}
+ruby.target-word {
+  border-bottom: 2px solid var(--soleil);
+  font-weight: 700;
+}
+rt {
+  font-family: 'Charis SIL', serif;
+  font-size: 11px;
+  line-height: 1;
+  color: var(--sauge);
+  font-weight: 700;
+  user-select: none;
+  transform: translateY(-2px);
+}
+.liaison-mark {
+  color: var(--terre);
+  font-weight: 800;
+  margin: 0 1px;
+}
+
+/* ── Lettrine Historique (Drop-Cap) ── */
+.drop-cap {
+  float: left;
+  font-size: 64px;
+  line-height: 0.85;
+  padding-top: 6px;
+  padding-right: 12px;
+  font-family: 'Libre Caslon Text', serif;
+  color: var(--prune);
+  font-weight: 700;
+}
+
+/* ── Textures & Vignettes ── */
+.paper-texture {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 60;
+  mix-blend-mode: multiply;
+  opacity: var(--grain);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.vignette-container {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  mix-blend-mode: multiply;
+  opacity: var(--vignette-opacity);
+  overflow: hidden;
+}
+.corner-top-left {
+  position: absolute; left: -60px; top: -60px; width: 440px; height: 380px;
+  background: radial-gradient(circle at 20% 20%, #4a94e8 0%, #75a7e6 42%, #a8cbfa 70%, transparent 88%);
+  border-radius: 46% 54% 48% 52% / 52% 48% 54% 46%; filter: url(#wc-vignette-heavy); opacity: 0.85;
+}
+.corner-top-right {
+  position: absolute; right: -80px; top: -60px; width: 460px; height: 360px;
+  background: radial-gradient(circle at 80% 20%, #e0548a 0%, #eb77a5 40%, #f6aec9 72%, transparent 88%);
+  border-radius: 54% 46% 52% 48% / 48% 54% 46% 54%; filter: url(#wc-vignette-heavy); opacity: 0.82;
+}
+.corner-bottom-left {
+  position: absolute; left: -70px; bottom: -70px; width: 480px; height: 380px;
+  background: radial-gradient(circle at 20% 80%, #d8682a 0%, #e88c54 44%, #f5b98f 72%, transparent 88%);
+  border-radius: 50% 50% 46% 54% / 54% 46% 52% 48%; filter: url(#wc-vignette-heavy); opacity: 0.82;
+}
+.corner-bottom-right {
+  position: absolute; right: -70px; bottom: -60px; width: 460px; height: 380px;
+  background: radial-gradient(circle at 80% 80%, #f0a818 0%, #f5c448 42%, #fae290 74%, transparent 88%);
+  border-radius: 48% 52% 54% 46% / 46% 54% 48% 52%; filter: url(#wc-vignette-heavy); opacity: 0.84;
+}

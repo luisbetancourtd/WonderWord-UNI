@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  # 1. Frontend React (Nginx)
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: wonderword-client
+    restart: always
+    ports:
+      - "3000:80"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - wonderword-network
+
+networks:
+  wonderword-network:
+    driver: bridge
