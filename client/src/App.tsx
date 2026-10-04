@@ -7,6 +7,7 @@ import { TopBar } from './components/layout/TopBar';
 import { DashboardView } from './components/dashboard/DashboardView';
 import { ReaderView } from './components/reader/ReaderView';
 import { ShadowingView } from './components/shadowing/ShadowingView';
+import { LibraryView } from './components/library/LibraryView';
 import { AuthView } from './components/auth/AuthView';
 
 export function App() {
@@ -14,6 +15,10 @@ export function App() {
   const [currentTheme, setCurrentTheme] = useState<ThemeType>('papel');
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+
+  // Livre et chapitre actuellement en lecture
+  const [activeBookId, setActiveBookId] = useState<string>('le-petit-prince');
+  const [activeChapterNumber, setActiveChapterNumber] = useState<number>(2);
 
   // Vérifier le token JWT ou le token de validation d'email dans l'URL
   useEffect(() => {
@@ -74,16 +79,22 @@ export function App() {
     setUser(userData);
   };
 
+  const handleSelectBook = (bookId: string, chapterNumber = 1) => {
+    setActiveBookId(bookId);
+    setActiveChapterNumber(chapterNumber);
+    setCurrentView('reader');
+  };
+
   const getBreadcrumb = () => {
     switch (currentView) {
       case 'dashboard':
-        return 'Tableau de bord / Le Petit Prince (Chapitre IV)';
+        return `Tableau de bord / ${user?.displayName || 'Session'}`;
       case 'reader':
-        return 'Lector & Estudio / Le Petit Prince (Chapitre II)';
+        return `Lector & Estudio / Chapitre ${activeChapterNumber}`;
       case 'shadowing':
-        return 'Laboratoire Phonétique / Studio de Shadowing';
+        return 'Laboratoire Phonétique / Studio de Shadowing & Formants';
       case 'library':
-        return 'Bibliothèque Littéraire / Catalogue Gutenberg & Gallica';
+        return 'Bibliothèque Littéraire / Catalogue Critique Paris 8';
       default:
         return 'WonderWord-UNI';
     }
@@ -123,24 +134,28 @@ export function App() {
         />
 
         <main className="flex-1">
-          {currentView === 'dashboard' && <DashboardView onNavigate={setCurrentView} />}
-          {currentView === 'reader' && <ReaderView />}
-          {currentView === 'shadowing' && <ShadowingView />}
-          {currentView === 'library' && (
-            <div className="max-w-[1080px] mx-auto px-10 py-16 text-center space-y-4">
-              <h2 className="font-serif text-3xl font-normal text-ink">Bibliothèque Littéraire</h2>
-              <p className="text-ink-2 max-w-lg mx-auto">
-                La passerelle vers les 70 000 ouvrages de Gutenberg et de la BNF sera connectée dans le prochain module.
-              </p>
-              <button 
-                type="button" 
-                onClick={() => setCurrentView('dashboard')}
-                className="bg-prune text-white text-xs font-bold uppercase tracking-wider px-6 py-2.5 rounded-full"
-              >
-                Retour au Tableau de Bord
-              </button>
-            </div>
+          {currentView === 'dashboard' && (
+            <DashboardView 
+              user={user} 
+              onNavigate={setCurrentView} 
+              onSelectBook={handleSelectBook} 
+            />
           )}
+          {currentView === 'library' && (
+            <LibraryView 
+              onNavigate={setCurrentView} 
+              onSelectBook={handleSelectBook} 
+            />
+          )}
+          {currentView === 'reader' && (
+            <ReaderView 
+              bookId={activeBookId} 
+              chapterNumber={activeChapterNumber}
+              onNavigate={setCurrentView}
+              onSelectBook={handleSelectBook}
+            />
+          )}
+          {currentView === 'shadowing' && <ShadowingView />}
           {currentView === 'vocabulary' && (
             <div className="max-w-[1080px] mx-auto px-10 py-16 text-center space-y-4">
               <h2 className="font-serif text-3xl font-normal text-ink">Vocabulaire & Mémorisation FSRS</h2>

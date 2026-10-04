@@ -4,6 +4,7 @@ import jwt from '@fastify/jwt';
 import { config } from './config.js';
 import prismaPlugin from './plugins/prisma.js';
 import authRoutes from './routes/auth.js';
+import bookRoutes from './routes/books.js';
 
 const server = Fastify({ logger: true });
 
@@ -23,6 +24,7 @@ async function main() {
   await server.register(prismaPlugin);
 
   await server.register(authRoutes, { prefix: '/api/auth' });
+  await server.register(bookRoutes, { prefix: '/api/books' });
 
   server.get('/api/health', async () => {
     return { status: 'ok', timestamp: new Date() };

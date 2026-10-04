@@ -19,15 +19,40 @@ export interface AuthResponse {
   message?: string;
 }
 
+export interface ChapterSummary {
+  id: string;
+  number: number;
+  title: string;
+  wordCount: number;
+}
+
 export interface BookSummary {
   id: string;
+  slug: string;
   title: string;
   author: string;
+  description?: string;
   coverColor: string;
   publisher: string;
-  progressPercent: number;
-  currentPage: number;
-  totalPages: number;
   language: string;
+  cefrLevel: string;
   year: number;
+  genre: string;
+  totalChapters: number;
+  totalWords: number;
+  chapters?: ChapterSummary[];
+  isAdded?: boolean;
+  currentChapter?: number;
+  progressPercent?: number;
+  status?: string;
+  lastReadAt?: string;
+}
+
+export interface ChapterDetail {
+  id: string;
+  number: number;
+  title: string;
+  contentHtml: string;
+  wordCount: number;
+  audioUrl?: string;
 }

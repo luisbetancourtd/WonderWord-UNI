@@ -8,5 +8,9 @@ until npx prisma db push --skip-generate 2>/dev/null; do
 done
 
 echo "✅ Base de données synchronisée"
+
+echo "📚 Alimentation du catalogue littéraire..."
+npx tsx src/seed.ts || echo "⚠️ Seed terminé ou éléments déjà existants"
+
 echo "🚀 Démarrage du serveur WonderWord..."
 exec npx tsx src/index.ts
