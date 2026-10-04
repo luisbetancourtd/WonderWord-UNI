@@ -345,14 +345,126 @@
       text-decoration: underline;
     }
 
+    /* Barre de bascule entre livraisons */
+    .delivery-switcher {
+      background: #191321;
+      color: #fff;
+      padding: 10px 20px;
+      font-size: 12.5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      flex-wrap: wrap;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      backdrop-filter: blur(8px);
+    }
+    .switcher-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--soleil);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 11px;
+    }
+    .switcher-links {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .switcher-btn {
+      color: var(--rail-ink-2);
+      text-decoration: none;
+      padding: 5px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .switcher-btn:hover {
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.35);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .switcher-btn.active {
+      color: #fff;
+      background: var(--sauge);
+      border-color: var(--sauge);
+      font-weight: 700;
+    }
+    .live-status-pill {
+      background: rgba(16, 185, 129, 0.18);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #10b981;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+      display: inline-block;
+      animation: pulse 1.8s infinite;
+    }
+    @keyframes pulse {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
     @media (max-width: 680px) {
       .editorial-card, .proto-details { padding: 24px 20px; }
+      .delivery-switcher { flex-direction: column; align-items: flex-start; }
     }
   </style>
 </head>
 <body>
 
   <div class="paper-texture"></div>
+
+  <!-- Barre de bascule et état de production -->
+  <div class="delivery-switcher">
+    <div class="switcher-badge">
+      <i data-lucide="layers" width="15" height="15"></i>
+      <span>Carnet de Bord Universitaire · Master NET Paris 8</span>
+    </div>
+
+    <div class="switcher-links">
+      <a href="index.html" class="switcher-btn active" title="Première livraison actuellement affichée">
+        <i data-lucide="check-circle" width="13" height="13"></i>
+        Livraison 01 : Prototypage (index.html)
+      </a>
+
+      <a href="index0.html" class="switcher-btn" title="Consulter la deuxième livraison (Cloud, Docker & Backend)">
+        <i data-lucide="arrow-right" width="13" height="13"></i>
+        Livraison 02 : Cloud & Déploiement (index0.html)
+      </a>
+
+      <a href="https://wonderword.luisbetancourt.fr" target="_blank" class="live-status-pill" title="Accéder à l'application déployée en direct sur Azure">
+        <span class="pulse-dot"></span>
+        Production Live : wonderword.luisbetancourt.fr
+      </a>
+    </div>
+  </div>
 
   <!-- En-tête Académique -->
   <header class="site-header">
