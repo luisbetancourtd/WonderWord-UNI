@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Mail, Lock, User as UserIcon } from 'lucide-react';
+import { BookOpen, Mail, Lock, User as UserIcon, KeyRound } from 'lucide-react';
 import { apiFetch, ApiError } from '../../lib/api';
 import type { User, AuthResponse } from '../../types';
 
@@ -9,8 +9,8 @@ interface AuthViewProps {
 
 export function AuthView({ onAuthSuccess }: AuthViewProps) {
   const [mode, setMode] = useState<'login' | 'register'>('login');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('luis@paris8.fr');
+  const [password, setPassword] = useState('WonderWord2026!');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   
@@ -123,6 +123,30 @@ export function AuthView({ onAuthSuccess }: AuthViewProps) {
         {error && (
           <div className="mb-6 p-3 bg-prune/5 border border-prune/20 rounded-lg text-prune text-sm">
             {error}
+          </div>
+        )}
+
+        {mode === 'login' && (
+          <div className="mb-5 p-3.5 bg-[#f4ecdc]/70 border border-terre/20 rounded-xl text-xs space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="font-semibold text-prune flex items-center gap-1.5">
+                <KeyRound size={14} className="text-terre" /> Accès Démo Évaluateur (Paris 8)
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('luis@paris8.fr');
+                  setPassword('WonderWord2026!');
+                }}
+                className="text-[11px] font-semibold underline text-terre hover:text-prune transition-colors"
+              >
+                Remplir
+              </button>
+            </div>
+            <p className="text-ink-2 font-mono text-[11px] leading-relaxed">
+              <span className="text-ink/60">Email :</span> luis@paris8.fr<br />
+              <span className="text-ink/60">Mot de passe :</span> WonderWord2026!
+            </p>
           </div>
         )}
 
