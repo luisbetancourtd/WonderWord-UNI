@@ -27,6 +27,9 @@ jobs:
             echo "==> Récupération des dernières modifications (git pull)..."
             git pull origin main
             
+            echo "==> Mise à jour des variables d'environnement..."
+            echo "RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}" > .env
+            
             echo "==> Reconstruction et redémarrage des conteneurs Docker..."
             docker compose up -d --build
             

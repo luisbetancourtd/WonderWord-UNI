@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { ViewType, ThemeType, User } from './types';
+import type { ViewType, ThemeType, User, AuthResponse } from './types';
 import { apiFetch } from './lib/api';
 import { PaperBackground } from './components/common/PaperBackground';
 import { RailSidebar } from './components/layout/RailSidebar';
@@ -15,8 +15,27 @@ export function App() {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
 
-  // Vérifier le token JWT au chargement
+  // Vérifier le token JWT ou le token de validation d'email dans l'URL
   useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const verifyToken = urlParams.get('verify_token');
+
+    if (verifyToken) {
+      apiFetch<AuthResponse>(`/auth/verify-email?token=${verifyToken}`)
+        .then((res) => {
+          localStorage.setItem('wonderword_token', res.token);
+          setUser(res.user);
+          window.history.replaceState({}, document.title, window.location.pathname);
+        })
+        .catch((err) => {
+          console.error('Erreur validation token email:', err);
+        })
+        .finally(() => {
+          setAuthLoading(false);
+        });
+      return;
+    }
+
     const token = localStorage.getItem('wonderword_token');
     if (!token) {
       setAuthLoading(false);

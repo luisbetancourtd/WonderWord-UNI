@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Mail, Lock, User as UserIcon, KeyRound } from 'lucide-react';
+import { BookOpen, Mail, Lock, User as UserIcon, KeyRound, MailCheck } from 'lucide-react';
 import { apiFetch, ApiError } from '../../lib/api';
 import type { User, AuthResponse } from '../../types';
 
@@ -13,6 +13,7 @@ export function AuthView({ onAuthSuccess }: AuthViewProps) {
   const [password, setPassword] = useState('WonderWord2026!');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [verificationNotice, setVerificationNotice] = useState<{ email: string; emailSent?: boolean; verifyUrl?: string } | null>(null);
   
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -59,6 +60,15 @@ export function AuthView({ onAuthSuccess }: AuthViewProps) {
         body: JSON.stringify(body),
       });
 
+      if (mode === 'register' && (response.emailSent || response.verifyUrl)) {
+        setVerificationNotice({
+          email,
+          emailSent: response.emailSent,
+          verifyUrl: response.verifyUrl,
+        });
+        return;
+      }
+
       onAuthSuccess(response.token, response.user);
     } catch (err) {
       if (err instanceof ApiError) {
@@ -92,33 +102,69 @@ export function AuthView({ onAuthSuccess }: AuthViewProps) {
           </p>
         </div>
 
-        {/* Onglets */}
-        <div className="flex border-b border-terre/20 mb-6">
-          <button
-            type="button"
-            className={`flex-1 pb-3 text-sm font-medium transition-colors relative ${
-              mode === 'login' ? 'text-prune' : 'text-ink-2 hover:text-ink'
-            }`}
-            onClick={() => setMode('login')}
-          >
-            Se connecter
-            {mode === 'login' && (
-              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-prune rounded-t-full" />
+        {verificationNotice ? (
+          <div className="text-center space-y-4 py-2">
+            <div className="w-16 h-16 bg-sauge/10 rounded-full flex items-center justify-center mx-auto text-sauge">
+              <MailCheck size={32} />
+            </div>
+            <h2 className="font-serif text-2xl text-ink">Vérifiez votre boîte mail</h2>
+            <p className="text-sm text-ink-2 leading-relaxed">
+              Un e-mail de confirmation avec votre lien d'activation a été envoyé à{' '}
+              <strong className="text-ink font-semibold">{verificationNotice.email}</strong>.
+            </p>
+            {verificationNotice.verifyUrl && (
+              <div className="p-3 bg-[#f4ecdc]/70 border border-terre/20 rounded-xl space-y-2 text-left">
+                <p className="text-xs text-terre font-semibold">Accès Direct Évaluateur / Simulation :</p>
+                <a
+                  href={verificationNotice.verifyUrl}
+                  className="block text-center text-xs bg-prune hover:bg-prune-2 text-white font-medium px-4 py-2.5 rounded-full transition-colors"
+                >
+                  Activer immédiatement le compte
+                </a>
+              </div>
             )}
-          </button>
-          <button
-            type="button"
-            className={`flex-1 pb-3 text-sm font-medium transition-colors relative ${
-              mode === 'register' ? 'text-prune' : 'text-ink-2 hover:text-ink'
-            }`}
-            onClick={() => setMode('register')}
-          >
-            S'inscrire
-            {mode === 'register' && (
-              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-prune rounded-t-full" />
-            )}
-          </button>
-        </div>
+            <div className="pt-4 border-t border-terre/10">
+              <button
+                type="button"
+                onClick={() => {
+                  setVerificationNotice(null);
+                  setMode('login');
+                }}
+                className="text-xs text-ink-2 underline hover:text-ink font-medium"
+              >
+                Retour à la connexion
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Onglets */}
+            <div className="flex border-b border-terre/20 mb-6">
+              <button
+                type="button"
+                className={`flex-1 pb-3 text-sm font-medium transition-colors relative ${
+                  mode === 'login' ? 'text-prune' : 'text-ink-2 hover:text-ink'
+                }`}
+                onClick={() => setMode('login')}
+              >
+                Se connecter
+                {mode === 'login' && (
+                  <span className="absolute bottom-0 left-0 w-full h-0.5 bg-prune rounded-t-full" />
+                )}
+              </button>
+              <button
+                type="button"
+                className={`flex-1 pb-3 text-sm font-medium transition-colors relative ${
+                  mode === 'register' ? 'text-prune' : 'text-ink-2 hover:text-ink'
+                }`}
+                onClick={() => setMode('register')}
+              >
+                S'inscrire
+                {mode === 'register' && (
+                  <span className="absolute bottom-0 left-0 w-full h-0.5 bg-prune rounded-t-full" />
+                )}
+              </button>
+            </div>
 
         {error && (
           <div className="mb-6 p-3 bg-prune/5 border border-prune/20 rounded-lg text-prune text-sm">
@@ -237,7 +283,9 @@ export function AuthView({ onAuthSuccess }: AuthViewProps) {
             )}
           </button>
         </form>
-      </div>
+      </>
+    )}
+  </div>
     </div>
   );
 }

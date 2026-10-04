@@ -15,6 +15,8 @@ model User {
   nativeLang   String   @default("es") @map("native_lang")
   targetLang   String   @default("fr") @map("target_lang")
   avatarUrl    String?  @map("avatar_url")
+  isVerified   Boolean  @default(false) @map("is_verified")
+  verifyToken  String?  @map("verify_token")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 

@@ -8,11 +8,15 @@ export interface User {
   displayName: string;
   nativeLang: string;
   targetLang: string;
+  isVerified?: boolean;
 }
 
 export interface AuthResponse {
   token: string;
   user: User;
+  emailSent?: boolean;
+  verifyUrl?: string;
+  message?: string;
 }
 
 export interface BookSummary {
