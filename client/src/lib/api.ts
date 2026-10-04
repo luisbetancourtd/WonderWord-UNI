@@ -21,8 +21,8 @@ export async function apiFetch<T = unknown>(path: string, options: RequestInit =
   const response = await fetch(`${API_BASE}${path}`, { ...options, headers });
 
   if (!response.ok) {
-    const body = await response.json().catch(() => ({ error: 'Erreur réseau' }));
-    throw new ApiError(response.status, body.error || 'Erreur inconnue');
+    const body = await response.json().catch(() => ({ message: 'Erreur réseau' }));
+    throw new ApiError(response.status, body.message || body.error || 'Erreur inconnue');
   }
 
   return response.json() as Promise<T>;

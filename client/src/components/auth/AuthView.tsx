@@ -297,8 +297,20 @@ export function AuthView({ onAuthSuccess }: AuthViewProps) {
             )}
 
             {error && (
-              <div className="mb-6 p-3 bg-prune/5 border border-prune/20 rounded-lg text-prune text-sm">
-                {error}
+              <div className="mb-6 p-3 bg-prune/5 border border-prune/20 rounded-lg text-prune text-sm space-y-2">
+                <p>{error}</p>
+                {mode === 'reset' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setError(null);
+                      setMode('forgot');
+                    }}
+                    className="text-xs text-terre underline hover:text-prune font-semibold block"
+                  >
+                    Demander un nouveau lien de réinitialisation →
+                  </button>
+                )}
               </div>
             )}
 

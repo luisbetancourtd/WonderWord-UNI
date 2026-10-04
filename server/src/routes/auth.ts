@@ -212,7 +212,8 @@ export default async function authRoutes(server: FastifyInstance) {
       return reply.status(400).send({ message: 'Adresse email requise' });
     }
 
-    const user = await server.prisma.user.findUnique({ where: { email } });
+    const cleanEmail = email.toLowerCase().trim();
+    const user = await server.prisma.user.findUnique({ where: { email: cleanEmail } });
 
     // Pour la sécurité, on retourne un succès même si l'email n'existe pas
     if (!user) {
@@ -255,9 +256,10 @@ export default async function authRoutes(server: FastifyInstance) {
       return reply.status(400).send({ message: 'Le mot de passe doit contenir au moins 8 caractères' });
     }
 
+    const cleanToken = token.toString().trim();
     const user = await server.prisma.user.findFirst({
       where: {
-        resetToken: token,
+        resetToken: cleanToken,
         resetExpires: {
           gt: new Date(),
         },
@@ -265,7 +267,9 @@ export default async function authRoutes(server: FastifyInstance) {
     });
 
     if (!user) {
-      return reply.status(400).send({ message: 'Le lien de réinitialisation est invalide ou a expiré' });
+      return reply.status(400).send({
+        message: 'Ce lien de réinitialisation est invalide ou a déjà été utilisé. Veuillez faire une nouvelle demande.',
+      });
     }
 
     const passwordHash = await bcrypt.hash(newPassword, 12);
