@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
-import { sendVerificationEmail } from '../services/email.js';
+import { sendVerificationEmail, sendPasswordResetEmail } from '../services/email.js';
 
 export default async function authRoutes(server: FastifyInstance) {
   // Inscription avec génération de jeton de confirmation et envoi d'email
@@ -201,6 +201,99 @@ export default async function authRoutes(server: FastifyInstance) {
       targetLang: user.targetLang,
       avatarUrl: user.avatarUrl,
       isVerified: user.isVerified,
+    };
+  });
+
+  // Demande de réinitialisation de mot de passe (Mot de passe oublié)
+  server.post('/forgot-password', async (request, reply) => {
+    const { email } = request.body as any;
+
+    if (!email) {
+      return reply.status(400).send({ message: 'Adresse email requise' });
+    }
+
+    const user = await server.prisma.user.findUnique({ where: { email } });
+
+    // Pour la sécurité, on retourne un succès même si l'email n'existe pas
+    if (!user) {
+      return {
+        success: true,
+        message: 'Si cette adresse email est enregistrée, un lien de réinitialisation a été envoyé.',
+      };
+    }
+
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetExpires = new Date(Date.now() + 3600000); // Valable 1 heure
+
+    await server.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        resetToken,
+        resetExpires,
+      },
+    });
+
+    const emailResult = await sendPasswordResetEmail(user.email, user.displayName, resetToken);
+
+    return {
+      success: true,
+      emailSent: emailResult.success,
+      resetUrl: emailResult.resetUrl, // Fourni pour test direct / simulation sans attendre
+      message: 'Si cette adresse email est enregistrée, un lien de réinitialisation a été envoyé.',
+    };
+  });
+
+  // Application du nouveau mot de passe
+  server.post('/reset-password', async (request, reply) => {
+    const { token, newPassword } = request.body as any;
+
+    if (!token || !newPassword) {
+      return reply.status(400).send({ message: 'Jeton ou nouveau mot de passe manquant' });
+    }
+
+    if (newPassword.length < 8) {
+      return reply.status(400).send({ message: 'Le mot de passe doit contenir au moins 8 caractères' });
+    }
+
+    const user = await server.prisma.user.findFirst({
+      where: {
+        resetToken: token,
+        resetExpires: {
+          gt: new Date(),
+        },
+      },
+    });
+
+    if (!user) {
+      return reply.status(400).send({ message: 'Le lien de réinitialisation est invalide ou a expiré' });
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+
+    const updatedUser = await server.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash,
+        resetToken: null,
+        resetExpires: null,
+      },
+    });
+
+    const jwtToken = server.jwt.sign({ id: updatedUser.id, email: updatedUser.email });
+
+    return {
+      success: true,
+      token: jwtToken,
+      message: 'Votre mot de passe a été mis à jour avec succès !',
+      user: {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        displayName: updatedUser.displayName,
+        nativeLang: updatedUser.nativeLang,
+        targetLang: updatedUser.targetLang,
+        avatarUrl: updatedUser.avatarUrl,
+        isVerified: updatedUser.isVerified,
+      },
     };
   });
 }

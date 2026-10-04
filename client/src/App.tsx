@@ -19,6 +19,12 @@ export function App() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const verifyToken = urlParams.get('verify_token');
+    const resetToken = urlParams.get('reset_token');
+
+    if (resetToken) {
+      setAuthLoading(false);
+      return;
+    }
 
     if (verifyToken) {
       apiFetch<AuthResponse>(`/auth/verify-email?token=${verifyToken}`)
