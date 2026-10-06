@@ -2,7 +2,7 @@
 set -e
 
 echo "⏳ Attente de PostgreSQL..."
-until npx prisma db push --skip-generate 2>/dev/null; do
+until npx prisma db push --skip-generate --accept-data-loss; do
   echo "PostgreSQL n'est pas encore prêt, nouvelle tentative dans 3s..."
   sleep 3
 done
