@@ -67,6 +67,7 @@ export default async function bookRoutes(server: FastifyInstance) {
         author: book.author,
         description: book.description,
         coverColor: book.coverColor,
+        coverImage: book.coverImage,
         publisher: book.publisher,
         language: book.language,
         cefrLevel: book.cefrLevel,
@@ -111,13 +112,14 @@ export default async function bookRoutes(server: FastifyInstance) {
     }
 
     const decoded = request.user as { id: string };
-    const { id, title, author, language, source, downloadUrl } = request.body as {
+    const { id, title, author, language, source, downloadUrl, coverUrl } = request.body as {
       id: string;
       title: string;
       author: string;
       language: string;
       source: string;
       downloadUrl?: string;
+      coverUrl?: string;
     };
 
     if (!title || !author) {
@@ -162,6 +164,7 @@ export default async function bookRoutes(server: FastifyInstance) {
           publisher: `${source || 'Domaine Public'} (Édition Numérique Libre)`,
           description: `Ouvrage importé depuis le catalogue public ${source || 'Gutenberg/DraCor'}.`,
           coverColor: language === 'de' ? 'prune' : 'sauge',
+          coverImage: coverUrl || null,
           year: 1850,
           genre: 'Patrimoine classique',
           totalChapters: content.chapters.length,
@@ -245,6 +248,7 @@ export default async function bookRoutes(server: FastifyInstance) {
       author: ub.book.author,
       description: ub.book.description,
       coverColor: ub.book.coverColor,
+      coverImage: ub.book.coverImage,
       publisher: ub.book.publisher,
       language: ub.book.language,
       cefrLevel: ub.book.cefrLevel,

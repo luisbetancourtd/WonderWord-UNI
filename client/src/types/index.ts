@@ -33,6 +33,8 @@ export interface BookSummary {
   author: string;
   description?: string;
   coverColor: string;
+  coverImage?: string;
+  coverUrl?: string;
   publisher: string;
   language: string;
   cefrLevel: string;

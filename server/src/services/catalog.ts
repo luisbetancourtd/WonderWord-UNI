@@ -40,6 +40,8 @@ const CURATED_CATALOG: CatalogBookItem[] = [
     cefrLevel: 'C1',
     year: 1913,
     coverColor: 'prune',
+    coverUrl: 'https://www.gutenberg.org/cache/epub/2650/pg2650.cover.medium.jpg',
+    downloadUrl: 'https://www.gutenberg.org/cache/epub/2650/pg2650.txt.utf-8',
     description: 'Premier volume d\'À la recherche du temps perdu. L\'épisode de la madeleine et la mélodie de la mémoire involontaire.',
   },
   {
@@ -51,6 +53,8 @@ const CURATED_CATALOG: CatalogBookItem[] = [
     cefrLevel: 'B2',
     year: 1885,
     coverColor: 'terre',
+    coverUrl: 'https://www.gutenberg.org/cache/epub/5711/pg5711.cover.medium.jpg',
+    downloadUrl: 'https://www.gutenberg.org/cache/epub/5711/pg5711.txt.utf-8',
     description: 'Fresque naturaliste du monde ouvrier et de la grève des mineurs dans le bassin houiller du Nord.',
   },
   {
@@ -62,6 +66,8 @@ const CURATED_CATALOG: CatalogBookItem[] = [
     cefrLevel: 'B1',
     year: 1844,
     coverColor: 'bleuet',
+    coverUrl: 'https://www.gutenberg.org/cache/epub/17989/pg17989.cover.medium.jpg',
+    downloadUrl: 'https://www.gutenberg.org/cache/epub/17989/pg17989.txt.utf-8',
     description: 'L\'odyssée vengeresse d\'Edmond Dantès, évadé du château d\'If sous les traits d\'un richissime seigneur.',
   },
   {
@@ -73,6 +79,8 @@ const CURATED_CATALOG: CatalogBookItem[] = [
     cefrLevel: 'B1',
     year: 1668,
     coverColor: 'soleil',
+    coverUrl: 'https://www.gutenberg.org/cache/epub/5799/pg5799.cover.medium.jpg',
+    downloadUrl: 'https://www.gutenberg.org/cache/epub/5799/pg5799.txt.utf-8',
     description: 'Comédie de caractère en prose dépeignant la tyrannie domestique d\'Harpagon et l\'obsession de sa cassette.',
   },
   // Allemand
@@ -85,6 +93,8 @@ const CURATED_CATALOG: CatalogBookItem[] = [
     cefrLevel: 'B2',
     year: 1925,
     coverColor: 'terre',
+    coverUrl: 'https://www.gutenberg.org/cache/epub/24373/pg24373.cover.medium.jpg',
+    downloadUrl: 'https://www.gutenberg.org/cache/epub/24373/pg24373.txt.utf-8',
     description: 'Josef K. wird eines Morgens grundlos verhaftet und durchläuft ein absurdes, undurchdringliches Rechtssystem.',
   },
   {
@@ -96,6 +106,8 @@ const CURATED_CATALOG: CatalogBookItem[] = [
     cefrLevel: 'B2',
     year: 1774,
     coverColor: 'bleuet',
+    coverUrl: 'https://www.gutenberg.org/cache/epub/2407/pg2407.cover.medium.jpg',
+    downloadUrl: 'https://www.gutenberg.org/cache/epub/2407/pg2407.txt.utf-8',
     description: 'Briefroman des Sturm und Drang über die unglückliche Liebe Werthers zu der verlobten Lotte.',
   },
   {
@@ -107,6 +119,8 @@ const CURATED_CATALOG: CatalogBookItem[] = [
     cefrLevel: 'C1',
     year: 1781,
     coverColor: 'prune',
+    coverUrl: 'https://www.gutenberg.org/cache/epub/6782/pg6782.cover.medium.jpg',
+    downloadUrl: 'https://www.gutenberg.org/cache/epub/6782/pg6782.txt.utf-8',
     description: 'Rebellisches Drama über den Konflikt zweier feindlicher Brüder: Karl und Franz Moor.',
   },
   {
@@ -118,6 +132,8 @@ const CURATED_CATALOG: CatalogBookItem[] = [
     cefrLevel: 'A2',
     year: 1812,
     coverColor: 'sauge',
+    coverUrl: 'https://www.gutenberg.org/cache/epub/5314/pg5314.cover.medium.jpg',
+    downloadUrl: 'https://www.gutenberg.org/cache/epub/5314/pg5314.txt.utf-8',
     description: 'Klassisches deutsches Volksmärchen. Ideal für Französisch-Muttersprachler auf A2-Niveau.',
   },
 ];

@@ -8,13 +8,16 @@ async function main() {
   // 1. LE PETIT PRINCE
   const petitPrince = await prisma.book.upsert({
     where: { slug: 'le-petit-prince' },
-    update: {},
+    update: {
+      coverImage: 'https://covers.openlibrary.org/b/id/10708272-M.jpg',
+    },
     create: {
       slug: 'le-petit-prince',
       title: 'Le Petit Prince',
       author: 'Antoine de Saint-Exupéry',
       description: 'Un aviateur tombe en panne dans le désert du Sahara et rencontre un jeune prince venu d\'un astéroïde lointain. Une fable poétique et philosophique sur l\'amour, l\'amitié et le sens de la vie.',
       coverColor: 'soleil',
+      coverImage: 'https://covers.openlibrary.org/b/id/10708272-M.jpg',
       publisher: 'Éditions Gallimard (1943)',
       language: 'fr',
       cefrLevel: 'B1',
@@ -85,13 +88,16 @@ async function main() {
   // 2. CANDIDE OU L'OPTIMISME
   await prisma.book.upsert({
     where: { slug: 'candide' },
-    update: {},
+    update: {
+      coverImage: 'https://www.gutenberg.org/cache/epub/4650/pg4650.cover.medium.jpg',
+    },
     create: {
       slug: 'candide',
       title: 'Candide ou l\'Optimisme',
       author: 'Voltaire',
       description: 'Le jeune Candide est chassé du paradisiaque château de Thunder-ten-tronckh et parcourt un monde ravagé par les guerres, les catastrophes et le fanatisme religieux.',
       coverColor: 'prune',
+      coverImage: 'https://www.gutenberg.org/cache/epub/4650/pg4650.cover.medium.jpg',
       publisher: 'Domaine Public (1759)',
       language: 'fr',
       cefrLevel: 'B2',
@@ -120,13 +126,16 @@ async function main() {
   // 3. VINGT MILLE LIEUES SOUS LES MERS
   await prisma.book.upsert({
     where: { slug: 'vingt-mille-lieues' },
-    update: {},
+    update: {
+      coverImage: 'https://www.gutenberg.org/cache/epub/5081/pg5081.cover.medium.jpg',
+    },
     create: {
       slug: 'vingt-mille-lieues',
       title: 'Vingt Mille Lieues sous les mers',
       author: 'Jules Verne',
       description: 'L\'expédition du professeur Aronnax à la poursuite d\'un mystérieux monstre marin les mène à bord du Nautilus, le sous-marin révolutionnaire du fascinant Capitaine Nemo.',
       coverColor: 'bleuet',
+      coverImage: 'https://www.gutenberg.org/cache/epub/5081/pg5081.cover.medium.jpg',
       publisher: 'Éditions Hetzel (1870)',
       language: 'fr',
       cefrLevel: 'B1',
@@ -153,13 +162,16 @@ async function main() {
   // 4. LE TOUR DU MONDE EN 80 JOURS
   await prisma.book.upsert({
     where: { slug: 'tour-du-monde' },
-    update: {},
+    update: {
+      coverImage: 'https://www.gutenberg.org/cache/epub/800/pg800.cover.medium.jpg',
+    },
     create: {
       slug: 'tour-du-monde',
       title: 'Le Tour du monde en 80 jours',
       author: 'Jules Verne',
       description: 'Phileas Fogg, gentleman londonien à la ponctualité maniaque, parie vingt mille livres avec ses pairs du Reform Club qu\'il fera le tour de la terre en quatre-vingts jours seulement.',
       coverColor: 'sauge',
+      coverImage: 'https://www.gutenberg.org/cache/epub/800/pg800.cover.medium.jpg',
       publisher: 'Éditions Hetzel (1872)',
       language: 'fr',
       cefrLevel: 'A2',
@@ -186,13 +198,16 @@ async function main() {
   // 5. LES FLEURS DU MAL
   await prisma.book.upsert({
     where: { slug: 'fleurs-du-mal' },
-    update: {},
+    update: {
+      coverImage: 'https://www.gutenberg.org/cache/epub/6099/pg6099.cover.medium.jpg',
+    },
     create: {
       slug: 'fleurs-du-mal',
       title: 'Les Fleurs du Mal',
       author: 'Charles Baudelaire',
       description: 'Chef-d\'œuvre de la poésie moderne française explorant la tension entre le Spleen et l\'Idéal, la beauté cachée dans la douleur et la mélancolie urbaine.',
       coverColor: 'terre',
+      coverImage: 'https://www.gutenberg.org/cache/epub/6099/pg6099.cover.medium.jpg',
       publisher: 'Auguste Poulet-Malassis (1857)',
       language: 'fr',
       cefrLevel: 'C1',
@@ -230,13 +245,16 @@ async function main() {
   // 6. DIE VERWANDLUNG (Franz Kafka - Allemand B1/B2)
   const dieVerwandlung = await prisma.book.upsert({
     where: { slug: 'die-verwandlung' },
-    update: {},
+    update: {
+      coverImage: 'https://www.gutenberg.org/cache/epub/22367/pg22367.cover.medium.jpg',
+    },
     create: {
       slug: 'die-verwandlung',
       title: 'Die Verwandlung',
       author: 'Franz Kafka',
       description: 'Gregor Samsa, commis voyageur dévoué à sa famille, se réveille un matin métamorphosé en un monstrueux insecte. Un chef-d\'œuvre absolu de la littérature germanophone explorant l\'aliénation, la culpabilité et l\'absurde.',
       coverColor: 'terre',
+      coverImage: 'https://www.gutenberg.org/cache/epub/22367/pg22367.cover.medium.jpg',
       publisher: 'Kurt Wolff Verlag (1915) / Domaine Public',
       language: 'de',
       cefrLevel: 'B1',
@@ -264,13 +282,16 @@ async function main() {
   // 7. KINDER- UND HAUSMÄRCHEN : ROTKÄPPCHEN (Brüder Grimm - Allemand A2)
   await prisma.book.upsert({
     where: { slug: 'grimms-maerchen' },
-    update: {},
+    update: {
+      coverImage: 'https://www.gutenberg.org/cache/epub/5314/pg5314.cover.medium.jpg',
+    },
     create: {
       slug: 'grimms-maerchen',
       title: 'Kinder- und Hausmärchen (Rotkäppchen)',
       author: 'Brüder Grimm',
       description: 'Le recueil fondamental des contes populaires allemands collectés par Jacob et Wilhelm Grimm. Une langue limpide, musicale et idéale pour les apprenants francophones au niveau A2.',
       coverColor: 'sauge',
+      coverImage: 'https://www.gutenberg.org/cache/epub/5314/pg5314.cover.medium.jpg',
       publisher: 'Realschulbuchhandlung Berlin (1812) / Domaine Public',
       language: 'de',
       cefrLevel: 'A2',
@@ -298,13 +319,16 @@ async function main() {
   // 8. FAUST : DER TRAGÖDIE ERSTER TEIL (Goethe - Allemand C1)
   await prisma.book.upsert({
     where: { slug: 'faust-goethe' },
-    update: {},
+    update: {
+      coverImage: 'https://www.gutenberg.org/cache/epub/2229/pg2229.cover.medium.jpg',
+    },
     create: {
       slug: 'faust-goethe',
       title: 'Faust : Der Tragödie erster Teil',
       author: 'Johann Wolfgang von Goethe',
       description: 'Sommet de la dramaturgie et de la poésie philosophique allemande. Le docteur Faust, désespéré par les limites du savoir humain, conclut un pacte avec Méphistophélès.',
       coverColor: 'prune',
+      coverImage: 'https://www.gutenberg.org/cache/epub/2229/pg2229.cover.medium.jpg',
       publisher: 'Cotta\'sche Verlagsbuchhandlung (1808) / Domaine Public',
       language: 'de',
       cefrLevel: 'C1',

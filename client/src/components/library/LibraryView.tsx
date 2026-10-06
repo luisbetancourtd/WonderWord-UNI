@@ -117,6 +117,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
             language: item.language,
             source: item.source,
             downloadUrl: item.downloadUrl,
+            coverUrl: item.coverUrl,
           }),
         }
       );
@@ -314,23 +315,39 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
                     className="bg-paper border border-rule rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col group"
                   >
                     {/* Haut de la carte : Couverture */}
-                    <div className={`p-6 ${colors.bg} relative flex flex-col justify-between min-h-[160px] border-b ${colors.border}`}>
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-black/15 text-white backdrop-blur-sm">
-                          {book.language === 'de' ? '🇩🇪 Allemand' : '🇫🇷 Français'} · {book.cefrLevel}
-                        </span>
-                        <span className="text-[11px] font-mono opacity-80 text-white">
-                          {book.year}
-                        </span>
-                      </div>
+                    <div className={`p-5 ${colors.bg} relative flex gap-4 min-h-[175px] border-b ${colors.border}`}>
+                      {(book.coverImage || book.coverUrl) && (
+                        <div className="w-[88px] h-[130px] flex-shrink-0 rounded shadow-md overflow-hidden bg-black/10 border border-white/20 self-center">
+                          <img
+                            src={book.coverImage || book.coverUrl}
+                            alt={book.title}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                            onError={(e) => {
+                              (e.currentTarget.parentElement as HTMLElement).style.display = 'none';
+                            }}
+                          />
+                        </div>
+                      )}
 
-                      <div>
-                        <h2 className="font-serif text-2xl font-normal leading-tight text-white mb-1 group-hover:underline">
-                          {book.title}
-                        </h2>
-                        <p className="text-xs font-sans text-white/90 font-medium">
-                          {book.author}
-                        </p>
+                      <div className="flex-1 flex flex-col justify-between min-w-0">
+                        <div className="flex items-center justify-between gap-1">
+                          <span className="text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-black/20 text-white backdrop-blur-sm truncate">
+                            {book.language === 'de' ? '🇩🇪 Allemand' : '🇫🇷 Français'} · {book.cefrLevel}
+                          </span>
+                          <span className="text-[11px] font-mono opacity-80 text-white flex-shrink-0">
+                            {book.year}
+                          </span>
+                        </div>
+
+                        <div className="my-auto py-1">
+                          <h2 className="font-serif text-xl font-normal leading-tight text-white line-clamp-2 group-hover:underline">
+                            {book.title}
+                          </h2>
+                          <p className="text-xs font-sans text-white/90 font-medium truncate mt-0.5">
+                            {book.author}
+                          </p>
+                        </div>
                       </div>
                     </div>
 
@@ -460,23 +477,39 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
                   >
                     <div>
                       {/* En-tête de carte avec source */}
-                      <div className={`p-5 ${colors.bg} relative flex flex-col justify-between min-h-[140px] border-b ${colors.border}`}>
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-black/15 text-white backdrop-blur-sm">
-                            {item.language === 'de' ? '🇩🇪 Deutsch' : '🇫🇷 Français'} · {item.cefrLevel}
-                          </span>
-                          <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-white/20 text-white">
-                            {item.source}
-                          </span>
-                        </div>
+                      <div className={`p-5 ${colors.bg} relative flex gap-4 min-h-[165px] border-b ${colors.border}`}>
+                        {item.coverUrl && (
+                          <div className="w-[82px] h-[122px] flex-shrink-0 rounded shadow-md overflow-hidden bg-black/10 border border-white/20 self-center">
+                            <img
+                              src={item.coverUrl}
+                              alt={item.title}
+                              className="w-full h-full object-cover"
+                              loading="lazy"
+                              onError={(e) => {
+                                (e.currentTarget.parentElement as HTMLElement).style.display = 'none';
+                              }}
+                            />
+                          </div>
+                        )}
 
-                        <div>
-                          <h3 className="font-serif text-xl font-normal leading-tight text-white mb-0.5">
-                            {item.title}
-                          </h3>
-                          <p className="text-xs font-sans text-white/90">
-                            {item.author}
-                          </p>
+                        <div className="flex-1 flex flex-col justify-between min-w-0">
+                          <div className="flex items-center justify-between gap-1">
+                            <span className="text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-black/20 text-white backdrop-blur-sm truncate">
+                              {item.language === 'de' ? '🇩🇪 Deutsch' : '🇫🇷 Français'} · {item.cefrLevel}
+                            </span>
+                            <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-white/20 text-white flex-shrink-0">
+                              {item.source}
+                            </span>
+                          </div>
+
+                          <div className="my-auto py-1">
+                            <h3 className="font-serif text-lg font-normal leading-tight text-white line-clamp-2">
+                              {item.title}
+                            </h3>
+                            <p className="text-xs font-sans text-white/90 truncate mt-0.5">
+                              {item.author}
+                            </p>
+                          </div>
                         </div>
                       </div>
 
