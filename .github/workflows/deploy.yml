@@ -33,6 +33,13 @@ jobs:
             echo "==> Reconstruction et redémarrage des conteneurs Docker..."
             docker compose up -d --build
             
+            echo "==> Attente du démarrage des conteneurs (12s)..."
+            sleep 12
+            echo "==> Statut des conteneurs Docker :"
+            docker compose ps
+            echo "==> Logs récents du serveur API :"
+            docker logs wonderword-server --tail 60
+            
             echo "==> Nettoyage des anciennes images Docker orphelines..."
             docker image prune -f
             
