@@ -56,3 +56,19 @@ export interface ChapterDetail {
   wordCount: number;
   audioUrl?: string;
 }
+
+export interface CatalogBookItem {
+  id: string;
+  source: 'Gutenberg' | 'DraCor' | 'Patrimoine';
+  title: string;
+  author: string;
+  language: 'fr' | 'de';
+  cefrLevel: 'A2' | 'B1' | 'B2' | 'C1';
+  year?: number;
+  coverUrl?: string;
+  coverColor: string;
+  description: string;
+  downloadUrl?: string;
+  downloads?: number;
+  isImported?: boolean;
+}

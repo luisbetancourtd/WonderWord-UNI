@@ -90,7 +90,7 @@ export function App() {
       case 'dashboard':
         return `Tableau de bord / ${user?.displayName || 'Session'}`;
       case 'reader':
-        return `Lector & Estudio / Chapitre ${activeChapterNumber}`;
+        return `Atelier de Lecture / Chapitre ${activeChapterNumber}`;
       case 'shadowing':
         return 'Laboratoire Phonétique / Studio de Shadowing & Formants';
       case 'library':

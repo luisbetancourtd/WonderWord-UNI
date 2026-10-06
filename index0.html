@@ -1119,25 +1119,137 @@
         </div>
 
         <h3 style="font-family:'Libre Caslon Text', serif; font-size:20px; margin: 28px 0 12px; color:var(--ink);">
-          2. Les 5 Chefs-d'Œuvre du Domaine Public Semés en Base de Données
+          2. Fondements Théoriques : Qu'est-ce qu'une API et comment fonctionne-t-elle ?
         </h3>
         <p>
-          Le script d'ensemencement (<em>seed</em>) alimente la plateforme avec cinq textes intégraux de la littérature francophone étalonnés selon le Cadre Européen Commun de Référence pour les Langues (CECRL) :
+          Une <strong>API</strong> (<em>Application Programming Interface</em>, ou Interface de Programmation d'Application) est un ensemble de règles, de protocoles et de points d'accès normalisés permettant à deux systèmes informatiques indépendants de dialoguer et de s'échanger des données de manière sécurisée et structurée.
+        </p>
+        
+        <div style="background:var(--paper-warm); border-left:4px solid var(--accent); padding:16px 20px; margin:16px 0; border-radius:0 8px 8px 0;">
+          <strong style="color:var(--accent); font-family:'Libre Caslon Text', serif;">L'Analogie du Restaurant : Comprendre le rôle d'une API</strong>
+          <p style="font-size:14px; color:var(--ink-2); margin-top:6px; line-height:1.6;">
+            Imaginons un restaurant. Vous êtes assis à table (<strong>le client / notre application</strong>). La cuisine renferme les ingrédients, les recettes et les cuisiniers (<strong>la base de données et le serveur de Gutenberg ou de la BNF</strong>). Vous n'avez pas le droit d'entrer directement en cuisine pour fouiller dans les réfrigérateurs : cela créerait un chaos technique et compromettrait la sécurité. 
+            C'est ici qu'intervient <strong>le serveur (l'API)</strong> : il vous présente une carte prédéfinie (la documentation de l'API), prend votre commande précise (la requête HTTP), la transmet en cuisine selon un protocole strict, puis vous apporte exactement le plat demandé dans une assiette standardisée (la réponse au format JSON).
+          </p>
+        </div>
+
+        <h4 style="font-family:'Libre Caslon Text', serif; font-size:17px; margin:20px 0 8px; color:var(--ink);">
+          Le cycle fondamental Requête / Réponse
+        </h4>
+        <p>
+          Toute interaction avec une API REST moderne repose sur le protocole standard du Web (HTTP) et se décompose en quatre éléments cardinaux :
+        </p>
+        <ul style="margin:8px 0 16px 24px; color:var(--ink-2); line-height:1.7;">
+          <li><strong>Le Point de Terminaison (Endpoint URL) :</strong> L'adresse web unique désignant la ressource convoitée (ex. <code>https://gutendex.com/books</code> ou <code>https://dracor.org/api/corpora/ger</code>).</li>
+          <li><strong>La Méthode HTTP :</strong> L'action souhaitée (<code>GET</code> pour consulter des œuvres sans modifier le serveur, <code>POST</code> pour soumettre ou importer des données).</li>
+          <li><strong>Les Paramètres de Requête (Query Params) :</strong> Les filtres appliqués à la demande (ex. <code>?languages=de&search=Kafka</code> pour isoler les textes allemands de Kafka).</li>
+          <li><strong>La Réponse Structurée (Payload JSON) :</strong> Les données retournées sous forme d'arbre d'objets (clé / valeur), universellement compréhensibles par les langages de programmation.</li>
+        </ul>
+
+        <h3 style="font-family:'Libre Caslon Text', serif; font-size:20px; margin: 28px 0 12px; color:var(--ink);">
+          3. Architecture de Fédération des Bibliothèques Publiques dans WonderWord
+        </h3>
+        <p>
+          Plutôt que d'enfermer l'utilisateur dans une collection close, WonderWord se positionne comme un <strong>nœud fédérateur</strong> interrogeant en temps réel les grands réservoirs ouverts du patrimoine littéraire mondial :
         </p>
 
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px; margin: 20px 0;">
           <div style="background:var(--paper-warm); border:1px solid var(--rule); padding:16px; border-radius:12px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-              <span class="tag-pill accent">Niveau B1</span>
-              <span style="font-size:12px; color:var(--ink-3);">3 Chapitres complets</span>
+              <span class="tag-pill accent">Catalogue Mondial</span>
+              <span style="font-size:12px; color:var(--ink-3);">+70 000 Livres</span>
             </div>
-            <strong style="font-family:'Libre Caslon Text', serif; font-size:16px;">Le Petit Prince</strong>
-            <p style="font-size:13px; color:var(--ink-2); margin-top:4px;">Antoine de Saint-Exupéry (1943). Fable poétique et philosophique. Texte intégral connecté au lecteur avec gloses phonétiques.</p>
+            <strong style="font-family:'Libre Caslon Text', serif; font-size:16px;">Project Gutenberg & Gutendex</strong>
+            <p style="font-size:13px; color:var(--ink-2); margin-top:4px;">
+              Accès programmatique au catalogue universel de livres libres de droits. Notre backend interroge l'API Gutendex (<code>gutendex.com</code>) filtrée par langue (<code>languages=fr,de</code>), télécharge le flux textuel brut et applique un algorithme de sanitisation regex pour élaguer les avertissements légaux préliminaires et terminaux avant de segmenter le texte en chapitres calibrés (~1 400 mots).
+            </p>
           </div>
 
           <div style="background:var(--paper-warm); border:1px solid var(--rule); padding:16px; border-radius:12px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-              <span class="tag-pill accent">Niveau B2</span>
+              <span class="tag-pill accent">Recherche Académique</span>
+              <span style="font-size:12px; color:var(--ink-3);">FreDraCor & GerDraCor</span>
+            </div>
+            <strong style="font-family:'Libre Caslon Text', serif; font-size:16px;">DraCor (Drama Corpora Project)</strong>
+            <p style="font-size:13px; color:var(--ink-2); margin-top:4px;">
+              Corpus scientifique d'œuvres théâtrales françaises (Molière, Corneille, Racine) et allemandes (Goethe, Schiller, Lessing) hébergé sur <code>dracor.org/api</code>. Fournit nativement le balisage TEI-XML, les métriques d'interaction dramatique et les dialogues propres des personnages sans bruit typographique.
+            </p>
+          </div>
+
+          <div style="background:var(--paper-warm); border:1px solid var(--rule); padding:16px; border-radius:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <span class="tag-pill accent">Patrimoine National</span>
+              <span style="font-size:12px; color:var(--ink-3);">BnF & DTA</span>
+            </div>
+            <strong style="font-family:'Libre Caslon Text', serif; font-size:16px;">Gallica (BnF) & Deutsches Textarchiv</strong>
+            <p style="font-size:13px; color:var(--ink-2); margin-top:4px;">
+              L'écosystème de la Bibliothèque nationale de France via les protocoles SRU/OAI-PMH et standard IIIF pour le patrimoine français, combiné au Deutsches Textarchiv (DTA) de l'Académie des Sciences de Berlin-Brandebourg pour les textes historiques rigoureusement collationnés en TEI.
+            </p>
+          </div>
+        </div>
+
+        <h3 style="font-family:'Libre Caslon Text', serif; font-size:20px; margin: 28px 0 12px; color:var(--ink);">
+          4. Démocratisation : Comment n'importe qui peut consommer ces APIs ?
+        </h3>
+        <p>
+          L'un des apports démocratiques majeurs des Humanités Numériques est l'accessibilité universelle de ces réservoirs textuels. Nul besoin de déployer une infrastructure complexe : tout étudiant, enseignant ou chercheur peut interroger ces sources ouvertes par trois vecteurs élémentaires :
+        </p>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px; margin: 16px 0;">
+          <div style="background:var(--paper-warm); border:1px solid var(--rule); padding:14px; border-radius:10px;">
+            <strong style="font-family:'Libre Caslon Text', serif; font-size:15px; color:var(--ink);">1. Dans un simple navigateur Web</strong>
+            <p style="font-size:12px; color:var(--ink-2); margin:6px 0;">Saisissez directement l'URL dans la barre d'adresse pour obtenir instantanément le catalogue en JSON brut :</p>
+            <pre style="font-size:11px; padding:8px; background:var(--paper); border:1px solid var(--rule); border-radius:6px; overflow-x:auto;">https://gutendex.com/books/?languages=de&search=Goethe</pre>
+          </div>
+
+          <div style="background:var(--paper-warm); border:1px solid var(--rule); padding:14px; border-radius:10px;">
+            <strong style="font-family:'Libre Caslon Text', serif; font-size:15px; color:var(--ink);">2. Dans un terminal (cURL)</strong>
+            <p style="font-size:12px; color:var(--ink-2); margin:6px 0;">Commande bash universelle pour rapatrier des métadonnées ou le texte intégral :</p>
+            <pre style="font-size:11px; padding:8px; background:var(--paper); border:1px solid var(--rule); border-radius:6px; overflow-x:auto;">curl -s "https://dracor.org/api/corpora/fre/play/corneille-cid/spoken-text"</pre>
+          </div>
+
+          <div style="background:var(--paper-warm); border:1px solid var(--rule); padding:14px; border-radius:10px;">
+            <strong style="font-family:'Libre Caslon Text', serif; font-size:15px; color:var(--ink);">3. En 4 lignes de code Python</strong>
+            <p style="font-size:12px; color:var(--ink-2); margin:6px 0;">Pour les ateliers d'initiation aux humanités numériques :</p>
+            <pre style="font-size:11px; padding:8px; background:var(--paper); border:1px solid var(--rule); border-radius:6px; overflow-x:auto;">import requests
+res = requests.get("https://gutendex.com/books?languages=fr&search=Moliere")
+livres = res.json()["results"]
+print(f"{len(livres)} livres trouvés !")</pre>
+          </div>
+        </div>
+
+        <h3 style="font-family:'Libre Caslon Text', serif; font-size:20px; margin: 28px 0 12px; color:var(--ink);">
+          5. Recadrage Pédagogique : Français et Allemand au Cœur du Dispositif
+        </h3>
+        <p>
+          Conformément aux impératifs d'excellence du <strong>Master Humanités Numériques : parcours NET de l'Université Paris 8</strong>, l'architecture a été recentrée exclusivement sur le public universitaire francophone. Le dédoublement hispanophone/francophone initial a été délaissé pour trois raisons scientifiques et pragmatiques fondamentales :
+        </p>
+        <ul style="margin:8px 0 16px 24px; color:var(--ink-2); line-height:1.7;">
+          <li><strong>Cohérence Institutionnelle et Académique :</strong> La plateforme, son évaluation, ses carnets de recherche et sa communauté cible sont ancrés dans le paysage universitaire francophone.</li>
+          <li><strong>Le Défi Didactique Franco-Allemand :</strong> L'apprentissage de la langue allemande (phonologie rigoureuse, déclinaisons, morphologie lexicale) représente un défi historique majeur pour les locuteurs francophones. WonderWord offre ainsi un outil d'assistance à la lecture en immersion active (<em>de → fr</em>) à fort impact éducatif.</li>
+          <li><strong>Efficience Cognitive et Computationnelle :</strong> Éviter la dispersion d'énergie et la surconsommation de jetons (<em>tokens</em>) LLM afin de maximiser la qualité des annotations grammaticales, des analyses phonétiques et de l'alignement texte-parole.</li>
+        </ul>
+
+        <h3 style="font-family:'Libre Caslon Text', serif; font-size:20px; margin: 28px 0 12px; color:var(--ink);">
+          6. Les 8 Chefs-d'Œuvre du Domaine Public Semés en Base de Données
+        </h3>
+        <p>
+          Le script d'ensemencement (<em>seed</em>) alimente immédiatement PostgreSQL avec huit œuvres patrimoniales intégrales bilingues, étalonnées selon le Cadre Européen Commun de Référence pour les Langues (CECRL) :
+        </p>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px; margin: 20px 0;">
+          <div style="background:var(--paper-warm); border:1px solid var(--rule); padding:16px; border-radius:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <span class="tag-pill accent">🇫🇷 Français · B1</span>
+              <span style="font-size:12px; color:var(--ink-3);">3 Chapitres complets</span>
+            </div>
+            <strong style="font-family:'Libre Caslon Text', serif; font-size:16px;">Le Petit Prince</strong>
+            <p style="font-size:13px; color:var(--ink-2); margin-top:4px;">Antoine de Saint-Exupéry (1943). Fable poétique et philosophique avec gloses phonétiques interactives.</p>
+          </div>
+
+          <div style="background:var(--paper-warm); border:1px solid var(--rule); padding:16px; border-radius:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <span class="tag-pill accent">🇫🇷 Français · B2</span>
               <span style="font-size:12px; color:var(--ink-3);">Voltaire (1759)</span>
             </div>
             <strong style="font-family:'Libre Caslon Text', serif; font-size:16px;">Candide ou l'Optimisme</strong>
@@ -1146,35 +1258,69 @@
 
           <div style="background:var(--paper-warm); border:1px solid var(--rule); padding:16px; border-radius:12px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-              <span class="tag-pill accent">Niveau A2</span>
+              <span class="tag-pill accent">🇫🇷 Français · A2</span>
               <span style="font-size:12px; color:var(--ink-3);">Jules Verne (1872)</span>
             </div>
             <strong style="font-family:'Libre Caslon Text', serif; font-size:16px;">Le Tour du monde en 80 jours</strong>
-            <p style="font-size:13px; color:var(--ink-2); margin-top:4px;">Roman d'aventure idéal pour les apprenants débutants et intermédiaires.</p>
+            <p style="font-size:13px; color:var(--ink-2); margin-top:4px;">Roman d'aventure au style vif, idéal pour les apprenants débutants et intermédiaires.</p>
           </div>
 
           <div style="background:var(--paper-warm); border:1px solid var(--rule); padding:16px; border-radius:12px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-              <span class="tag-pill accent">Niveau B1</span>
+              <span class="tag-pill accent">🇫🇷 Français · B1</span>
               <span style="font-size:12px; color:var(--ink-3);">Jules Verne (1870)</span>
             </div>
             <strong style="font-family:'Libre Caslon Text', serif; font-size:16px;">Vingt Mille Lieues sous les mers</strong>
-            <p style="font-size:13px; color:var(--ink-2); margin-top:4px;">Science-fiction classique au vocabulaire riche d'océanographie et d'ingénierie.</p>
+            <p style="font-size:13px; color:var(--ink-2); margin-top:4px;">Science-fiction classique au vocabulaire riche d'océanographie et d'ingénierie nautique.</p>
           </div>
 
           <div style="background:var(--paper-warm); border:1px solid var(--rule); padding:16px; border-radius:12px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-              <span class="tag-pill accent">Niveau C1</span>
+              <span class="tag-pill accent">🇫🇷 Français · C1</span>
               <span style="font-size:12px; color:var(--ink-3);">Baudelaire (1857)</span>
             </div>
             <strong style="font-family:'Libre Caslon Text', serif; font-size:16px;">Les Fleurs du Mal</strong>
-            <p style="font-size:13px; color:var(--ink-2); margin-top:4px;">Poésie symboliste majeure explorant la prosodie, la scansion métrique et le rythme des rimes françaises.</p>
+            <p style="font-size:13px; color:var(--ink-2); margin-top:4px;">Monument poétique explorant la prosodie, la scansion métrique et le rythme des rimes françaises.</p>
+          </div>
+
+          <div style="background:var(--paper-warm); border:1px solid var(--rule); padding:16px; border-radius:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <span class="tag-pill accent">🇩🇪 Deutsch · B1</span>
+              <span style="font-size:12px; color:var(--ink-3);">Franz Kafka (1915)</span>
+            </div>
+            <strong style="font-family:'Libre Caslon Text', serif; font-size:16px;">Die Verwandlung (La Métamorphose)</strong>
+            <p style="font-size:13px; color:var(--ink-2); margin-top:4px;">Texte fondateur du XXe siècle à la syntaxe allemande limpide, parfait pour l'acquisition du vocabulaire intermédiaire.</p>
+          </div>
+
+          <div style="background:var(--paper-warm); border:1px solid var(--rule); padding:16px; border-radius:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <span class="tag-pill accent">🇩🇪 Deutsch · A2</span>
+              <span style="font-size:12px; color:var(--ink-3);">Brüder Grimm (1812)</span>
+            </div>
+            <strong style="font-family:'Libre Caslon Text', serif; font-size:16px;">Kinder- und Hausmärchen (Rotkäppchen)</strong>
+            <p style="font-size:13px; color:var(--ink-2); margin-top:4px;">Contes populaires traditionnels (Le Petit Chaperon Rouge) à la structure narrative répétitive et rassurante.</p>
+          </div>
+
+          <div style="background:var(--paper-warm); border:1px solid var(--rule); padding:16px; border-radius:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <span class="tag-pill accent">🇩🇪 Deutsch · C1</span>
+              <span style="font-size:12px; color:var(--ink-3);">J.W. von Goethe (1808)</span>
+            </div>
+            <strong style="font-family:'Libre Caslon Text', serif; font-size:16px;">Faust : Der Tragödie erster Teil</strong>
+            <p style="font-size:13px; color:var(--ink-2); margin-top:4px;">Sommet de la littérature germanique, versification rigoureuse et dialogue philosophique transcendant.</p>
           </div>
         </div>
 
+        <h3 style="font-family:'Libre Caslon Text', serif; font-size:20px; margin: 28px 0 12px; color:var(--ink);">
+          7. L'Interface Bibliothèque Rénovée à Deux Volets
+        </h3>
         <p>
-          L'utilisateur peut rechercher par titre/auteur, filtrer par niveau de compétence (A2, B1, B2, C1), ajouter un livre à sa bibliothèque personnelle et cliquer sur <em>« Lire »</em> pour être propulsé directement dans l'interface de lecture immersive avec chapitrage dynamique.
+          L'interface utilisateur de la Bibliothèque (<code>LibraryView.tsx</code>) adopte une organisation ergonomique scindée en deux volets thématiques :
         </p>
+        <ul style="margin:8px 0 16px 24px; color:var(--ink-2); line-height:1.7;">
+          <li><strong>Onglet « Mes Livres » :</strong> Votre collection personnelle stockée dans PostgreSQL avec suivi précis du pourcentage de progression de lecture, reprise automatique au dernier chapitre consulté et indicateurs de niveau CECRL.</li>
+          <li><strong>Onglet « Découvrir (+70 000 Ouvrages) » :</strong> Moteur de recherche unifié fédérant en temps réel les APIs Gutenberg et DraCor avec filtrage linguistique instantané (<em>Toutes les langues</em>, <em>🇫🇷 Français</em>, <em>🇩🇪 Deutsch</em>) et importation en 1 clic sans rechargement de page.</li>
+        </ul>
       </div>
     </section>
 

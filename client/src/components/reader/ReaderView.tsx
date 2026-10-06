@@ -183,7 +183,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                   , il y a six ans. Quelque chose s'était cassé dans mon moteur. Et comme je n'avais avec moi ni mécanicien, ni passagers, je me préparais à essayer de réussir, tout seul, une{' '}
                   <ruby 
                     className="target-word cursor-pointer text-prune hover:underline"
-                    onClick={() => handleWordClick('réparation', '/ʁe.pa.ʁa.sjɔ̃/', 'reparación', 'Action de remettre en bon état un mécanisme endommagé.', 'Nom féminin')}
+                    onClick={() => handleWordClick('réparation', '/ʁe.pa.ʁa.sjɔ̃/', 'remise en état', 'Action de remettre en bon état un mécanisme endommagé.', 'Nom féminin · Registre soigné')}
                   >
                     réparation<rt className="text-sauge font-sans text-[11px]">/ʁe.pa.ʁa.sjɔ̃/</rt>
                   </ruby>{' '}
@@ -194,7 +194,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                   Le premier soir je me suis donc endormi sur le sable à{' '}
                   <ruby 
                     className="target-word cursor-pointer text-prune hover:underline"
-                    onClick={() => handleWordClick('mille', '/mil/', 'mil', 'Nombre désignant dix fois cent. Note : le groupe "ll" se prononce /l/ et non /j/.', 'Adjectif numéral')}
+                    onClick={() => handleWordClick('mille', '/mil/', 'mille (invariable)', 'Nombre désignant dix fois cent. Note phonétique : le digraphe "ll" se prononce /l/ et non /j/.', 'Adjectif numéral invariable')}
                   >
                     mille<rt className="text-sauge font-sans text-[11px]">/mil/</rt>
                   </ruby>{' '}
@@ -206,7 +206,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                     — S'il vous plaît…{' '}
                     <ruby 
                       className="target-word cursor-pointer text-prune hover:underline"
-                      onClick={() => handleWordClick('dessine-moi', '/de.sin.mwa/', 'dibújame', 'Forme impérative du verbe dessiner avec pronom personnel réfléchi.', 'Verbe transitif')}
+                      onClick={() => handleWordClick('dessine-moi', '/de.sin.mwa/', 'dessine-moi', 'Forme impérative du verbe dessiner avec pronom personnel réfléchi enclitique.', 'Verbe transitif')}
                     >
                       dessine-moi<rt className="text-sauge font-sans text-[11px]">/de.sin.mwa/</rt>
                     </ruby>{' '}

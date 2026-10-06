@@ -24,7 +24,7 @@ export async function sendVerificationEmail(
         <div style="font-family: 'Georgia', serif; max-width: 600px; margin: 0 auto; padding: 32px 24px; background-color: #fbf7ee; border: 1px solid rgba(196, 99, 47, 0.25); border-radius: 16px; color: #241d24;">
           <div style="text-align: center; margin-bottom: 24px;">
             <h1 style="color: #53335a; font-size: 28px; margin: 0 0 6px 0; font-family: 'Georgia', serif;">WonderWord-UNI</h1>
-            <p style="font-size: 12px; color: #756a77; text-transform: uppercase; letter-spacing: 1.5px; margin: 0;">Inmersión Literaria & Fonética Viva</p>
+            <p style="font-size: 12px; color: #756a77; text-transform: uppercase; letter-spacing: 1.5px; margin: 0;">Immersion Littéraire & Laboratoire Phonétique</p>
           </div>
 
           <h2 style="color: #241d24; font-size: 20px; font-weight: normal; margin-bottom: 12px;">Bonjour ${displayName},</h2>
@@ -88,7 +88,7 @@ export async function sendPasswordResetEmail(
         <div style="font-family: 'Georgia', serif; max-width: 600px; margin: 0 auto; padding: 32px 24px; background-color: #fbf7ee; border: 1px solid rgba(196, 99, 47, 0.25); border-radius: 16px; color: #241d24;">
           <div style="text-align: center; margin-bottom: 24px;">
             <h1 style="color: #53335a; font-size: 28px; margin: 0 0 6px 0; font-family: 'Georgia', serif;">WonderWord-UNI</h1>
-            <p style="font-size: 12px; color: #756a77; text-transform: uppercase; letter-spacing: 1.5px; margin: 0;">Inmersión Literaria & Fonética Viva</p>
+            <p style="font-size: 12px; color: #756a77; text-transform: uppercase; letter-spacing: 1.5px; margin: 0;">Immersion Littéraire & Laboratoire Phonétique</p>
           </div>
 
           <h2 style="color: #241d24; font-size: 20px; font-weight: normal; margin-bottom: 12px;">Bonjour ${displayName},</h2>

@@ -18,6 +18,8 @@ pnpm-debug.log*
 # Entorno y Secretos
 .env
 .env*.local
+client_secret*.json
+*credentials*.json
 
 # IDEs y Editores
 .vscode/*

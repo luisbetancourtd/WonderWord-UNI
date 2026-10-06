@@ -204,7 +204,7 @@ async function main() {
         create: [
           {
             number: 1,
-            title: 'Spleen et Idéal — L\'Albatros & Correspondances',
+            title: "Spleen et Idéal — L'Albatros & Correspondances",
             wordCount: 600,
             contentHtml: `
               <p><strong>L'Albatros</strong></p>
@@ -227,7 +227,128 @@ async function main() {
     },
   });
 
-  // 6. Associer Le Petit Prince aux utilisateurs existants (dont luis@paris8.fr)
+  // 6. DIE VERWANDLUNG (Franz Kafka - Allemand B1/B2)
+  const dieVerwandlung = await prisma.book.upsert({
+    where: { slug: 'die-verwandlung' },
+    update: {},
+    create: {
+      slug: 'die-verwandlung',
+      title: 'Die Verwandlung',
+      author: 'Franz Kafka',
+      description: 'Gregor Samsa, commis voyageur dévoué à sa famille, se réveille un matin métamorphosé en un monstrueux insecte. Un chef-d\'œuvre absolu de la littérature germanophone explorant l\'aliénation, la culpabilité et l\'absurde.',
+      coverColor: 'terre',
+      publisher: 'Kurt Wolff Verlag (1915) / Domaine Public',
+      language: 'de',
+      cefrLevel: 'B1',
+      year: 1915,
+      genre: 'Erzählung & Absurde Literatur',
+      totalChapters: 1,
+      totalWords: 1250,
+      chapters: {
+        create: [
+          {
+            number: 1,
+            title: 'Erster Abschnitt — Das Erwachen als ungeheures Ungeziefer',
+            wordCount: 1250,
+            contentHtml: `
+              <p>Als Gregor Samsa eines Morgens aus unruhigen Träumen erwachte, fand er sich in seinem Bett zu einem ungeheuren Ungeziefer verwandelt. Er lag auf seinem panzerartig harten Rücken und sah, wenn er den Kopf ein wenig hob, seinen gewölbten, braunen, von bogenförmigen Versteifungen geteilten Bauch, auf dessen Höhe sich die Bettdecke, zum gänzlichen Niedergleiten bereit, kaum noch erhalten konnte. Seine vielen, im Vergleich zu seinem sonstigen Umfang kläglich dünnen Beine flimmerten ihm hilflos vor den Augen.</p>
+              <p>»Was ist mit mir geschehen?«, dachte er. Es war kein Traum. Sein Zimmer, ein richtiges, nur etwas zu kleines Menschenzimmer, lag ruhig zwischen den vier wohlbekannten Wänden. Über dem Tisch, auf dem eine aufgeschnittene Mustersammlung von Tuchwaren ausgebreitet war — Samsa war Reisender —, hing das Bild, das er vor kurzem aus einer illustrierten Zeitschrift ausgeschnitten und in einen hübschen, vergoldeten Rahmen getan hatte. Es stellte eine Dame dar, die, mit einem Pelzhut und einer Pelzboa versehen, aufrecht dasaß und einen schweren Pelzmuff, in dem ihr ganzer Unterarm verschwunden war, dem Beschauer entgegenhob.</p>
+              <p>Gregors Blick richtete sich dann zum Fenster, und das trübe Wetter — man hörte Regentropfen auf das Fensterblech aufschlagen — machte ihn ganz melancholisch. »Wie wäre es, wenn ich noch ein wenig weiterschliefe und alle Verrücktheiten vergäße«, dachte er, aber das war gänzlich unausführbar, denn er war gewohnt, auf der rechten Seite zu schlafen, konnte sich aber in seinem gegenwärtigen Zustand nicht in diese Lage bringen. Mit welcher Kraft er sich auch auf die rechte Seite warf, immer wieder schaukelte er in die Rückenlage zurück.</p>
+            `,
+          },
+        ],
+      },
+    },
+  });
+
+  // 7. KINDER- UND HAUSMÄRCHEN : ROTKÄPPCHEN (Brüder Grimm - Allemand A2)
+  await prisma.book.upsert({
+    where: { slug: 'grimms-maerchen' },
+    update: {},
+    create: {
+      slug: 'grimms-maerchen',
+      title: 'Kinder- und Hausmärchen (Rotkäppchen)',
+      author: 'Brüder Grimm',
+      description: 'Le recueil fondamental des contes populaires allemands collectés par Jacob et Wilhelm Grimm. Une langue limpide, musicale et idéale pour les apprenants francophones au niveau A2.',
+      coverColor: 'sauge',
+      publisher: 'Realschulbuchhandlung Berlin (1812) / Domaine Public',
+      language: 'de',
+      cefrLevel: 'A2',
+      year: 1812,
+      genre: 'Volksmärchen',
+      totalChapters: 1,
+      totalWords: 950,
+      chapters: {
+        create: [
+          {
+            number: 1,
+            title: 'Rotkäppchen — Begegnung mit dem Wolf im Wald',
+            wordCount: 950,
+            contentHtml: `
+              <p>Es war einmal eine kleine süße Dirne, die hatte jedermann lieb, der sie nur ansah, am allerliebsten aber ihre Großmutter, die wußte gar nicht, was sie alles dem Kinde geben sollte. Einmal schenkte sie ihm ein Käppchen von rotem Sammet, und weil ihm das so wohl stand, und es nichts anders mehr tragen wollte, hieß es nur das Rotkäppchen.</p>
+              <p>Eines Tages sprach seine Mutter zu ihm: »Komm, Rotkäppchen, da hast du ein Stück Kuchen und eine Flasche Wein, bring das der Großmutter hinaus; sie ist krank und schwach und wird sich daran laben. Mach dich auf, bevor es heiß wird, und wenn du hinauskommst, so geh hübsch sittsam und lauf nicht vom Weg ab, sonst fällst du und zerbrichst das Glas, und die Großmutter hat nichts. Und wenn du in ihre Stube kommst, so vergiß nicht, guten Morgen zu sagen, und guck nicht erst in alle Ecken herum.«</p>
+              <p>»Ich will schon alles gut machen«, sagte Rotkäppchen zur Mutter, und gab ihr die Hand darauf. Die Großmutter aber wohnte draußen im Wald, eine halbe Stunde vom Dorf. Wie nun Rotkäppchen in den Wald kam, begegnete ihm der Wolf. Rotkäppchen aber wußte nicht, was das für ein böses Tier war, und fürchtete sich nicht vor ihm.</p>
+            `,
+          },
+        ],
+      },
+    },
+  });
+
+  // 8. FAUST : DER TRAGÖDIE ERSTER TEIL (Goethe - Allemand C1)
+  await prisma.book.upsert({
+    where: { slug: 'faust-goethe' },
+    update: {},
+    create: {
+      slug: 'faust-goethe',
+      title: 'Faust : Der Tragödie erster Teil',
+      author: 'Johann Wolfgang von Goethe',
+      description: 'Sommet de la dramaturgie et de la poésie philosophique allemande. Le docteur Faust, désespéré par les limites du savoir humain, conclut un pacte avec Méphistophélès.',
+      coverColor: 'prune',
+      publisher: 'Cotta\'sche Verlagsbuchhandlung (1808) / Domaine Public',
+      language: 'de',
+      cefrLevel: 'C1',
+      year: 1808,
+      genre: 'Klassisches Drama & Tragödie',
+      totalChapters: 1,
+      totalWords: 750,
+      chapters: {
+        create: [
+          {
+            number: 1,
+            title: 'Nacht — In einem hochgewölbten, engen gotischen Zimmer',
+            wordCount: 750,
+            contentHtml: `
+              <p><strong>Faust (unruhig auf seinem Sessel am Pulte) :</strong></p>
+              <p>Habe nun, ach! Philosophie,<br>
+              Juristerei und Medizin,<br>
+              Und leider auch Theologie<br>
+              Durchaus studiert, mit heißem Bemühn.<br>
+              Da steh ich nun, ich armer Tor!<br>
+              Und bin so klug als wie zuvor;<br>
+              Heiße Magister, heiße Doktor gar<br>
+              Und ziehe schon an die zehen Jahr<br>
+              Herauf, herab und quer und krumm<br>
+              Meine Schüler an der Nase herum —<br>
+              Und sehe, daß wir nichts wissen können!<br>
+              Das will mir schier das Herz verbrennen.</p>
+              <p>Drum hab ich mich der Magie ergeben,<br>
+              Ob mir durch Geistes Kraft und Mund<br>
+              Nicht manch Geheimnis würde kund;<br>
+              Daß ich nicht mehr mit saurem Schweiß<br>
+              Zu sagen brauche, was ich nicht weiß;<br>
+              Daß ich erkenne, was die Welt<br>
+              Im Innersten zusammenhält,<br>
+              Schau alle Wirkenskraft und Samen,<br>
+              Und tu nicht mehr in Worten kramen.</p>
+            `,
+          },
+        ],
+      },
+    },
+  });
+
+  // Associer les livres phares aux utilisateurs existants (dont luis@paris8.fr)
   const users = await prisma.user.findMany();
   for (const user of users) {
     await prisma.userBook.upsert({
@@ -246,9 +367,26 @@ async function main() {
         status: 'reading',
       },
     });
+
+    await prisma.userBook.upsert({
+      where: {
+        userId_bookId: {
+          userId: user.id,
+          bookId: dieVerwandlung.id,
+        },
+      },
+      update: {},
+      create: {
+        userId: user.id,
+        bookId: dieVerwandlung.id,
+        currentChapter: 1,
+        progressPercent: 10.0,
+        status: 'reading',
+      },
+    });
   }
 
-  console.log(`✅ Catalogue alimenté avec succès : 5 œuvres majeures du patrimoine littéraire français.`);
+  console.log(`✅ Catalogue alimenté avec succès : 8 chefs-d'œuvre bilingues (Français & Allemand).`);
 }
 
 main()

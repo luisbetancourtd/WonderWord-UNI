@@ -32,14 +32,14 @@ export const RailSidebar: React.FC<RailSidebarProps> = ({ currentView, onNavigat
           WonderWord
         </h1>
         <span className="text-[9px] uppercase tracking-[0.2em] font-semibold text-rail-ink-3">
-          Inmersión Literaria
+          Immersion Littéraire
         </span>
       </div>
 
       {/* Navigation */}
       <nav className="relative flex-1 overflow-y-auto py-5 space-y-1">
         <p className="text-[9px] uppercase tracking-[0.2em] font-semibold text-rail-ink-3 mb-2 px-6">
-          Lectura
+          Lecture & Corpus
         </p>
 
         {/* Dashboard */}
@@ -56,10 +56,10 @@ export const RailSidebar: React.FC<RailSidebarProps> = ({ currentView, onNavigat
             <span className="absolute left-0 top-1 bottom-1 w-[3px] bg-soleil rounded-r" />
           )}
           <LayoutDashboard size={16} className={currentView === 'dashboard' ? 'text-soleil' : ''} />
-          <span className="flex-1">Dashboard</span>
+          <span className="flex-1">Tableau de bord</span>
         </button>
 
-        {/* Biblioteca */}
+        {/* Bibliothèque */}
         <button
           type="button"
           onClick={() => onNavigate('library')}
@@ -73,10 +73,10 @@ export const RailSidebar: React.FC<RailSidebarProps> = ({ currentView, onNavigat
             <span className="absolute left-0 top-1 bottom-1 w-[3px] bg-soleil rounded-r" />
           )}
           <BookOpen size={16} className={currentView === 'library' ? 'text-soleil' : ''} />
-          <span className="flex-1">Biblioteca</span>
+          <span className="flex-1">Bibliothèque</span>
         </button>
 
-        {/* Lector & Estudio */}
+        {/* Atelier de Lecture */}
         <button
           type="button"
           onClick={() => onNavigate('reader')}
@@ -90,11 +90,11 @@ export const RailSidebar: React.FC<RailSidebarProps> = ({ currentView, onNavigat
             <span className="absolute left-0 top-1 bottom-1 w-[3px] bg-soleil rounded-r" />
           )}
           <BookOpenCheck size={16} className={currentView === 'reader' ? 'text-soleil' : ''} />
-          <span className="flex-1">Lector & Estudio</span>
+          <span className="flex-1">Atelier de Lecture</span>
         </button>
 
         <p className="text-[9px] uppercase tracking-[0.2em] font-semibold text-rail-ink-3 pt-6 mb-2 px-6">
-          Práctica & Fonética
+          Pratique & Phonétique
         </p>
 
         {/* Vocabulaire */}
@@ -111,11 +111,11 @@ export const RailSidebar: React.FC<RailSidebarProps> = ({ currentView, onNavigat
             <span className="absolute left-0 top-1 bottom-1 w-[3px] bg-soleil rounded-r" />
           )}
           <Brain size={16} className={currentView === 'vocabulary' ? 'text-soleil' : ''} />
-          <span className="flex-1">Vocabulario & Repaso</span>
+          <span className="flex-1">Vocabulaire & FSRS</span>
           <span className="font-serif text-[13px] text-soleil">18</span>
         </button>
 
-        {/* Shadowing & Fonética */}
+        {/* Studio de Shadowing */}
         <button
           type="button"
           onClick={() => onNavigate('shadowing')}
@@ -129,7 +129,7 @@ export const RailSidebar: React.FC<RailSidebarProps> = ({ currentView, onNavigat
             <span className="absolute left-0 top-1 bottom-1 w-[3px] bg-soleil rounded-r" />
           )}
           <Mic size={16} className={currentView === 'shadowing' ? 'text-soleil' : ''} />
-          <span className="flex-1">Shadowing & Fonética</span>
+          <span className="flex-1">Studio de Shadowing</span>
         </button>
 
         <p className="text-[9px] uppercase tracking-[0.2em] font-semibold text-rail-ink-3 pt-6 mb-2 px-6">
@@ -150,7 +150,7 @@ export const RailSidebar: React.FC<RailSidebarProps> = ({ currentView, onNavigat
             <span className="absolute left-0 top-1 bottom-1 w-[3px] bg-soleil rounded-r" />
           )}
           <Settings size={16} className={currentView === 'settings' ? 'text-soleil' : ''} />
-          <span className="flex-1">Ajustes</span>
+          <span className="flex-1">Paramètres</span>
         </button>
       </nav>
 
