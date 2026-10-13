@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify';
 import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
 import { sendVerificationEmail, sendPasswordResetEmail } from '../services/email.js';
+import { config } from '../config.js';
 
 export default async function authRoutes(server: FastifyInstance) {
   // Inscription avec génération de jeton de confirmation et envoi d'email
@@ -124,6 +125,10 @@ export default async function authRoutes(server: FastifyInstance) {
     const user = await server.prisma.user.findUnique({ where: { email } });
     if (!user) {
       return reply.status(401).send({ message: 'Identifiants invalides' });
+    }
+
+    if (!user.passwordHash) {
+      return reply.status(401).send({ message: 'Ce compte utilise la connexion Google. Veuillez vous connecter avec Google.' });
     }
 
     const isValid = await bcrypt.compare(password, user.passwordHash);
@@ -299,5 +304,98 @@ export default async function authRoutes(server: FastifyInstance) {
         isVerified: updatedUser.isVerified,
       },
     };
+  });
+
+  // Authentification Google OAuth (Google Identity Services)
+  server.post('/google', async (request, reply) => {
+    const { credential } = request.body as { credential?: string };
+
+    if (!credential) {
+      return reply.status(400).send({ message: 'Jeton Google requis' });
+    }
+
+    try {
+      // 1. Valider le jeton auprès de l'API officielle Google
+      const googleRes = await fetch(
+        `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`
+      );
+
+      if (!googleRes.ok) {
+        return reply.status(401).send({ message: 'Jeton Google invalide ou expiré' });
+      }
+
+      const payload = (await googleRes.json()) as {
+        sub?: string;
+        email?: string;
+        email_verified?: string | boolean;
+        name?: string;
+        picture?: string;
+        aud?: string;
+      };
+
+      if (!payload.sub || !payload.email) {
+        return reply.status(400).send({ message: 'Données de profil Google incomplètes' });
+      }
+
+      // Vérifier que le jeton s'adresse bien à notre Client ID
+      if (payload.aud !== config.googleClientId) {
+        return reply.status(401).send({ message: 'Client ID Google non reconnu' });
+      }
+
+      // 2. Rechercher l'utilisateur par googleId ou par email
+      let user = await server.prisma.user.findFirst({
+        where: {
+          OR: [
+            { googleId: payload.sub },
+            { email: payload.email.toLowerCase() },
+          ],
+        },
+      });
+
+      if (user) {
+        // Mettre à jour l'identifiant Google, avatar et statut vérifié
+        user = await server.prisma.user.update({
+          where: { id: user.id },
+          data: {
+            googleId: user.googleId || payload.sub,
+            avatarUrl: user.avatarUrl || payload.picture || null,
+            isVerified: true, // Garanti par Google
+          },
+        });
+      } else {
+        // Créer automatiquement le compte avec le profil vérifié
+        user = await server.prisma.user.create({
+          data: {
+            email: payload.email.toLowerCase(),
+            googleId: payload.sub,
+            displayName: payload.name || payload.email.split('@')[0],
+            avatarUrl: payload.picture || null,
+            isVerified: true,
+            nativeLang: 'fr',
+            targetLang: 'de',
+          },
+        });
+      }
+
+      // 3. Générer le jeton JWT WonderWord de session
+      const token = server.jwt.sign({ id: user.id, email: user.email });
+
+      return {
+        token,
+        message: 'Connexion réussie avec votre compte Google !',
+        user: {
+          id: user.id,
+          email: user.email,
+          displayName: user.displayName,
+          nativeLang: user.nativeLang,
+          targetLang: user.targetLang,
+          avatarUrl: user.avatarUrl,
+          isVerified: user.isVerified,
+        },
+      };
+    } catch (err) {
+      server.log.error(err);
+      return reply.status(500).send({ message: 'Erreur lors de la validation Google' });
+    }
   });
 }

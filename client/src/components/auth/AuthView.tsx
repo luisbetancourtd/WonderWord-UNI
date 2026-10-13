@@ -36,6 +36,68 @@ export function AuthView({ onAuthSuccess }: AuthViewProps) {
     }
   }, []);
 
+  // Gestion de la réponse Google OAuth
+  const handleGoogleCredentialResponse = async (response: { credential: string }) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const res = await apiFetch<AuthResponse>('/auth/google', {
+        method: 'POST',
+        body: JSON.stringify({ credential: response.credential }),
+      });
+      if (res.token && res.user) {
+        onAuthSuccess(res.token, res.user);
+      }
+    } catch (err: any) {
+      console.error('Erreur Google OAuth:', err);
+      setError(err.message || 'Échec de la connexion avec Google');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Initialisation du bouton Google Identity Services
+  useEffect(() => {
+    if (mode !== 'login' && mode !== 'register') return;
+
+    const initGoogle = () => {
+      const google = (window as any).google;
+      if (google?.accounts?.id) {
+        google.accounts.id.initialize({
+          client_id: '231091449511-64p32fnt4eao3gm9qjvq8c0fgpfhqpub.apps.googleusercontent.com',
+          callback: handleGoogleCredentialResponse,
+        });
+
+        const btnContainer = document.getElementById('googleSignInBtn');
+        if (btnContainer) {
+          btnContainer.innerHTML = '';
+          google.accounts.id.renderButton(btnContainer, {
+            theme: 'outline',
+            size: 'large',
+            type: 'standard',
+            shape: 'pill',
+            text: 'continue_with',
+            logo_alignment: 'left',
+            width: 320,
+            locale: 'fr',
+          });
+        }
+      }
+    };
+
+    if ((window as any).google?.accounts?.id) {
+      initGoogle();
+    } else {
+      const interval = setInterval(() => {
+        if ((window as any).google?.accounts?.id) {
+          clearInterval(interval);
+          initGoogle();
+        }
+      }, 200);
+      return () => clearInterval(interval);
+    }
+  }, [mode]);
+
   const validate = (): boolean => {
     const errors: Record<string, string> = {};
 
@@ -460,6 +522,24 @@ export function AuthView({ onAuthSuccess }: AuthViewProps) {
                   'Enregistrer le nouveau mot de passe'
                 )}
               </button>
+
+              {/* Séparateur et Connexion Google (Login & Register) */}
+              {(mode === 'login' || mode === 'register') && (
+                <div className="pt-2 space-y-4">
+                  <div className="relative my-3">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-terre/20" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-[#FAF7F2] px-3 text-ink-3 font-medium">ou</span>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-center w-full min-h-[44px]">
+                    <div id="googleSignInBtn" className="flex justify-center w-full" />
+                  </div>
+                </div>
+              )}
 
               {/* Bouton retour si mode forgot */}
               {mode === 'forgot' && (
