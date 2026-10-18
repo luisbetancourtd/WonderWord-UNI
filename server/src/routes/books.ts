@@ -42,6 +42,7 @@ export default async function bookRoutes(server: FastifyInstance) {
             number: true,
             title: true,
             wordCount: true,
+            contentHtml: true,
           },
           orderBy: {
             number: 'asc',
@@ -60,12 +61,25 @@ export default async function bookRoutes(server: FastifyInstance) {
 
     return books.map((book: any) => {
       const userBook = book.userBooks && book.userBooks.length > 0 ? book.userBooks[0] : null;
+      const rawText = book.chapters?.[0]?.contentHtml
+        ? book.chapters[0].contentHtml.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+        : '';
+      const excerpt = rawText ? rawText.slice(0, 280) + '...' : undefined;
+
+      const cleanChapters = book.chapters?.map((ch: any) => ({
+        id: ch.id,
+        number: ch.number,
+        title: ch.title,
+        wordCount: ch.wordCount,
+      }));
+
       return {
         id: book.id,
         slug: book.slug,
         title: book.title,
         author: book.author,
         description: book.description,
+        excerpt: excerpt || book.description,
         coverColor: book.coverColor,
         coverImage: book.coverImage,
         publisher: book.publisher,
@@ -75,7 +89,7 @@ export default async function bookRoutes(server: FastifyInstance) {
         genre: book.genre,
         totalChapters: book.totalChapters,
         totalWords: book.totalWords,
-        chapters: book.chapters,
+        chapters: cleanChapters,
         isAdded: Boolean(userBook),
         currentChapter: userBook?.currentChapter || 1,
         progressPercent: userBook?.progressPercent || 0,
@@ -228,6 +242,7 @@ export default async function bookRoutes(server: FastifyInstance) {
                 number: true,
                 title: true,
                 wordCount: true,
+                contentHtml: true,
               },
               orderBy: {
                 number: 'asc',
@@ -241,27 +256,42 @@ export default async function bookRoutes(server: FastifyInstance) {
       },
     });
 
-    return userBooks.map((ub) => ({
-      id: ub.book.id,
-      slug: ub.book.slug,
-      title: ub.book.title,
-      author: ub.book.author,
-      description: ub.book.description,
-      coverColor: ub.book.coverColor,
-      coverImage: ub.book.coverImage,
-      publisher: ub.book.publisher,
-      language: ub.book.language,
-      cefrLevel: ub.book.cefrLevel,
-      year: ub.book.year,
-      genre: ub.book.genre,
-      totalChapters: ub.book.totalChapters,
-      totalWords: ub.book.totalWords,
-      currentChapter: ub.currentChapter,
-      progressPercent: ub.progressPercent,
-      status: ub.status,
-      lastReadAt: ub.lastReadAt,
-      chapters: ub.book.chapters,
-    }));
+    return userBooks.map((ub) => {
+      const rawText = ub.book.chapters?.[0]?.contentHtml
+        ? ub.book.chapters[0].contentHtml.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+        : '';
+      const excerpt = rawText ? rawText.slice(0, 280) + '...' : undefined;
+
+      const cleanChapters = ub.book.chapters?.map((ch: any) => ({
+        id: ch.id,
+        number: ch.number,
+        title: ch.title,
+        wordCount: ch.wordCount,
+      }));
+
+      return {
+        id: ub.book.id,
+        slug: ub.book.slug,
+        title: ub.book.title,
+        author: ub.book.author,
+        description: ub.book.description,
+        excerpt: excerpt || ub.book.description,
+        coverColor: ub.book.coverColor,
+        coverImage: ub.book.coverImage,
+        publisher: ub.book.publisher,
+        language: ub.book.language,
+        cefrLevel: ub.book.cefrLevel,
+        year: ub.book.year,
+        genre: ub.book.genre,
+        totalChapters: ub.book.totalChapters,
+        totalWords: ub.book.totalWords,
+        currentChapter: ub.currentChapter,
+        progressPercent: ub.progressPercent,
+        status: ub.status,
+        lastReadAt: ub.lastReadAt,
+        chapters: cleanChapters,
+      };
+    });
   });
 
   // 3. Obtenir un livre spécifique avec tous ses chapitres

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Search, BookOpen, Check, Plus, Filter, BookMarked, Globe, Sparkles, Download } from 'lucide-react';
+import { Search, BookOpen, Check, Plus, Filter, BookMarked, Globe, Sparkles, Download, Eye } from 'lucide-react';
 import { apiFetch } from '../../lib/api';
 import type { BookSummary, CatalogBookItem, ViewType } from '../../types';
+import { BookBackCoverModal } from './BookBackCoverModal';
 
 interface LibraryViewProps {
   onNavigate: (view: ViewType) => void;
@@ -17,6 +18,9 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
   const [loading, setLoading] = useState(true);
   const [selectedBook, setSelectedBook] = useState<BookSummary | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  // État de la modale de quatrième de couverture (Fiche Ouvrage)
+  const [selectedBackCoverBook, setSelectedBackCoverBook] = useState<(BookSummary | CatalogBookItem) | null>(null);
 
   // État du catalogue public découvert
   const [discoverBooks, setDiscoverBooks] = useState<CatalogBookItem[]>([]);
@@ -312,12 +316,13 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
                 return (
                   <div
                     key={book.id}
-                    className="bg-paper border border-rule rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col group"
+                    onClick={() => setSelectedBackCoverBook(book)}
+                    className="bg-paper border border-rule rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col group cursor-pointer hover:border-prune/40"
                   >
                     {/* Haut de la carte : Couverture */}
                     <div className={`p-5 ${colors.bg} relative flex gap-4 min-h-[175px] border-b ${colors.border}`}>
                       {(book.coverImage || book.coverUrl) && (
-                        <div className="w-[88px] h-[130px] flex-shrink-0 rounded shadow-md overflow-hidden bg-black/10 border border-white/20 self-center">
+                        <div className="w-[88px] h-[130px] flex-shrink-0 rounded shadow-md overflow-hidden bg-black/10 border border-white/20 self-center transition-transform duration-200 group-hover:scale-105">
                           <img
                             src={book.coverImage || book.coverUrl}
                             alt={book.title}
@@ -360,7 +365,9 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
                       <div className="space-y-3 pt-2 border-t border-rule-soft">
                         <div className="flex items-center justify-between text-[11px] text-ink-3">
                           <span>{book.genre}</span>
-                          <span>{book.totalChapters} chapitres</span>
+                          <span className="text-prune font-semibold flex items-center gap-1 group-hover:underline">
+                            <Eye size={12} /> Voir la fiche
+                          </span>
                         </div>
 
                         {/* Progression */}
@@ -385,28 +392,35 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
                         <div className="flex items-center gap-2 pt-2">
                           <button
                             type="button"
-                            onClick={() => handleStartReading(book, book.currentChapter || 1)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleStartReading(book, book.currentChapter || 1);
+                            }}
                             className="flex-1 bg-prune hover:bg-prune-2 text-white text-xs font-bold uppercase tracking-wider py-2.5 rounded-full shadow-sm transition-all text-center flex items-center justify-center gap-1.5"
                           >
                             <BookOpen size={13} />
                             <span>Lire</span>
                           </button>
 
-                          {book.chapters && book.chapters.length > 0 && (
-                            <button
-                              type="button"
-                              onClick={() => setSelectedBook(book)}
-                              className="px-3 py-2 rounded-full border border-rule hover:bg-paper-warm text-ink text-xs font-semibold"
-                              title="Voir les chapitres"
-                            >
-                              Chapitres
-                            </button>
-                          )}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedBackCoverBook(book);
+                            }}
+                            className="px-3 py-2 rounded-full border border-rule hover:bg-paper-warm text-ink text-xs font-semibold"
+                            title="Voir la quatrième de couverture et les chapitres"
+                          >
+                            Fiche
+                          </button>
 
                           <button
                             type="button"
                             disabled={actionLoading === book.id}
-                            onClick={() => handleToggleLibrary(book)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleLibrary(book);
+                            }}
                             className={`p-2.5 rounded-full border transition-all ${
                               book.isAdded
                                 ? 'border-sauge/40 bg-sauge-wash text-sauge hover:bg-red-50 hover:text-red-700 hover:border-red-200'
@@ -473,13 +487,14 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
                 return (
                   <div
                     key={item.id}
-                    className="bg-paper border border-rule rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between group"
+                    onClick={() => setSelectedBackCoverBook(item)}
+                    className="bg-paper border border-rule rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between group cursor-pointer hover:border-sauge/50"
                   >
                     <div>
                       {/* En-tête de carte avec source */}
                       <div className={`p-5 ${colors.bg} relative flex gap-4 min-h-[165px] border-b ${colors.border}`}>
                         {item.coverUrl && (
-                          <div className="w-[82px] h-[122px] flex-shrink-0 rounded shadow-md overflow-hidden bg-black/10 border border-white/20 self-center">
+                          <div className="w-[82px] h-[122px] flex-shrink-0 rounded shadow-md overflow-hidden bg-black/10 border border-white/20 self-center transition-transform duration-200 group-hover:scale-105">
                             <img
                               src={item.coverUrl}
                               alt={item.title}
@@ -503,7 +518,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
                           </div>
 
                           <div className="my-auto py-1">
-                            <h3 className="font-serif text-lg font-normal leading-tight text-white line-clamp-2">
+                            <h3 className="font-serif text-lg font-normal leading-tight text-white line-clamp-2 group-hover:underline">
                               {item.title}
                             </h3>
                             <p className="text-xs font-sans text-white/90 truncate mt-0.5">
@@ -513,31 +528,49 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
                         </div>
                       </div>
 
-                      {/* Description */}
+                      {/* Description & Découverte */}
                       <div className="p-5 space-y-3">
                         <p className="text-xs text-ink-2 line-clamp-3 leading-relaxed">
                           {item.description}
                         </p>
-                        {item.downloads && (
-                          <p className="text-[11px] text-ink-3 font-mono">
-                            {item.downloads} consultations sur Gutenberg
-                          </p>
-                        )}
+                        <div className="flex items-center justify-between text-[11px] text-ink-3 pt-1 border-t border-rule-soft">
+                          {item.downloads ? (
+                            <span className="font-mono">
+                              {item.downloads} consultations
+                            </span>
+                          ) : (
+                            <span className="font-serif italic text-ink-3 truncate max-w-[150px]">
+                              {item.genre || 'Patrimoine'}
+                            </span>
+                          )}
+                          <span className="text-sauge font-semibold flex items-center gap-1 group-hover:underline">
+                            <Eye size={12} /> Fiche & Extrait
+                          </span>
+                        </div>
                       </div>
                     </div>
 
                     {/* Action d'importation */}
                     <div className="p-5 pt-0">
                       {item.isImported ? (
-                        <div className="w-full py-2.5 px-4 rounded-full bg-sauge-wash border border-sauge/30 text-sauge text-xs font-bold text-center flex items-center justify-center gap-1.5">
+                        <div
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedBackCoverBook(item);
+                          }}
+                          className="w-full py-2.5 px-4 rounded-full bg-sauge-wash border border-sauge/30 text-sauge text-xs font-bold text-center flex items-center justify-center gap-1.5 hover:bg-sauge/15 transition-all cursor-pointer"
+                        >
                           <Check size={14} />
-                          <span>Présent dans votre bibliothèque</span>
+                          <span>Présent dans votre bibliothèque · Voir la fiche</span>
                         </div>
                       ) : (
                         <button
                           type="button"
                           disabled={Boolean(importingId)}
-                          onClick={() => handleImportBook(item)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleImportBook(item);
+                          }}
                           className="w-full bg-sauge hover:bg-sauge-2 text-white text-xs font-bold uppercase tracking-wider py-2.5 px-4 rounded-full shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                         >
                           {isImporting ? (
@@ -562,59 +595,18 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
         </div>
       )}
 
-      {/* 6. MODAL DES CHAPITRES (si ouvert) */}
-      {selectedBook && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-paper border border-rule rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-6">
-            <div className="flex items-start justify-between border-b border-rule pb-4">
-              <div>
-                <h3 className="font-serif text-2xl text-ink">{selectedBook.title}</h3>
-                <p className="text-xs text-ink-2 mt-0.5">{selectedBook.author}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSelectedBook(null)}
-                className="text-ink-3 hover:text-ink text-sm font-semibold p-1"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
-              {selectedBook.chapters?.map((ch) => (
-                <div
-                  key={ch.id}
-                  onClick={() => {
-                    handleStartReading(selectedBook, ch.number);
-                    setSelectedBook(null);
-                  }}
-                  className="flex items-center justify-between p-3 rounded-xl border border-rule hover:border-prune/50 hover:bg-paper-warm cursor-pointer transition-all"
-                >
-                  <div className="space-y-0.5">
-                    <p className="text-xs font-semibold text-ink">
-                      {ch.title}
-                    </p>
-                    <p className="text-[11px] text-ink-3 font-mono">
-                      {ch.wordCount} mots analysés
-                    </p>
-                  </div>
-                  <span className="text-[11px] font-bold text-prune">Lire →</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="pt-2 text-right">
-              <button
-                type="button"
-                onClick={() => setSelectedBook(null)}
-                className="px-5 py-2 rounded-full border border-rule text-xs font-semibold text-ink-2 hover:bg-paper-warm"
-              >
-                Fermer
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* 6. MODAL QUATRIÈME DE COUVERTURE & FICHE OUVRAGE */}
+      <BookBackCoverModal
+        book={selectedBackCoverBook}
+        isOpen={Boolean(selectedBackCoverBook)}
+        onClose={() => setSelectedBackCoverBook(null)}
+        onStartReading={(bookId, ch) => {
+          if (onSelectBook) onSelectBook(bookId, ch);
+          onNavigate('reader');
+        }}
+        onImportBook={handleImportBook}
+        isImporting={Boolean(importingId)}
+      />
     </div>
   );
 };

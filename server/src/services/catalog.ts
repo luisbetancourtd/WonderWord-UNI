@@ -14,6 +14,8 @@ export interface CatalogBookItem {
   coverUrl?: string;
   coverColor: 'soleil' | 'prune' | 'sauge' | 'terre' | 'bleuet';
   description: string;
+  excerpt?: string;
+  genre?: string;
   downloadUrl?: string;
   downloads?: number;
 }
@@ -39,10 +41,12 @@ const CURATED_CATALOG: CatalogBookItem[] = [
     language: 'fr',
     cefrLevel: 'C1',
     year: 1913,
+    genre: 'Roman psychologique & moderniste',
     coverColor: 'prune',
     coverUrl: 'https://www.gutenberg.org/cache/epub/2650/pg2650.cover.medium.jpg',
     downloadUrl: 'https://www.gutenberg.org/cache/epub/2650/pg2650.txt.utf-8',
-    description: 'Premier volume d\'À la recherche du temps perdu. L\'épisode de la madeleine et la mélodie de la mémoire involontaire.',
+    description: 'Premier volume monumental d\'À la recherche du temps perdu. Proust y explore les méandres de la mémoire involontaire, l\'enfance à Combray, l\'amour jaloux de Swann pour Odette et la quête de la vocation esthétique.',
+    excerpt: "Longtemps, je me suis couché de bonne heure. Parfois, à peine ma bougie éteinte, mes yeux se fermaient si vite que je n'avais pas le temps de me dire : « Je m'endors. » Et, une demi-heure après, la pensée qu'il était temps de chercher le sommeil m'éveillait...",
   },
   {
     id: 'patrimoine:fr:zola-germinal',
@@ -52,10 +56,12 @@ const CURATED_CATALOG: CatalogBookItem[] = [
     language: 'fr',
     cefrLevel: 'B2',
     year: 1885,
+    genre: 'Fresque naturaliste & sociale',
     coverColor: 'terre',
     coverUrl: 'https://www.gutenberg.org/cache/epub/5711/pg5711.cover.medium.jpg',
     downloadUrl: 'https://www.gutenberg.org/cache/epub/5711/pg5711.txt.utf-8',
-    description: 'Fresque naturaliste du monde ouvrier et de la grève des mineurs dans le bassin houiller du Nord.',
+    description: 'Chef-d\'œuvre du naturalisme français. Treizième roman des Rougon-Macquart, Zola plonge dans l\'enfer des fosses houillères du Nord, décrivant la misère ouvrière et l\'explosion d\'une grève héroïque.',
+    excerpt: "Une seule idée occupait sa tête d'ouvrier sans travail et sans gîte, l'espoir que le froid serait moins vif après le lever du jour. Depuis une heure, il avançait ainsi, lorsque sur la gauche, à deux kilomètres de Montsou, il aperçut des feux rouges, trois brasiers brûlant en plein air...",
   },
   {
     id: 'patrimoine:fr:dumas-monte-cristo',
@@ -65,10 +71,12 @@ const CURATED_CATALOG: CatalogBookItem[] = [
     language: 'fr',
     cefrLevel: 'B1',
     year: 1844,
+    genre: 'Roman d\'aventures & drame',
     coverColor: 'bleuet',
     coverUrl: 'https://www.gutenberg.org/cache/epub/17989/pg17989.cover.medium.jpg',
     downloadUrl: 'https://www.gutenberg.org/cache/epub/17989/pg17989.txt.utf-8',
-    description: 'L\'odyssée vengeresse d\'Edmond Dantès, évadé du château d\'If sous les traits d\'un richissime seigneur.',
+    description: 'L\'odyssée vengeresse d\'Edmond Dantès, trahi le jour de ses fiançailles et enfermé quatorze ans au château d\'If avant de ressurgir sous les traits d\'un richissime seigneur omnipotent.',
+    excerpt: "Le 24 février 1815, la vigie de Notre-Dame de la Garde signala le trois-mâts le Pharaon, venant de Smyrne, Trieste et Naples, sous le commandement du jeune Edmond Dantès, second du navire...",
   },
   {
     id: 'patrimoine:fr:moliere-avare',
@@ -78,10 +86,12 @@ const CURATED_CATALOG: CatalogBookItem[] = [
     language: 'fr',
     cefrLevel: 'B1',
     year: 1668,
+    genre: 'Comédie classique en prose',
     coverColor: 'soleil',
     coverUrl: 'https://www.gutenberg.org/cache/epub/5799/pg5799.cover.medium.jpg',
     downloadUrl: 'https://www.gutenberg.org/cache/epub/5799/pg5799.txt.utf-8',
-    description: 'Comédie de caractère en prose dépeignant la tyrannie domestique d\'Harpagon et l\'obsession de sa cassette.',
+    description: 'Comédie de caractère en prose dépeignant la tyrannie domestique d\'Harpagon et l\'obsession dévorante de sa cassette d\'or face aux désirs d\'amour de ses enfants.',
+    excerpt: "Valère : Hé quoi ! charmante Élise, vous devenez mélancolique, après les obligeantes assurances que vous avez eu la bonté de me donner de votre foi ? Je vous vois soupirer, hélas ! au milieu de ma joie !",
   },
   // Allemand
   {
@@ -92,10 +102,12 @@ const CURATED_CATALOG: CatalogBookItem[] = [
     language: 'de',
     cefrLevel: 'B2',
     year: 1925,
+    genre: 'Roman allégorique & existentiel',
     coverColor: 'terre',
     coverUrl: 'https://www.gutenberg.org/cache/epub/24373/pg24373.cover.medium.jpg',
     downloadUrl: 'https://www.gutenberg.org/cache/epub/24373/pg24373.txt.utf-8',
-    description: 'Josef K. wird eines Morgens grundlos verhaftet und durchläuft ein absurdes, undurchdringliches Rechtssystem.',
+    description: 'Josef K. wird eines Morgens grundlos verhaftet und durchläuft ein absurdes, unerbittliches und undurchdringliches Rechtssystem, das seine Existenz schrittweise erstickt.',
+    excerpt: "Jemand mußte Josef K. verleumdet haben, denn ohne daß er etwas Böses getan hätte, wurde er eines Morgens verhaftet. Die Köchin der Frau Grubach, die ihm jeden Tag gegen acht Uhr früh das Frühstück brachte, kam diesmal nicht...",
   },
   {
     id: 'patrimoine:de:goethe-werther',
@@ -105,10 +117,12 @@ const CURATED_CATALOG: CatalogBookItem[] = [
     language: 'de',
     cefrLevel: 'B2',
     year: 1774,
+    genre: 'Briefroman (Sturm und Drang)',
     coverColor: 'bleuet',
     coverUrl: 'https://www.gutenberg.org/cache/epub/2407/pg2407.cover.medium.jpg',
     downloadUrl: 'https://www.gutenberg.org/cache/epub/2407/pg2407.txt.utf-8',
-    description: 'Briefroman des Sturm und Drang über die unglückliche Liebe Werthers zu der verlobten Lotte.',
+    description: 'Briefroman des Sturm und Drang über die unglückliche, leidenschaftliche Liebe Werthers zu der verlobten Lotte, ein literarisches Monument der romantischen Seelenqual.',
+    excerpt: "Wie froh bin ich, daß ich weg bin! Bester Freund, was ist das Herz des Menschen! Dich zu verlassen, den ich so liebe, von dem ich unzertrennlich war, und froh zu sein! Ich weiß, du verzeihst mir's...",
   },
   {
     id: 'patrimoine:de:schiller-raeuber',
@@ -118,10 +132,12 @@ const CURATED_CATALOG: CatalogBookItem[] = [
     language: 'de',
     cefrLevel: 'C1',
     year: 1781,
+    genre: 'Drame tragique (Sturm und Drang)',
     coverColor: 'prune',
     coverUrl: 'https://www.gutenberg.org/cache/epub/6782/pg6782.cover.medium.jpg',
     downloadUrl: 'https://www.gutenberg.org/cache/epub/6782/pg6782.txt.utf-8',
-    description: 'Rebellisches Drama über den Konflikt zweier feindlicher Brüder: Karl und Franz Moor.',
+    description: 'Rebellisches Drama über den bitteren Konflikt zweier ungleicher Brüder: Karl Moor, der edle Räuberhauptmann in den Wäldern, und sein heimtückischer Bruder Franz.',
+    excerpt: "Franz : Aber ist dir auch wohl, Vater? Du siehst so blaß. / Der alte Moor : Ganz wohl, mein Sohn – was hattest du mir zu sagen? / Franz : Die Post ist angekommen – ein Brief von unserm Korrespondenten in Leipzig...",
   },
   {
     id: 'patrimoine:de:grimm-haensel',
@@ -131,10 +147,12 @@ const CURATED_CATALOG: CatalogBookItem[] = [
     language: 'de',
     cefrLevel: 'A2',
     year: 1812,
+    genre: 'Volksmärchen',
     coverColor: 'sauge',
     coverUrl: 'https://www.gutenberg.org/cache/epub/5314/pg5314.cover.medium.jpg',
     downloadUrl: 'https://www.gutenberg.org/cache/epub/5314/pg5314.txt.utf-8',
-    description: 'Klassisches deutsches Volksmärchen. Ideal für Französisch-Muttersprachler auf A2-Niveau.',
+    description: 'Klassische deutsche Kinder- und Hausmärchen. Sprachlich klar, rhythmisch und didaktisch ideal für den Wortschatzerwerb frankophoner Germanistik-Studierender.',
+    excerpt: "Vor einem großen Walde wohnte ein armer Holzhacker mit seiner Frau und seinen zwei Kindern; das Bübchen hieß Hänsel und das Mädchen Gretel. Er hatte wenig zu beißen und zu brechen...",
   },
 ];
 
@@ -192,6 +210,8 @@ export async function searchPublicCatalog(query = '', lang: 'fr' | 'de' | 'all' 
         for (const drama of filteredDramas) {
           const authorName = drama.authors?.[0]?.name || 'Auteur classique';
           const dramaLang: 'fr' | 'de' = corpus === 'fre' ? 'fr' : 'de';
+          const genre = corpus === 'fre' ? 'Théâtre classique français' : 'Deutsches klassisches Theater';
+          const subtitleDesc = drama.subtitle ? `${drama.subtitle}. ` : '';
           results.push({
             id: `dracor:${corpus}:${drama.name}`,
             source: 'DraCor',
@@ -200,8 +220,10 @@ export async function searchPublicCatalog(query = '', lang: 'fr' | 'de' | 'all' 
             language: dramaLang,
             cefrLevel: dramaLang === 'fr' ? 'B2' : 'C1',
             year: drama.writtenYear || drama.yearPremiered || drama.yearPrinted || 1700,
+            genre,
             coverColor: corpus === 'fre' ? 'sauge' : 'prune',
-            description: `Corpus théâtral universitaire DraCor (${corpus.toUpperCase()}). ${drama.networkSize || 0} personnages identifiés.`,
+            description: `${subtitleDesc}Corpus théâtral universitaire DraCor (${corpus.toUpperCase()}). Distribution de ${drama.networkSize || 0} personnages.`,
+            excerpt: `« Pièce dramatique numérisée selon les standards académiques TEI-XML. ${drama.networkSize || 'Plusieurs'} personnages en interaction scénique. »`,
           });
         }
       }
@@ -236,6 +258,8 @@ export async function searchPublicCatalog(query = '', lang: 'fr' | 'de' | 'all' 
         const authorName = gb.authors?.[0]?.name ? gb.authors[0].name.split(',').reverse().join(' ').trim() : 'Auteur classique';
         const coverUrl = gb.formats?.['image/jpeg'] || undefined;
         const txtUrl = gb.formats?.['text/plain; charset=utf-8'] || gb.formats?.['text/plain'] || undefined;
+        const subjects = gb.subjects && gb.subjects.length > 0 ? gb.subjects.slice(0, 3).join(' · ') : 'Littérature générale & patrimoine';
+        const genre = gb.subjects?.[0] ? gb.subjects[0].split('--')[0].trim() : 'Classique du domaine public';
 
         // Éviter les doublons avec ce qui est déjà dans results
         const alreadyIn = results.some((r) => r.title.toLowerCase() === gb.title.toLowerCase());
@@ -247,9 +271,11 @@ export async function searchPublicCatalog(query = '', lang: 'fr' | 'de' | 'all' 
             author: authorName,
             language: gbLang,
             cefrLevel: gbLang === 'fr' ? 'B1' : 'B2',
+            genre,
             coverUrl,
             coverColor: gbLang === 'fr' ? 'soleil' : 'bleuet',
-            description: `Œuvre du domaine public répertoriée par le Projet Gutenberg (${gb.download_count || 0} consultations mondiales).`,
+            description: `Édition patrimoniale issue du Projet Gutenberg mondial. Thématiques : ${subjects}.`,
+            excerpt: `« Ouvrage numérisé et conservé en libre accès pour la recherche et l'étude critique. Consulté plus de ${(gb.download_count || 0).toLocaleString('fr-FR')} fois à l'international. »`,
             downloadUrl: txtUrl,
             downloads: gb.download_count,
           });

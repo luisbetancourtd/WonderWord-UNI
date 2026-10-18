@@ -32,6 +32,7 @@ export interface BookSummary {
   title: string;
   author: string;
   description?: string;
+  excerpt?: string;
   coverColor: string;
   coverImage?: string;
   coverUrl?: string;
@@ -70,6 +71,8 @@ export interface CatalogBookItem {
   coverUrl?: string;
   coverColor: string;
   description: string;
+  excerpt?: string;
+  genre?: string;
   downloadUrl?: string;
   downloads?: number;
   isImported?: boolean;
