@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, BookOpen, Check, Plus, Filter, BookMarked, Globe, Sparkles, Download, Eye } from 'lucide-react';
+import { Search, BookOpen, Check, Filter, BookMarked, Globe, Sparkles, Download, Eye, Trash2 } from 'lucide-react';
 import { apiFetch } from '../../lib/api';
 import type { BookSummary, CatalogBookItem, ViewType } from '../../types';
 import { BookBackCoverModal } from './BookBackCoverModal';
@@ -13,10 +13,9 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
   // Navigation entre onglets : 'my_books' (Mes Livres) vs 'discover' (Découvrir)
   const [activeTab, setActiveTab] = useState<'my_books' | 'discover'>('my_books');
 
-  // État de la bibliothèque personnelle
+  // État de la bibliothèque personnelle ("Mes Livres")
   const [books, setBooks] = useState<BookSummary[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedBook, setSelectedBook] = useState<BookSummary | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   // État de la modale de quatrième de couverture (Fiche Ouvrage)
@@ -32,7 +31,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
   const [selectedLanguage, setSelectedLanguage] = useState<'ALL' | 'fr' | 'de'>('ALL');
   const [selectedLevel, setSelectedLevel] = useState<string>('ALL');
 
-  // 1. Charger les livres de sa bibliothèque
+  // 1. Charger uniquement les livres personnels de l'utilisateur ("Mes Livres")
   const fetchMyBooks = async () => {
     try {
       setLoading(true);
@@ -41,16 +40,17 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
       if (selectedLevel !== 'ALL') params.append('level', selectedLevel);
       if (selectedLanguage !== 'ALL') params.append('lang', selectedLanguage);
 
-      const data = await apiFetch<BookSummary[]>(`/books?${params.toString()}`);
+      const data = await apiFetch<BookSummary[]>(`/books/my-library?${params.toString()}`);
       setBooks(data);
     } catch (err) {
       console.error('Erreur chargement bibliothèque personnelle:', err);
+      setBooks([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // 2. Charger ou rechercher dans le catalogue public ouvert (Gutendex & DraCor)
+  // 2. Charger ou rechercher dans le catalogue public ouvert (8 classiques + Gutendex & DraCor)
   const fetchDiscoverCatalog = async () => {
     try {
       setDiscoverLoading(true);
@@ -84,29 +84,46 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
     }
   };
 
-  // Ajouter / retirer un livre déjà répertorié dans sa bibliothèque
-  const handleToggleLibrary = async (book: BookSummary) => {
+  // Supprimer manuellement un livre de "Mes Livres"
+  const handleRemoveBook = async (bookId: string) => {
     try {
-      setActionLoading(book.id);
-      if (book.isAdded) {
-        await apiFetch(`/books/${book.id}/remove-from-library`, { method: 'DELETE' });
-      } else {
-        await apiFetch(`/books/${book.id}/add-to-library`, { method: 'POST' });
-      }
-      setBooks((prev) =>
-        prev.map((b) => (b.id === book.id ? { ...b, isAdded: !b.isAdded } : b))
-      );
-      if (selectedBook?.id === book.id) {
-        setSelectedBook((prev) => (prev ? { ...prev, isAdded: !prev.isAdded } : null));
+      setActionLoading(bookId);
+      const targetBook = books.find((b) => b.id === bookId || b.slug === bookId);
+      await apiFetch(`/books/${bookId}/remove-from-library`, { method: 'DELETE' });
+
+      setBooks((prev) => prev.filter((b) => b.id !== bookId && b.slug !== bookId));
+
+      if (targetBook) {
+        setDiscoverBooks((prev) =>
+          prev.map((item) =>
+            item.title.toLowerCase().trim() === targetBook.title.toLowerCase().trim()
+              ? { ...item, isImported: false }
+              : item
+          )
+        );
       }
     } catch (err) {
-      console.error('Erreur modification bibliothèque:', err);
+      console.error('Erreur suppression livre:', err);
     } finally {
       setActionLoading(null);
     }
   };
 
-  // Importer un nouveau livre externe depuis Gutenberg ou DraCor
+  // Vider entièrement "Mes Livres"
+  const handleClearMyLibrary = async () => {
+    try {
+      setLoading(true);
+      await apiFetch('/books/my-library/clear', { method: 'DELETE' });
+      setBooks([]);
+      setDiscoverBooks((prev) => prev.map((item) => ({ ...item, isImported: false })));
+    } catch (err) {
+      console.error('Erreur vidage bibliothèque:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Importer un nouveau livre depuis "Découvrir" dans "Mes Livres"
   const handleImportBook = async (item: CatalogBookItem) => {
     try {
       setImportingId(item.id);
@@ -126,12 +143,13 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
         }
       );
 
-      // Mettre à jour l'état visuel du catalogue
+      // Mettre à jour l'état visuel du catalogue et de Mes Livres
       setDiscoverBooks((prev) =>
         prev.map((b) => (b.id === item.id ? { ...b, isImported: true } : b))
       );
+      fetchMyBooks();
 
-      // Ouvrir directement dans le lecteur ou rafraîchir
+      // Ouvrir directement dans le lecteur
       if (response.book && onSelectBook) {
         onSelectBook(response.book.slug || response.book.id, 1);
         onNavigate('reader');
@@ -257,32 +275,46 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
         </div>
       </div>
 
-      {/* 3. FILTRES DE NIVEAU CECR (pour Mes Livres) */}
+      {/* 3. FILTRES DE NIVEAU CECR & ACTION DE VIDAGE (pour Mes Livres) */}
       {activeTab === 'my_books' && (
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-          <span className="text-xs text-ink-3 font-semibold mr-2 flex items-center gap-1.5 flex-shrink-0">
-            <Filter size={13} /> Niveaux :
-          </span>
-          {[
-            { label: 'Tous les niveaux', value: 'ALL' },
-            { label: 'A2 · Débutant', value: 'A2' },
-            { label: 'B1 · Intermédiaire', value: 'B1' },
-            { label: 'B2 · Avancé', value: 'B2' },
-            { label: 'C1 · Autonome', value: 'C1' },
-          ].map((lvl) => (
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+            <span className="text-xs text-ink-3 font-semibold mr-2 flex items-center gap-1.5 flex-shrink-0">
+              <Filter size={13} /> Niveaux :
+            </span>
+            {[
+              { label: 'Tous les niveaux', value: 'ALL' },
+              { label: 'A2 · Débutant', value: 'A2' },
+              { label: 'B1 · Intermédiaire', value: 'B1' },
+              { label: 'B2 · Avancé', value: 'B2' },
+              { label: 'C1 · Autonome', value: 'C1' },
+            ].map((lvl) => (
+              <button
+                key={lvl.value}
+                type="button"
+                onClick={() => setSelectedLevel(lvl.value)}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all flex-shrink-0 ${
+                  selectedLevel === lvl.value
+                    ? 'bg-prune text-white shadow-sm'
+                    : 'bg-paper border border-rule hover:bg-paper-warm text-ink-2'
+                }`}
+              >
+                {lvl.label}
+              </button>
+            ))}
+          </div>
+
+          {books.length > 0 && (
             <button
-              key={lvl.value}
               type="button"
-              onClick={() => setSelectedLevel(lvl.value)}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all flex-shrink-0 ${
-                selectedLevel === lvl.value
-                  ? 'bg-prune text-white shadow-sm'
-                  : 'bg-paper border border-rule hover:bg-paper-warm text-ink-2'
-              }`}
+              onClick={handleClearMyLibrary}
+              className="px-3.5 py-1.5 rounded-full border border-red-200 bg-red-50/70 hover:bg-red-600 text-red-700 hover:text-white text-xs font-semibold transition-all flex items-center gap-1.5"
+              title="Retirer tous les livres de Mes Livres"
             >
-              {lvl.label}
+              <Trash2 size={13} />
+              <span>Vider ma bibliothèque</span>
             </button>
-          ))}
+          )}
         </div>
       )}
 
@@ -297,9 +329,11 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
           ) : books.length === 0 ? (
             <div className="py-20 text-center space-y-4 bg-paper border border-rule rounded-2xl p-8">
               <BookOpen size={36} className="text-terre/40 mx-auto" />
-              <h3 className="font-serif text-xl text-ink">Aucun livre ne correspond à vos filtres</h3>
+              <h3 className="font-serif text-xl text-ink">
+                Votre bibliothèque personnelle (« Mes Livres ») est vide
+              </h3>
               <p className="text-xs text-ink-2 max-w-md mx-auto">
-                Explorez le catalogue public dans l'onglet « Découvrir » pour importer des œuvres classiques en un clic.
+                Vous n’avez encore ajouté aucun livre à votre collection personnelle. Explorez le catalogue public dans l’onglet « Découvrir (+70 000 Ouvrages) » pour choisir et importer vos premiers livres.
               </p>
               <button
                 type="button"
@@ -371,22 +405,20 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
                         </div>
 
                         {/* Progression */}
-                        {book.isAdded && (
-                          <div className="space-y-1">
-                            <div className="flex items-center justify-between text-[10px] font-semibold text-sauge">
-                              <span className="flex items-center gap-1">
-                                <BookMarked size={12} /> En cours de lecture
-                              </span>
-                              <span>{Math.round(book.progressPercent || 0)}%</span>
-                            </div>
-                            <div className="w-full h-1.5 bg-canvas rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-sauge rounded-full transition-all"
-                                style={{ width: `${Math.min(100, book.progressPercent || 0)}%` }}
-                              />
-                            </div>
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between text-[10px] font-semibold text-sauge">
+                            <span className="flex items-center gap-1">
+                              <BookMarked size={12} /> En cours de lecture
+                            </span>
+                            <span>{Math.round(book.progressPercent || 0)}%</span>
                           </div>
-                        )}
+                          <div className="w-full h-1.5 bg-canvas rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-sauge rounded-full transition-all"
+                              style={{ width: `${Math.min(100, book.progressPercent || 0)}%` }}
+                            />
+                          </div>
+                        </div>
 
                         {/* Boutons d'action */}
                         <div className="flex items-center gap-2 pt-2">
@@ -419,21 +451,15 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
                             disabled={actionLoading === book.id}
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleToggleLibrary(book);
+                              handleRemoveBook(book.id);
                             }}
-                            className={`p-2.5 rounded-full border transition-all ${
-                              book.isAdded
-                                ? 'border-sauge/40 bg-sauge-wash text-sauge hover:bg-red-50 hover:text-red-700 hover:border-red-200'
-                                : 'border-rule hover:bg-paper-warm text-ink-3 hover:text-ink'
-                            }`}
-                            title={book.isAdded ? 'Retirer de ma bibliothèque' : 'Ajouter à ma bibliothèque'}
+                            className="p-2.5 rounded-full border border-red-200 bg-red-50/70 text-red-700 hover:bg-red-600 hover:text-white hover:border-red-600 transition-all"
+                            title="Supprimer ce livre de Mes Livres"
                           >
                             {actionLoading === book.id ? (
                               <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                            ) : book.isAdded ? (
-                              <Check size={14} />
                             ) : (
-                              <Plus size={14} />
+                              <Trash2 size={14} />
                             )}
                           </button>
                         </div>
@@ -605,6 +631,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
           onNavigate('reader');
         }}
         onImportBook={handleImportBook}
+        onRemoveBook={handleRemoveBook}
         isImporting={Boolean(importingId)}
       />
     </div>

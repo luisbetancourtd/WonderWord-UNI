@@ -372,45 +372,16 @@ async function main() {
     },
   });
 
-  // Associer les livres phares aux utilisateurs existants (dont luis@paris8.fr)
-  const users = await prisma.user.findMany();
-  for (const user of users) {
-    await prisma.userBook.upsert({
-      where: {
-        userId_bookId: {
-          userId: user.id,
-          bookId: petitPrince.id,
-        },
+  // Nettoyage des anciens livres pré-ajoutés automatiquement afin que "Mes Livres" soit vide par défaut
+  await prisma.userBook.deleteMany({
+    where: {
+      addedAt: {
+        lt: new Date('2026-10-20T16:00:00Z'),
       },
-      update: {},
-      create: {
-        userId: user.id,
-        bookId: petitPrince.id,
-        currentChapter: 2,
-        progressPercent: 45.0,
-        status: 'reading',
-      },
-    });
+    },
+  });
 
-    await prisma.userBook.upsert({
-      where: {
-        userId_bookId: {
-          userId: user.id,
-          bookId: dieVerwandlung.id,
-        },
-      },
-      update: {},
-      create: {
-        userId: user.id,
-        bookId: dieVerwandlung.id,
-        currentChapter: 1,
-        progressPercent: 10.0,
-        status: 'reading',
-      },
-    });
-  }
-
-  console.log(`✅ Catalogue alimenté avec succès : 8 chefs-d'œuvre bilingues (Français & Allemand).`);
+  console.log(`✅ Catalogue alimenté avec succès : 8 chefs-d'œuvre bilingues disponibles dans Découvrir (Mes Livres vide par défaut).`);
 }
 
 main()

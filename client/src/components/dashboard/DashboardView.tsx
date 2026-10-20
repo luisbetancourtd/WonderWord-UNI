@@ -11,7 +11,7 @@ interface DashboardViewProps {
 
 export const DashboardView: React.FC<DashboardViewProps> = ({ user, onNavigate, onSelectBook }) => {
   const [currentBook, setCurrentBook] = useState<BookSummary | null>(null);
-  const [totalBooks, setTotalBooks] = useState<number>(1);
+  const [totalBooks, setTotalBooks] = useState<number>(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,6 +22,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ user, onNavigate, 
         if (myLibrary && myLibrary.length > 0) {
           setCurrentBook(myLibrary[0]);
           setTotalBooks(myLibrary.length);
+        } else {
+          setCurrentBook(null);
+          setTotalBooks(0);
         }
       } catch (err) {
         console.error('Erreur chargement bibliothèque utilisateur:', err);

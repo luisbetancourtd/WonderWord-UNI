@@ -99,26 +99,96 @@ export default async function bookRoutes(server: FastifyInstance) {
     });
   });
 
-  // 1b. Découverte d'ouvrages dans le catalogue public (Gutendex & DraCor)
+  // 1b. Découverte d'ouvrages dans le catalogue public (8 classiques Paris 8 + Gutendex & DraCor)
   server.get('/discover', async (request) => {
     const { query, lang } = request.query as { query?: string; lang?: string };
     const language = (lang === 'fr' || lang === 'de') ? lang : 'all';
 
-    const externalBooks = await searchPublicCatalog(query || '', language);
+    // Identifier l'utilisateur connecté pour savoir quels livres sont dans "Mes Livres"
+    let userId: string | null = null;
+    try {
+      const authHeader = request.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const decoded = server.jwt.verify<{ id: string }>(authHeader.substring(7));
+        userId = decoded.id;
+      }
+    } catch {
+      // Utilisateur anonyme
+    }
 
-    // Vérifier les livres déjà importés en base
-    const existingBooks = await server.prisma.book.findMany({
-      select: { title: true, id: true },
+    const userBookTitles = new Set<string>();
+    if (userId) {
+      const userBooks = await server.prisma.userBook.findMany({
+        where: { userId },
+        include: { book: { select: { title: true } } },
+      });
+      for (const ub of userBooks) {
+        userBookTitles.add(ub.book.title.toLowerCase().trim());
+      }
+    }
+
+    // 1. Récupérer les œuvres du catalogue local (ex: les 8 classiques Paris 8)
+    const dbWhere: any = {};
+    if (language !== 'all') {
+      dbWhere.language = language;
+    }
+    if (query && query.trim()) {
+      dbWhere.OR = [
+        { title: { contains: query.trim(), mode: 'insensitive' } },
+        { author: { contains: query.trim(), mode: 'insensitive' } },
+        { genre: { contains: query.trim(), mode: 'insensitive' } },
+      ];
+    }
+
+    const dbBooks = await server.prisma.book.findMany({
+      where: dbWhere,
+      include: {
+        chapters: {
+          where: { number: 1 },
+          select: { contentHtml: true },
+        },
+      },
+      orderBy: { year: 'asc' },
     });
-    const existingTitles = new Set(existingBooks.map((b) => b.title.toLowerCase().trim()));
 
-    return externalBooks.map((book) => ({
-      ...book,
-      isImported: existingTitles.has(book.title.toLowerCase().trim()),
-    }));
+    const localCatalogItems = dbBooks.map((b) => {
+      const rawText = b.chapters?.[0]?.contentHtml
+        ? b.chapters[0].contentHtml.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+        : '';
+      const excerpt = rawText ? rawText.slice(0, 280) + '...' : b.description || undefined;
+
+      return {
+        id: b.slug || b.id,
+        source: 'Patrimoine' as const,
+        title: b.title,
+        author: b.author,
+        language: (b.language === 'de' ? 'de' : 'fr') as 'fr' | 'de',
+        cefrLevel: (b.cefrLevel || 'B1') as 'A2' | 'B1' | 'B2' | 'C1',
+        year: b.year,
+        coverUrl: b.coverImage || undefined,
+        coverColor: (b.coverColor || 'soleil') as any,
+        description: b.description || 'Œuvre patrimoniale annotée pour la lecture critique.',
+        excerpt,
+        genre: b.genre,
+        isImported: userBookTitles.has(b.title.toLowerCase().trim()),
+      };
+    });
+
+    // 2. Récupérer le catalogue externe (Gutendex & DraCor)
+    const externalBooks = await searchPublicCatalog(query || '', language);
+    const seenTitles = new Set(localCatalogItems.map((item) => item.title.toLowerCase().trim()));
+
+    const mergedExternal = externalBooks
+      .filter((book) => !seenTitles.has(book.title.toLowerCase().trim()))
+      .map((book) => ({
+        ...book,
+        isImported: userBookTitles.has(book.title.toLowerCase().trim()),
+      }));
+
+    return [...localCatalogItems, ...mergedExternal];
   });
 
-  // 1c. Importer un livre depuis le catalogue public dans sa bibliothèque
+  // 1c. Importer un livre depuis le catalogue public dans sa bibliothèque ("Mes Livres")
   server.post('/import', async (request, reply) => {
     try {
       await request.jwtVerify();
@@ -151,7 +221,7 @@ export default async function bookRoutes(server: FastifyInstance) {
 
     let book = await server.prisma.book.findFirst({
       where: {
-        OR: [{ slug: baseSlug }, { title: { equals: title, mode: 'insensitive' } }],
+        OR: [{ id }, { slug: id }, { slug: baseSlug }, { title: { equals: title, mode: 'insensitive' } }],
       },
     });
 
@@ -196,7 +266,7 @@ export default async function bookRoutes(server: FastifyInstance) {
       });
     }
 
-    // L'ajouter à la bibliothèque de l'utilisateur
+    // L'ajouter à la bibliothèque personnelle de l'utilisateur
     await server.prisma.userBook.upsert({
       where: {
         userId_bookId: {
@@ -218,12 +288,12 @@ export default async function bookRoutes(server: FastifyInstance) {
 
     return {
       success: true,
-      message: `« ${book.title} » a été importé avec succès dans votre bibliothèque !`,
+      message: `« ${book.title} » a été ajouté avec succès dans Mes Livres !`,
       book,
     };
   });
 
-  // 2. Bibliothèque personnelle de l'utilisateur connecté
+  // 2. Bibliothèque personnelle de l'utilisateur connecté ("Mes Livres")
   server.get('/my-library', async (request, reply) => {
     try {
       await request.jwtVerify();
@@ -232,8 +302,32 @@ export default async function bookRoutes(server: FastifyInstance) {
     }
 
     const decoded = request.user as { id: string };
+    const { search, level, lang } = request.query as {
+      search?: string;
+      level?: string;
+      lang?: string;
+    };
+
+    const bookFilter: any = {};
+    if (level && level !== 'ALL') {
+      bookFilter.cefrLevel = level.toUpperCase();
+    }
+    if (lang && lang !== 'ALL') {
+      bookFilter.language = lang.toLowerCase();
+    }
+    if (search && search.trim()) {
+      bookFilter.OR = [
+        { title: { contains: search.trim(), mode: 'insensitive' } },
+        { author: { contains: search.trim(), mode: 'insensitive' } },
+        { genre: { contains: search.trim(), mode: 'insensitive' } },
+      ];
+    }
+
     const userBooks = await server.prisma.userBook.findMany({
-      where: { userId: decoded.id },
+      where: {
+        userId: decoded.id,
+        ...(Object.keys(bookFilter).length > 0 && { book: bookFilter }),
+      },
       include: {
         book: {
           include: {
@@ -286,6 +380,7 @@ export default async function bookRoutes(server: FastifyInstance) {
         genre: ub.book.genre,
         totalChapters: ub.book.totalChapters,
         totalWords: ub.book.totalWords,
+        isAdded: true,
         currentChapter: ub.currentChapter,
         progressPercent: ub.progressPercent,
         status: ub.status,
@@ -293,6 +388,25 @@ export default async function bookRoutes(server: FastifyInstance) {
         chapters: cleanChapters,
       };
     });
+  });
+
+  // 2b. Vider intégralement sa bibliothèque personnelle ("Mes Livres")
+  server.delete('/my-library/clear', async (request, reply) => {
+    try {
+      await request.jwtVerify();
+    } catch {
+      return reply.status(401).send({ message: 'Non autorisé' });
+    }
+
+    const decoded = request.user as { id: string };
+    await server.prisma.userBook.deleteMany({
+      where: { userId: decoded.id },
+    });
+
+    return {
+      success: true,
+      message: 'Votre bibliothèque personnelle a été entièrement vidée.',
+    };
   });
 
   // 3. Obtenir un livre spécifique avec tous ses chapitres
@@ -661,24 +775,14 @@ export default async function bookRoutes(server: FastifyInstance) {
       return reply.status(404).send({ message: 'Livre introuvable' });
     }
 
-    const updated = await server.prisma.userBook.upsert({
+    const updated = await server.prisma.userBook.updateMany({
       where: {
-        userId_bookId: {
-          userId: decoded.id,
-          bookId: book.id,
-        },
-      },
-      update: {
-        ...(currentChapter !== undefined && { currentChapter }),
-        ...(progressPercent !== undefined && { progressPercent }),
-        lastReadAt: new Date(),
-        status: (progressPercent || 0) >= 100 ? 'completed' : 'reading',
-      },
-      create: {
         userId: decoded.id,
         bookId: book.id,
-        currentChapter: currentChapter || 1,
-        progressPercent: progressPercent || 0,
+      },
+      data: {
+        ...(currentChapter !== undefined && { currentChapter }),
+        ...(progressPercent !== undefined && { progressPercent }),
         lastReadAt: new Date(),
         status: (progressPercent || 0) >= 100 ? 'completed' : 'reading',
       },
@@ -686,7 +790,7 @@ export default async function bookRoutes(server: FastifyInstance) {
 
     return {
       success: true,
-      userBook: updated,
+      updatedCount: updated.count,
     };
   });
 }
