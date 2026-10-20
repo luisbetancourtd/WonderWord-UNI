@@ -62,6 +62,7 @@ export interface ChapterDetail {
 
 export interface CatalogBookItem {
   id: string;
+  slug?: string;
   source: 'Gutenberg' | 'DraCor' | 'Patrimoine';
   title: string;
   author: string;
@@ -76,4 +77,8 @@ export interface CatalogBookItem {
   downloadUrl?: string;
   downloads?: number;
   isImported?: boolean;
+  currentChapter?: number;
+  totalChapters?: number;
+  totalWords?: number;
+  chapters?: ChapterSummary[];
 }

@@ -101,7 +101,11 @@ export default async function bookRoutes(server: FastifyInstance) {
 
   // 1b. Découverte d'ouvrages dans le catalogue public (8 classiques Paris 8 + Gutendex & DraCor)
   server.get('/discover', async (request) => {
-    const { query, lang } = request.query as { query?: string; lang?: string };
+    const { query, lang, level } = request.query as {
+      query?: string;
+      lang?: string;
+      level?: string;
+    };
     const language = (lang === 'fr' || lang === 'de') ? lang : 'all';
 
     // Identifier l'utilisateur connecté pour savoir quels livres sont dans "Mes Livres"
@@ -116,21 +120,28 @@ export default async function bookRoutes(server: FastifyInstance) {
       // Utilisateur anonyme
     }
 
-    const userBookTitles = new Set<string>();
+    const userBookByTitle = new Map<string, { slug: string; id: string; currentChapter: number }>();
     if (userId) {
       const userBooks = await server.prisma.userBook.findMany({
         where: { userId },
-        include: { book: { select: { title: true } } },
+        include: { book: { select: { id: true, slug: true, title: true } } },
       });
       for (const ub of userBooks) {
-        userBookTitles.add(ub.book.title.toLowerCase().trim());
+        userBookByTitle.set(ub.book.title.toLowerCase().trim(), {
+          id: ub.book.id,
+          slug: ub.book.slug,
+          currentChapter: ub.currentChapter,
+        });
       }
     }
 
-    // 1. Récupérer les œuvres du catalogue local (ex: les 8 classiques Paris 8)
+    // 1. Récupérer les œuvres du catalogue local (les 8 classiques Paris 8)
     const dbWhere: any = {};
     if (language !== 'all') {
       dbWhere.language = language;
+    }
+    if (level && level !== 'ALL') {
+      dbWhere.cefrLevel = level.toUpperCase();
     }
     if (query && query.trim()) {
       dbWhere.OR = [
@@ -144,8 +155,14 @@ export default async function bookRoutes(server: FastifyInstance) {
       where: dbWhere,
       include: {
         chapters: {
-          where: { number: 1 },
-          select: { contentHtml: true },
+          select: {
+            id: true,
+            number: true,
+            title: true,
+            wordCount: true,
+            contentHtml: true,
+          },
+          orderBy: { number: 'asc' },
         },
       },
       orderBy: { year: 'asc' },
@@ -156,9 +173,17 @@ export default async function bookRoutes(server: FastifyInstance) {
         ? b.chapters[0].contentHtml.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
         : '';
       const excerpt = rawText ? rawText.slice(0, 280) + '...' : b.description || undefined;
+      const cleanChapters = b.chapters?.map((ch) => ({
+        id: ch.id,
+        number: ch.number,
+        title: ch.title,
+        wordCount: ch.wordCount,
+      }));
+      const matchedUb = userBookByTitle.get(b.title.toLowerCase().trim());
 
       return {
         id: b.slug || b.id,
+        slug: b.slug,
         source: 'Patrimoine' as const,
         title: b.title,
         author: b.author,
@@ -170,7 +195,11 @@ export default async function bookRoutes(server: FastifyInstance) {
         description: b.description || 'Œuvre patrimoniale annotée pour la lecture critique.',
         excerpt,
         genre: b.genre,
-        isImported: userBookTitles.has(b.title.toLowerCase().trim()),
+        totalChapters: b.totalChapters,
+        totalWords: b.totalWords,
+        chapters: cleanChapters,
+        currentChapter: matchedUb?.currentChapter || 1,
+        isImported: Boolean(matchedUb),
       };
     });
 
@@ -180,10 +209,16 @@ export default async function bookRoutes(server: FastifyInstance) {
 
     const mergedExternal = externalBooks
       .filter((book) => !seenTitles.has(book.title.toLowerCase().trim()))
-      .map((book) => ({
-        ...book,
-        isImported: userBookTitles.has(book.title.toLowerCase().trim()),
-      }));
+      .filter((book) => !level || level === 'ALL' || book.cefrLevel === level.toUpperCase())
+      .map((book) => {
+        const matchedUb = userBookByTitle.get(book.title.toLowerCase().trim());
+        return {
+          ...book,
+          slug: matchedUb?.slug,
+          currentChapter: matchedUb?.currentChapter || 1,
+          isImported: Boolean(matchedUb),
+        };
+      });
 
     return [...localCatalogItems, ...mergedExternal];
   });
@@ -224,6 +259,40 @@ export default async function bookRoutes(server: FastifyInstance) {
         OR: [{ id }, { slug: id }, { slug: baseSlug }, { title: { equals: title, mode: 'insensitive' } }],
       },
     });
+
+    // Si un livre importé précédemment avait un texte de substitution trop court et qu'une downloadUrl existe, le mettre à jour
+    if (book && book.totalWords <= 160 && downloadUrl) {
+      try {
+        const content = await fetchAndSanitizeBookContent({
+          id,
+          source: source || 'Catalogue Public',
+          title,
+          author,
+          language: language === 'de' ? 'de' : 'fr',
+          downloadUrl,
+        });
+        const totalWords = content.chapters.reduce((sum, ch) => sum + ch.wordCount, 0);
+        await server.prisma.chapter.deleteMany({ where: { bookId: book.id } });
+        book = await server.prisma.book.update({
+          where: { id: book.id },
+          data: {
+            totalChapters: content.chapters.length,
+            totalWords,
+            ...(coverUrl && !book.coverImage && { coverImage: coverUrl }),
+            chapters: {
+              create: content.chapters.map((ch) => ({
+                number: ch.number,
+                title: ch.title,
+                contentHtml: ch.contentHtml,
+                wordCount: ch.wordCount,
+              })),
+            },
+          },
+        });
+      } catch (err) {
+        console.warn('Impossible de rafraîchir le texte complet:', err);
+      }
+    }
 
     if (!book) {
       // Télécharger et découper le contenu

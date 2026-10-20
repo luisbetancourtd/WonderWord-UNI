@@ -314,8 +314,8 @@ export async function fetchAndSanitizeBookContent(item: {
     });
     if (!resp.ok) throw new Error('Impossible de télécharger la pièce depuis DraCor.');
     rawText = await resp.text();
-  } else if (item.id.startsWith('gutenberg:')) {
-    // Importation depuis Gutenberg
+  } else if (item.id.startsWith('gutenberg:') || item.downloadUrl) {
+    // Importation depuis Gutenberg ou URL directe du patrimoine
     const gutenbergId = item.id.replace('gutenberg:', '');
     const url = item.downloadUrl || `https://www.gutenberg.org/cache/epub/${gutenbergId}/pg${gutenbergId}.txt`;
     const resp = await fetch(url, {
@@ -334,7 +334,7 @@ export async function fetchAndSanitizeBookContent(item: {
       rawText = rawText.slice(0, endMatch.index);
     }
   } else {
-    // Exemple patrimonial pré-rempli
+    // Exemple patrimonial pré-rempli si aucune URL externe
     rawText = `
       Chapitre I. L'ouverture littéraire.
       C'est ainsi que commence ce chef-d'œuvre du patrimoine universel. Les mots résonnent avec la voix des siècles passés et nous invitent à une écoute attentive des nuances de la langue.
@@ -344,7 +344,7 @@ export async function fetchAndSanitizeBookContent(item: {
     `;
   }
 
-  // Découper le texte en chapitres ou en sections équilibrées de 1 200 à 2 000 mots
+  // Découper le texte en chapitres ou en sections équilibrées de 1 200 à 1 800 mots
   const paragraphs = rawText
     .split(/\r?\n\r?\n+/)
     .map((p) => p.trim())
@@ -360,8 +360,8 @@ export async function fetchAndSanitizeBookContent(item: {
     currentChapterParas.push(`<p>${escapeHtml(para)}</p>`);
     currentWordCount += wordsInPara;
 
-    // Quand on atteint environ 1 500 mots, on forme un chapitre (limité à 3 chapitres pour la lecture réactive)
-    if (currentWordCount >= 1400 && chapters.length < 2) {
+    // Quand on atteint environ 1 400 mots, on forme un chapitre (jusqu'à 6 chapitres équilibrés)
+    if (currentWordCount >= 1400 && chapters.length < 5) {
       chapters.push({
         number: chapterIndex,
         title: item.language === 'de' ? `Kapitel ${chapterIndex}` : `Chapitre ${chapterIndex}`,

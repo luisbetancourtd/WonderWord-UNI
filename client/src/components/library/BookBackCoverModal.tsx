@@ -7,7 +7,7 @@ interface BookBackCoverModalProps {
   isOpen: boolean;
   onClose: () => void;
   onStartReading?: (bookId: string, chapterNumber?: number) => void;
-  onImportBook?: (item: CatalogBookItem) => Promise<void>;
+  onImportBook?: (item: CatalogBookItem, openReader?: boolean) => Promise<void>;
   onRemoveBook?: (bookId: string) => Promise<void>;
   isImporting?: boolean;
 }
@@ -38,8 +38,13 @@ export const BookBackCoverModal: React.FC<BookBackCoverModalProps> = ({
 
   if (!isOpen || !book) return null;
 
-  const isBookSummary = 'totalChapters' in book;
-  const isImported = isBookSummary ? true : Boolean(book.isImported);
+  const isImported = Boolean(
+    ('isAdded' in book && book.isAdded) ||
+    ('isImported' in book && book.isImported)
+  );
+  const totalWords = ('totalWords' in book && typeof book.totalWords === 'number') ? book.totalWords : 0;
+  const totalChapters = ('totalChapters' in book && typeof book.totalChapters === 'number') ? book.totalChapters : 0;
+  const chapters = ('chapters' in book && Array.isArray(book.chapters)) ? book.chapters : [];
   const coverUrl = ('coverImage' in book ? book.coverImage : null) || book.coverUrl;
   const language = book.language === 'de' ? 'de' : 'fr';
   const cefrLevel = book.cefrLevel || 'B1';
@@ -164,13 +169,13 @@ export const BookBackCoverModal: React.FC<BookBackCoverModalProps> = ({
                 <span className="flex items-center gap-1">
                   <Calendar size={12} /> {year}
                 </span>
-                {isBookSummary && book.totalWords > 0 && (
+                {totalWords > 0 && (
                   <span className="flex items-center gap-1">
-                    <Layers size={12} /> ~{book.totalWords.toLocaleString('fr-FR')} mots
+                    <Layers size={12} /> ~{totalWords.toLocaleString('fr-FR')} mots
                   </span>
                 )}
-                {isBookSummary && book.totalChapters > 0 && (
-                  <span>· {book.totalChapters} chapitres</span>
+                {totalChapters > 0 && (
+                  <span>· {totalChapters} chapitres</span>
                 )}
               </div>
             </div>
@@ -224,19 +229,22 @@ export const BookBackCoverModal: React.FC<BookBackCoverModalProps> = ({
                 </div>
               )}
 
-              {/* Si l'ouvrage est déjà dans sa bibliothèque : liste des chapitres */}
-              {isBookSummary && book.chapters && book.chapters.length > 0 && (
+              {/* Sommaire des chapitres */}
+              {chapters.length > 0 && (
                 <div className="space-y-2">
                   <h3 className="text-xs uppercase tracking-widest font-bold text-ink-3 flex items-center gap-1.5">
                     <Bookmark size={13} className="text-sauge" />
-                    Sommaire des Chapitres ({book.chapters.length})
+                    Sommaire des Chapitres ({chapters.length})
                   </h3>
                   <div className="max-h-36 overflow-y-auto space-y-1.5 pr-2">
-                    {book.chapters.map((ch) => (
+                    {chapters.map((ch) => (
                       <div
                         key={ch.id}
-                        onClick={() => {
-                          if (onStartReading) {
+                        onClick={async () => {
+                          if (!isImported && onImportBook) {
+                            await onImportBook(book as CatalogBookItem, true);
+                            onClose();
+                          } else if (onStartReading) {
                             onStartReading(book.slug || book.id, ch.number);
                             onClose();
                           }
@@ -247,7 +255,7 @@ export const BookBackCoverModal: React.FC<BookBackCoverModalProps> = ({
                           {ch.title}
                         </span>
                         <span className="text-[11px] text-prune font-semibold flex-shrink-0">
-                          Lire →
+                          {isImported ? 'Lire →' : 'Importer & Lire →'}
                         </span>
                       </div>
                     ))}
@@ -263,7 +271,7 @@ export const BookBackCoverModal: React.FC<BookBackCoverModalProps> = ({
                   <button
                     type="button"
                     onClick={async () => {
-                      await onRemoveBook(book.id);
+                      await onRemoveBook(book.slug || book.id);
                       onClose();
                     }}
                     className="w-full sm:w-auto px-4 py-2 rounded-full border border-red-200 bg-red-50/80 hover:bg-red-600 text-red-700 hover:text-white text-xs font-semibold transition-all flex items-center justify-center gap-1.5"
@@ -288,7 +296,7 @@ export const BookBackCoverModal: React.FC<BookBackCoverModalProps> = ({
                     type="button"
                     onClick={() => {
                       if (onStartReading) {
-                        const bookIdentifier = 'slug' in book ? book.slug : book.id;
+                        const bookIdentifier = ('slug' in book && book.slug) ? book.slug : book.id;
                         const chapterNum = ('currentChapter' in book && book.currentChapter) ? book.currentChapter : 1;
                         onStartReading(bookIdentifier, chapterNum);
                         onClose();
@@ -308,8 +316,8 @@ export const BookBackCoverModal: React.FC<BookBackCoverModalProps> = ({
                     type="button"
                     disabled={isImporting}
                     onClick={async () => {
-                      if (onImportBook && !isBookSummary) {
-                        await onImportBook(book as CatalogBookItem);
+                      if (onImportBook) {
+                        await onImportBook(book as CatalogBookItem, true);
                         onClose();
                       }
                     }}
