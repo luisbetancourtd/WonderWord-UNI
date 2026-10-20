@@ -23,7 +23,9 @@ model User {
   createdAt    DateTime   @default(now()) @map("created_at")
   updatedAt    DateTime   @updatedAt @map("updated_at")
 
-  userBooks    UserBook[]
+  userBooks         UserBook[]
+  annotations       ReaderAnnotation[]
+  vocabularyCards   VocabularyCard[]
 
   @@map("users")
 }
@@ -47,6 +49,7 @@ model Book {
 
   chapters      Chapter[]
   userBooks     UserBook[]
+  annotations   ReaderAnnotation[]
 
   @@map("books")
 }
@@ -83,3 +86,41 @@ model UserBook {
   @@unique([userId, bookId])
   @@map("user_books")
 }
+
+model ReaderAnnotation {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  bookId        String   @map("book_id")
+  chapterNumber Int      @default(1) @map("chapter_number")
+  type          String   @default("bookmark") // "bookmark" | "highlight"
+  selectedText  String   @map("selected_text")
+  note          String?
+  color         String   @default("soleil")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book          Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@map("reader_annotations")
+}
+
+model VocabularyCard {
+  id              String   @id @default(uuid())
+  userId          String   @map("user_id")
+  bookId          String?  @map("book_id")
+  word            String
+  ipa             String
+  translation     String
+  definition      String
+  grammatical     String
+  contextSentence String?  @map("context_sentence")
+  language        String   @default("fr")
+  status          String   @default("new") // "new" | "learning" | "review" | "mastered"
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, word, language])
+  @@map("vocabulary_cards")
+}
+

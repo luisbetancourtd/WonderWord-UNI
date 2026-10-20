@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { searchPublicCatalog, fetchAndSanitizeBookContent } from '../services/catalog.js';
+import { analyzeLiteraryWord } from '../services/linguistics.js';
 
 export default async function bookRoutes(server: FastifyInstance) {
   // 1. Lister tous les livres du catalogue avec filtres de recherche et niveau CECR
@@ -318,7 +319,7 @@ export default async function bookRoutes(server: FastifyInstance) {
     return book;
   });
 
-  // 4. Obtenir le contenu textuel d'un chapitre spécifique
+  // 4. Obtenir le contenu textuel d'un chapitre spécifique (avec le sommaire complet du livre)
   server.get('/:id/chapters/:number', async (request, reply) => {
     const { id, number } = request.params as { id: string; number: string };
     const chapterNumber = parseInt(number, 10);
@@ -326,6 +327,19 @@ export default async function bookRoutes(server: FastifyInstance) {
     const book = await server.prisma.book.findFirst({
       where: {
         OR: [{ id }, { slug: id }],
+      },
+      include: {
+        chapters: {
+          select: {
+            id: true,
+            number: true,
+            title: true,
+            wordCount: true,
+          },
+          orderBy: {
+            number: 'asc',
+          },
+        },
       },
     });
 
@@ -349,10 +363,13 @@ export default async function bookRoutes(server: FastifyInstance) {
     return {
       book: {
         id: book.id,
+        slug: book.slug,
         title: book.title,
         author: book.author,
+        language: book.language,
         cefrLevel: book.cefrLevel,
         totalChapters: book.totalChapters,
+        chapters: book.chapters,
       },
       chapter: {
         id: chapter.id,
@@ -362,6 +379,179 @@ export default async function bookRoutes(server: FastifyInstance) {
         wordCount: chapter.wordCount,
         audioUrl: chapter.audioUrl,
       },
+    };
+  });
+
+  // 4b. Analyser un mot cliqué dans le lecteur (API Phonétique IPA, traduction, définition, grammaire)
+  server.post('/analyze-word', async (request, reply) => {
+    const { word, language, sentence } = request.body as {
+      word: string;
+      language?: 'fr' | 'de';
+      sentence?: string;
+    };
+
+    if (!word || !word.trim()) {
+      return reply.status(400).send({ message: 'Mot requis pour l’analyse' });
+    }
+
+    const lang = language === 'de' ? 'de' : 'fr';
+    const analysis = await analyzeLiteraryWord(word, lang, sentence);
+    return analysis;
+  });
+
+  // 4c. Lister les signets (bookmarks) et surlignages (highlights) d'un livre pour l'utilisateur
+  server.get('/:id/annotations', async (request, reply) => {
+    try {
+      await request.jwtVerify();
+    } catch {
+      return reply.status(401).send({ message: 'Non autorisé' });
+    }
+
+    const decoded = request.user as { id: string };
+    const { id } = request.params as { id: string };
+
+    const book = await server.prisma.book.findFirst({
+      where: { OR: [{ id }, { slug: id }] },
+    });
+
+    if (!book) {
+      return reply.status(404).send({ message: 'Livre introuvable' });
+    }
+
+    const annotations = await server.prisma.readerAnnotation.findMany({
+      where: {
+        userId: decoded.id,
+        bookId: book.id,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return annotations;
+  });
+
+  // 4d. Créer un signet ou un surlignage dans le lecteur
+  server.post('/:id/annotations', async (request, reply) => {
+    try {
+      await request.jwtVerify();
+    } catch {
+      return reply.status(401).send({ message: 'Non autorisé' });
+    }
+
+    const decoded = request.user as { id: string };
+    const { id } = request.params as { id: string };
+    const { chapterNumber, type, selectedText, note, color } = request.body as {
+      chapterNumber: number;
+      type?: 'bookmark' | 'highlight';
+      selectedText: string;
+      note?: string;
+      color?: string;
+    };
+
+    const book = await server.prisma.book.findFirst({
+      where: { OR: [{ id }, { slug: id }] },
+    });
+
+    if (!book) {
+      return reply.status(404).send({ message: 'Livre introuvable' });
+    }
+
+    const annotation = await server.prisma.readerAnnotation.create({
+      data: {
+        userId: decoded.id,
+        bookId: book.id,
+        chapterNumber: chapterNumber || 1,
+        type: type || 'bookmark',
+        selectedText: selectedText || `Chapitre ${chapterNumber || 1}`,
+        note: note || null,
+        color: color || 'soleil',
+      },
+    });
+
+    return annotation;
+  });
+
+  // 4e. Supprimer un signet ou surlignage
+  server.delete('/:id/annotations/:annotationId', async (request, reply) => {
+    try {
+      await request.jwtVerify();
+    } catch {
+      return reply.status(401).send({ message: 'Non autorisé' });
+    }
+
+    const decoded = request.user as { id: string };
+    const { annotationId } = request.params as { id: string; annotationId: string };
+
+    await server.prisma.readerAnnotation.deleteMany({
+      where: {
+        id: annotationId,
+        userId: decoded.id,
+      },
+    });
+
+    return { success: true };
+  });
+
+  // 4f. Sauvegarder un mot inspecté dans les cartes de vocabulaire FSRS
+  server.post('/vocabulary', async (request, reply) => {
+    try {
+      await request.jwtVerify();
+    } catch {
+      return reply.status(401).send({ message: 'Non autorisé' });
+    }
+
+    const decoded = request.user as { id: string };
+    const { bookId, word, ipa, translation, definition, grammatical, contextSentence, language } =
+      request.body as {
+        bookId?: string;
+        word: string;
+        ipa: string;
+        translation: string;
+        definition: string;
+        grammatical: string;
+        contextSentence?: string;
+        language?: string;
+      };
+
+    if (!word) {
+      return reply.status(400).send({ message: 'Mot requis' });
+    }
+
+    const lang = language === 'de' ? 'de' : 'fr';
+    const cleanWord = word.trim();
+
+    const card = await server.prisma.vocabularyCard.upsert({
+      where: {
+        userId_word_language: {
+          userId: decoded.id,
+          word: cleanWord,
+          language: lang,
+        },
+      },
+      update: {
+        ipa,
+        translation,
+        definition,
+        grammatical,
+        ...(contextSentence && { contextSentence }),
+      },
+      create: {
+        userId: decoded.id,
+        bookId: bookId || null,
+        word: cleanWord,
+        ipa: ipa || '//',
+        translation: translation || cleanWord,
+        definition: definition || '',
+        grammatical: grammatical || 'Terme lexical',
+        contextSentence: contextSentence || null,
+        language: lang,
+      },
+    });
+
+    return {
+      success: true,
+      card,
     };
   });
 
@@ -471,16 +661,24 @@ export default async function bookRoutes(server: FastifyInstance) {
       return reply.status(404).send({ message: 'Livre introuvable' });
     }
 
-    const updated = await server.prisma.userBook.update({
+    const updated = await server.prisma.userBook.upsert({
       where: {
         userId_bookId: {
           userId: decoded.id,
           bookId: book.id,
         },
       },
-      data: {
+      update: {
         ...(currentChapter !== undefined && { currentChapter }),
         ...(progressPercent !== undefined && { progressPercent }),
+        lastReadAt: new Date(),
+        status: (progressPercent || 0) >= 100 ? 'completed' : 'reading',
+      },
+      create: {
+        userId: decoded.id,
+        bookId: book.id,
+        currentChapter: currentChapter || 1,
+        progressPercent: progressPercent || 0,
         lastReadAt: new Date(),
         status: (progressPercent || 0) >= 100 ? 'completed' : 'reading',
       },
