@@ -88,14 +88,28 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
   const handleRemoveBook = async (bookId: string) => {
     try {
       setActionLoading(bookId);
-      const targetBook = books.find((b) => b.id === bookId || b.slug === bookId);
-      await apiFetch(`/books/${bookId}/remove-from-library`, { method: 'DELETE' });
+      const targetBook =
+        books.find((b) => b.id === bookId || b.slug === bookId) ||
+        (selectedBackCoverBook && selectedBackCoverBook.id === bookId ? selectedBackCoverBook : null);
 
-      setBooks((prev) => prev.filter((b) => b.id !== bookId && b.slug !== bookId));
+      const query = targetBook?.title ? `?title=${encodeURIComponent(targetBook.title)}` : '';
+      await apiFetch(`/books/${encodeURIComponent(bookId)}/remove-from-library${query}`, {
+        method: 'DELETE',
+      });
+
+      setBooks((prev) =>
+        prev.filter(
+          (b) =>
+            b.id !== bookId &&
+            b.slug !== bookId &&
+            (!targetBook?.title || b.title.toLowerCase().trim() !== targetBook.title.toLowerCase().trim())
+        )
+      );
 
       if (targetBook) {
         setDiscoverBooks((prev) =>
           prev.map((item) =>
+            item.id === bookId ||
             item.title.toLowerCase().trim() === targetBook.title.toLowerCase().trim()
               ? { ...item, isImported: false }
               : item

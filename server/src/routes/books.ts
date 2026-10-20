@@ -726,26 +726,31 @@ export default async function bookRoutes(server: FastifyInstance) {
 
     const decoded = request.user as { id: string };
     const { id } = request.params as { id: string };
+    const { title } = request.query as { title?: string };
 
-    const book = await server.prisma.book.findFirst({
-      where: {
-        OR: [{ id }, { slug: id }],
-      },
-    });
+    const orConditions: any[] = [
+      { bookId: id },
+      { id: id },
+      { book: { id: id } },
+      { book: { slug: id } },
+    ];
 
-    if (!book) {
-      return reply.status(404).send({ message: 'Livre introuvable' });
+    if (title && title.trim()) {
+      orConditions.push({
+        book: { title: { equals: title.trim(), mode: 'insensitive' } },
+      });
     }
 
-    await server.prisma.userBook.deleteMany({
+    const deleted = await server.prisma.userBook.deleteMany({
       where: {
         userId: decoded.id,
-        bookId: book.id,
+        OR: orConditions,
       },
     });
 
     return {
       success: true,
+      deletedCount: deleted.count,
       message: `Livre retiré de votre bibliothèque.`,
     };
   });

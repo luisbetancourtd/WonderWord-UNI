@@ -11,8 +11,8 @@ export class ApiError extends Error {
 export async function apiFetch<T = unknown>(path: string, options: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem('wonderword_token');
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...(options.headers as Record<string, string> || {}),
+    ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+    ...((options.headers as Record<string, string>) || {}),
   };
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
