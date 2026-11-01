@@ -1,3 +1,5 @@
+export type SupportedLanguage = 'fr' | 'de' | 'en' | 'es' | 'ru';
+
 export interface WordAnalysisResult {
   word: string;
   lemma: string;
@@ -5,7 +7,7 @@ export interface WordAnalysisResult {
   translation: string;
   definition: string;
   grammatical: string;
-  language: 'fr' | 'de';
+  language: SupportedLanguage;
 }
 
 interface LexiconEntry {
@@ -448,9 +450,77 @@ export function generateGermanIpa(word: string): string {
 }
 
 /**
- * Infère la catégorie grammaticale d'un mot français ou allemand
+ * Transcription G2P pour l'Anglais, l'Espagnol et le Russe
  */
-export function inferGrammaticalCategory(rawWord: string, language: 'fr' | 'de'): string {
+export function generateOtherLangIpa(word: string, lang: 'en' | 'es' | 'ru'): string {
+  const w = word.toLowerCase().trim();
+  if (!w) return '//';
+
+  if (lang === 'es') {
+    let p = w
+      .replace(/ch/g, 't͡ʃ')
+      .replace(/ll/g, 'ʎ')
+      .replace(/ñ/g, 'ɲ')
+      .replace(/rr/g, 'r')
+      .replace(/qu(?=[eiéí])/g, 'k')
+      .replace(/gu(?=[eiéí])/g, 'ɡ')
+      .replace(/c(?=[eiéí])/g, 's')
+      .replace(/c/g, 'k')
+      .replace(/g(?=[eiéí])/g, 'x')
+      .replace(/j/g, 'x')
+      .replace(/z/g, 's')
+      .replace(/v/g, 'b')
+      .replace(/h/g, '')
+      .replace(/y$/g, 'i')
+      .replace(/y/g, 'ʝ')
+      .replace(/á/g, 'ˈa')
+      .replace(/é/g, 'ˈe')
+      .replace(/í/g, 'ˈi')
+      .replace(/ó/g, 'ˈo')
+      .replace(/ú/g, 'ˈu');
+    return `/${p}/`;
+  }
+
+  if (lang === 'ru') {
+    const map: Record<string, string> = {
+      а: 'a', б: 'b', в: 'v', г: 'ɡ', д: 'd', е: 'je', ё: 'jo', ж: 'ʐ', з: 'z',
+      и: 'i', й: 'j', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r',
+      с: 's', т: 't', у: 'u', ф: 'f', х: 'x', ц: 't͡s', ч: 't͡ɕ', ш: 'ʂ', щ: 'ɕː',
+      ъ: '', ы: 'ɨ', ь: 'ʲ', э: 'ɛ', ю: 'ju', я: 'ja',
+    };
+    const p = Array.from(w).map((ch) => map[ch] ?? ch).join('');
+    return `/${p || w}/`;
+  }
+
+  // English G2P approximation
+  let p = w
+    .replace(/tion$/g, 'ʃən')
+    .replace(/sion$/g, 'ʒən')
+    .replace(/igh/g, 'aɪ')
+    .replace(/ough/g, 'ɔː')
+    .replace(/sh/g, 'ʃ')
+    .replace(/ch/g, 't͡ʃ')
+    .replace(/th/g, 'θ')
+    .replace(/ph/g, 'f')
+    .replace(/ng$/g, 'ŋ')
+    .replace(/ee|ea/g, 'iː')
+    .replace(/oo/g, 'uː')
+    .replace(/ou|ow/g, 'aʊ')
+    .replace(/ai|ay/g, 'eɪ')
+    .replace(/oi|oy/g, 'ɔɪ')
+    .replace(/ar/g, 'ɑːɹ')
+    .replace(/er|ir|ur/g, 'ɜːɹ')
+    .replace(/or/g, 'ɔːɹ')
+    .replace(/r/g, 'ɹ')
+    .replace(/j/g, 'd͡ʒ')
+    .replace(/y$/g, 'i');
+  return `/${p || w}/`;
+}
+
+/**
+ * Infère la catégorie grammaticale d'un mot
+ */
+export function inferGrammaticalCategory(rawWord: string, language: SupportedLanguage): string {
   const clean = cleanWordToken(rawWord);
   const lower = clean.toLowerCase();
 
@@ -475,6 +545,27 @@ export function inferGrammaticalCategory(rawWord: string, language: 'fr' | 'de')
       return 'Adjektiv / Adverb';
     }
     return 'Wortform · Literarisches Deutsch';
+  }
+
+  if (language === 'en') {
+    if (lower.endsWith('tion') || lower.endsWith('ness') || lower.endsWith('ment') || lower.endsWith('ity')) return 'Noun · English';
+    if (lower.endsWith('ly')) return 'Adverb · English';
+    if (lower.endsWith('ing') || lower.endsWith('ed')) return 'Verb form / Participle · English';
+    if (lower.endsWith('ful') || lower.endsWith('less') || lower.endsWith('ous') || lower.endsWith('ive')) return 'Adjective · English';
+    return 'Lexical term · English';
+  }
+
+  if (language === 'es') {
+    if (lower.endsWith('ción') || lower.endsWith('sión') || lower.endsWith('dad') || lower.endsWith('tud')) return 'Sustantivo femenino · Español';
+    if (lower.endsWith('mente')) return 'Adverbio de modo · Español';
+    if (lower.endsWith('ar') || lower.endsWith('er') || lower.endsWith('ir')) return 'Verbo en infinitivo · Español';
+    return 'Término léxico · Español';
+  }
+
+  if (language === 'ru') {
+    if (lower.endsWith('ть') || lower.endsWith('ти')) return 'Глагол (Инфинитив) · Русский';
+    if (lower.endsWith('ый') || lower.endsWith('ий') || lower.endsWith('ая') || lower.endsWith('ое')) return 'Прилагательное · Русский';
+    return 'Лексическая единица · Русский';
   }
 
   // Français
@@ -507,7 +598,7 @@ export function inferGrammaticalCategory(rawWord: string, language: 'fr' | 'de')
  */
 export async function analyzeLiteraryWord(
   rawWord: string,
-  language: 'fr' | 'de' = 'fr',
+  language: SupportedLanguage = 'fr',
   contextSentence?: string
 ): Promise<WordAnalysisResult> {
   const cleaned = cleanWordToken(rawWord);
@@ -519,8 +610,8 @@ export async function analyzeLiteraryWord(
   }
 
   // 1. Vérifier dans le lexique critique de référence
-  const lexicon = language === 'de' ? CURATED_LEXICON_DE : CURATED_LEXICON_FR;
-  if (lexicon[lower]) {
+  const lexicon = language === 'de' ? CURATED_LEXICON_DE : language === 'fr' ? CURATED_LEXICON_FR : null;
+  if (lexicon && lexicon[lower]) {
     const entry = lexicon[lower];
     const result: WordAnalysisResult = {
       word: cleaned,
@@ -536,7 +627,12 @@ export async function analyzeLiteraryWord(
   }
 
   // 2. Calculer la transcription API (IPA) et la catégorie grammaticale
-  const ipa = language === 'de' ? generateGermanIpa(cleaned) : generateFrenchIpa(cleaned);
+  const ipa =
+    language === 'de'
+      ? generateGermanIpa(cleaned)
+      : language === 'fr'
+      ? generateFrenchIpa(cleaned)
+      : generateOtherLangIpa(cleaned, language);
   let grammatical = inferGrammaticalCategory(cleaned, language);
   let translation = '';
   let definition = '';
@@ -546,8 +642,8 @@ export async function analyzeLiteraryWord(
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 2200);
 
-    // Paire de traduction : de -> fr (pour les textes allemands) ou fr -> es / fr (pour les textes français)
-    const langPair = language === 'de' ? 'de|fr' : 'fr|es';
+    const targetLang = language === 'es' ? 'fr' : 'es';
+    const langPair = `${language}|${targetLang}`;
     const transRes = await fetch(
       `https://api.mymemory.translated.net/get?q=${encodeURIComponent(cleaned)}&langpair=${langPair}`,
       { signal: controller.signal }
@@ -558,10 +654,7 @@ export async function analyzeLiteraryWord(
       const transJson = (await transRes.json()) as any;
       const translatedText = transJson?.responseData?.translatedText;
       if (translatedText && translatedText.toLowerCase() !== lower) {
-        translation =
-          language === 'de'
-            ? `${translatedText} (FR)`
-            : `${translatedText}`;
+        translation = translatedText;
       }
     }
   } catch {
@@ -572,7 +665,7 @@ export async function analyzeLiteraryWord(
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 2000);
-    const wikiHost = language === 'de' ? 'fr.wiktionary.org' : 'fr.wiktionary.org';
+    const wikiHost = language === 'en' ? 'en.wiktionary.org' : language === 'es' ? 'es.wiktionary.org' : 'fr.wiktionary.org';
     const wikiRes = await fetch(
       `https://${wikiHost}/api/rest_v1/page/definition/${encodeURIComponent(lower)}`,
       {
@@ -584,11 +677,11 @@ export async function analyzeLiteraryWord(
 
     if (wikiRes.ok) {
       const wikiData = (await wikiRes.json()) as any;
-      const sections = wikiData[language] || wikiData['fr'] || Object.values(wikiData)[0];
+      const sections = wikiData[language] || wikiData['fr'] || wikiData['en'] || Object.values(wikiData)[0];
       if (Array.isArray(sections) && sections.length > 0) {
         const firstSection = sections[0];
         if (firstSection.partOfSpeech) {
-          grammatical = `${firstSection.partOfSpeech} · ${language === 'de' ? 'Deutsch' : 'Français'}`;
+          grammatical = `${firstSection.partOfSpeech} · ${language.toUpperCase()}`;
         }
         const firstDefHtml = firstSection.definitions?.[0]?.definition;
         if (firstDefHtml) {
@@ -610,15 +703,13 @@ export async function analyzeLiteraryWord(
     translation =
       language === 'de'
         ? `Terme allemand « ${cleaned} » en contexte littéraire`
-        : `Terme français « ${cleaned} »`;
+        : `Terme « ${cleaned} » (${language.toUpperCase()})`;
   }
 
   if (!definition) {
     definition = contextSentence
       ? `Employé dans l'extrait : « ${contextSentence.slice(0, 140)}${contextSentence.length > 140 ? '…' : ''} »`
-      : language === 'de'
-      ? `Vocabulaire littéraire allemand (${grammatical}) analysé phonétiquement selon la norme standard.`
-      : `Vocabulaire littéraire français (${grammatical}) transcrit en Alphabet Phonétique International.`;
+      : `Vocabulaire littéraire (${grammatical}) transcrit en Alphabet Phonétique International.`;
   }
 
   const finalResult: WordAnalysisResult = {

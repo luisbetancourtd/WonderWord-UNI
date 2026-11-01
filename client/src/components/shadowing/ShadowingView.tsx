@@ -1,10 +1,54 @@
-import React, { useState } from 'react';
-import { Volume2, Mic, Play, Check, Activity, Sparkles } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Volume2, Mic, Play, Check, Activity, Sparkles, RotateCcw } from 'lucide-react';
+
+interface ShadowingTarget {
+  word: string;
+  ipa: string;
+  sentence: string;
+  language: string;
+  bookTitle?: string;
+}
 
 export const ShadowingView: React.FC = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [selectedTempo, setSelectedTempo] = useState<'0.75x' | '1.0x' | '1.25x'>('1.0x');
   const [hvptFeedback, setHvptFeedback] = useState<string | null>(null);
+  const [customTarget, setCustomTarget] = useState<ShadowingTarget | null>(null);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('wonderword_shadowing_target');
+      if (saved) {
+        const parsed = JSON.parse(saved) as ShadowingTarget;
+        if (parsed && parsed.word) {
+          setCustomTarget(parsed);
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const speakText = (text: string, langCode = 'fr') => {
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    const langMap: Record<string, string> = {
+      fr: 'fr-FR',
+      de: 'de-DE',
+      en: 'en-US',
+      es: 'es-ES',
+      ru: 'ru-RU',
+    };
+    utterance.lang = langMap[langCode] || 'fr-FR';
+    utterance.rate = selectedTempo === '0.75x' ? 0.75 : selectedTempo === '1.25x' ? 1.2 : 0.95;
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const resetToDefaultTarget = () => {
+    localStorage.removeItem('wonderword_shadowing_target');
+    setCustomTarget(null);
+  };
 
   const toggleRecording = () => {
     setIsRecording(!isRecording);
@@ -64,31 +108,83 @@ export const ShadowingView: React.FC = () => {
         />
 
         {/* Détail d'extrait */}
-        <div className="flex items-center gap-3">
-          <span className="text-[10px] uppercase tracking-widest font-extrabold text-sauge bg-sauge-wash border border-sauge/25 rounded-full px-3 py-1">
-            Français · A2
-          </span>
-          <span className="text-[13px] text-ink-2">
-            De <em>« Le Petit Prince »</em> · Cap. IV (Página 34)
-          </span>
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] uppercase tracking-widest font-extrabold text-sauge bg-sauge-wash border border-sauge/25 rounded-full px-3 py-1">
+              {customTarget
+                ? `${customTarget.language.toUpperCase()} · Palabra Diana: «${customTarget.word}»`
+                : 'Français · A2'}
+            </span>
+            <span className="text-[13px] text-ink-2">
+              {customTarget ? (
+                <>
+                  De <em>« {customTarget.bookTitle || 'Atelier de Lecture'} »</em> · Extracto seleccionado en el Lector
+                </>
+              ) : (
+                <>
+                  De <em>« Le Petit Prince »</em> · Cap. IV (Página 34)
+                </>
+              )}
+            </span>
+          </div>
+          {customTarget && (
+            <button
+              type="button"
+              onClick={resetToDefaultTarget}
+              className="inline-flex items-center gap-1.5 text-[11px] font-bold text-ink-3 hover:text-ink px-3 py-1 rounded-full border border-rule bg-paper-warm transition-colors"
+            >
+              <RotateCcw size={12} /> Restaurar frase canónica
+            </button>
+          )}
         </div>
 
         {/* Phrase Cible avec Ruby Phonétique */}
         <div className="text-center py-4">
-          <h2 className="font-serif text-[34px] md:text-[38px] leading-[2.1] text-ink font-normal m-0 mb-3">
-            <ruby className="px-1">J’ai<rt className="font-ipa text-sauge font-bold">ʒe</rt></ruby>{' '}
-            <ruby className="px-1">de<rt className="font-ipa text-ink-3">də</rt></ruby>{' '}
-            <ruby className="px-1">sérieuses<rt className="font-ipa text-ink-3">seʁjøz</rt></ruby>{' '}
-            <ruby className="px-1">raisons<rt className="font-ipa text-ink-3">ʁɛzɔ̃</rt></ruby>{' '}
-            <ruby className="px-1">de<rt className="font-ipa text-ink-3">də</rt></ruby>{' '}
-            <ruby className="px-1">croire<rt className="font-ipa text-terre-ink font-bold underline">kʁwaʁ</rt></ruby>{' '}
-            <ruby className="px-1">que<rt className="font-ipa text-ink-3">kə</rt></ruby>{' '}
-            <ruby className="px-1">la<rt className="font-ipa text-ink-3">la</rt></ruby>{' '}
-            <ruby className="px-1">planète<rt className="font-ipa text-ink-3">planɛt</rt></ruby>…
-          </h2>
-          <p className="text-[15px] text-ink-2 italic m-0">
-            «Tengo serias razones para creer que el planeta de donde venía el principito…»
-          </p>
+          {customTarget ? (
+            <>
+              <h2 className="font-serif text-[30px] md:text-[34px] leading-[2.0] text-ink font-normal m-0 mb-3">
+                {customTarget.sentence.split(/\s+/).map((tok, idx) => {
+                  const cleanTok = tok.replace(/[.,;!?«»"()—–]/g, '');
+                  const isTarget = cleanTok.toLowerCase() === customTarget.word.toLowerCase();
+                  return (
+                    <React.Fragment key={idx}>
+                      {isTarget ? (
+                        <ruby className="px-1.5 bg-soleil-wash rounded-md">
+                          {tok}
+                          <rt className="font-ipa text-terre-ink font-bold underline">
+                            {customTarget.ipa}
+                          </rt>
+                        </ruby>
+                      ) : (
+                        <span>{tok}</span>
+                      )}{' '}
+                    </React.Fragment>
+                  );
+                })}
+              </h2>
+              <p className="text-[14px] text-ink-2 italic m-0">
+                Foco fonético seleccionado en el Atelier: <strong>{customTarget.word}</strong>{' '}
+                <span className="font-ipa text-sauge font-bold">{customTarget.ipa}</span>
+              </p>
+            </>
+          ) : (
+            <>
+              <h2 className="font-serif text-[34px] md:text-[38px] leading-[2.1] text-ink font-normal m-0 mb-3">
+                <ruby className="px-1">J’ai<rt className="font-ipa text-sauge font-bold">ʒe</rt></ruby>{' '}
+                <ruby className="px-1">de<rt className="font-ipa text-ink-3">də</rt></ruby>{' '}
+                <ruby className="px-1">sérieuses<rt className="font-ipa text-ink-3">seʁjøz</rt></ruby>{' '}
+                <ruby className="px-1">raisons<rt className="font-ipa text-ink-3">ʁɛzɔ̃</rt></ruby>{' '}
+                <ruby className="px-1">de<rt className="font-ipa text-ink-3">də</rt></ruby>{' '}
+                <ruby className="px-1">croire<rt className="font-ipa text-terre-ink font-bold underline">kʁwaʁ</rt></ruby>{' '}
+                <ruby className="px-1">que<rt className="font-ipa text-ink-3">kə</rt></ruby>{' '}
+                <ruby className="px-1">la<rt className="font-ipa text-ink-3">la</rt></ruby>{' '}
+                <ruby className="px-1">planète<rt className="font-ipa text-ink-3">planɛt</rt></ruby>…
+              </h2>
+              <p className="text-[15px] text-ink-2 italic m-0">
+                «Tengo serias razones para creer que el planeta de donde venía el principito…»
+              </p>
+            </>
+          )}
         </div>
 
         {/* COURBE MÉLODIQUE & PROSODIE (DTW) */}
@@ -167,7 +263,15 @@ export const ShadowingView: React.FC = () => {
         <div className="flex justify-center items-center gap-5 pt-2 flex-wrap">
           <button
             type="button"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-paper border border-rule text-xs font-bold text-ink hover:bg-paper-warm transition-all shadow-sm"
+            onClick={() =>
+              speakText(
+                customTarget
+                  ? customTarget.sentence
+                  : "J'ai de sérieuses raisons de croire que la planète d'où venait le petit prince est l'astéroïde B 612.",
+                customTarget?.language || 'fr'
+              )
+            }
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-paper border border-rule text-xs font-bold text-ink hover:bg-paper-warm transition-all shadow-sm cursor-pointer"
           >
             <Volume2 size={16} className="text-sauge" />
             <span>Escuchar Nativo</span>
@@ -299,7 +403,8 @@ export const ShadowingView: React.FC = () => {
 
           <button
             type="button"
-            className="self-start sm:self-auto bg-sauge hover:bg-sauge-2 text-white font-bold text-[11.5px] px-5 py-2.5 rounded-full flex items-center gap-2 transition-colors shadow"
+            onClick={() => speakText('tu', 'fr')}
+            className="self-start sm:self-auto bg-sauge hover:bg-sauge-2 text-white font-bold text-[11.5px] px-5 py-2.5 rounded-full flex items-center gap-2 transition-colors shadow cursor-pointer"
           >
             <Volume2 size={15} />
             <span>Escuchar Estímulo</span>

@@ -19,6 +19,7 @@ export function App() {
   // Livre et chapitre actuellement en lecture
   const [activeBookId, setActiveBookId] = useState<string>('le-petit-prince');
   const [activeChapterNumber, setActiveChapterNumber] = useState<number>(2);
+  const [readerInitialMode, setReaderInitialMode] = useState<'study' | 'book'>('study');
 
   // Vérifier le token JWT ou le token de validation d'email dans l'URL
   useEffect(() => {
@@ -79,9 +80,17 @@ export function App() {
     setUser(userData);
   };
 
+  const handleNavigate = (view: ViewType) => {
+    if (view === 'reader' && currentView !== 'reader') {
+      // Abrir por defecto en el taller o último modo
+    }
+    setCurrentView(view);
+  };
+
   const handleSelectBook = (bookId: string, chapterNumber = 1) => {
     setActiveBookId(bookId);
     setActiveChapterNumber(chapterNumber);
+    setReaderInitialMode('book');
     setCurrentView('reader');
   };
 
@@ -123,7 +132,7 @@ export function App() {
       <PaperBackground />
 
       {/* Barre latérale permanente (Rail) */}
-      <RailSidebar currentView={currentView} onNavigate={setCurrentView} />
+      <RailSidebar currentView={currentView} onNavigate={handleNavigate} />
 
       {/* Contenu principal */}
       <div className="flex-1 flex flex-col ml-[252px] min-w-0 relative z-10">
@@ -137,13 +146,13 @@ export function App() {
           {currentView === 'dashboard' && (
             <DashboardView 
               user={user} 
-              onNavigate={setCurrentView} 
+              onNavigate={handleNavigate} 
               onSelectBook={handleSelectBook} 
             />
           )}
           {currentView === 'library' && (
             <LibraryView 
-              onNavigate={setCurrentView} 
+              onNavigate={handleNavigate} 
               onSelectBook={handleSelectBook} 
             />
           )}
@@ -151,8 +160,10 @@ export function App() {
             <ReaderView 
               bookId={activeBookId} 
               chapterNumber={activeChapterNumber}
-              onNavigate={setCurrentView}
+              initialMode={readerInitialMode}
+              onNavigate={handleNavigate}
               onSelectBook={handleSelectBook}
+              onPracticeShadowing={() => setCurrentView('shadowing')}
             />
           )}
           {currentView === 'shadowing' && <ShadowingView />}

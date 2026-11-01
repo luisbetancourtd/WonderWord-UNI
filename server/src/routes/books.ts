@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
-import { searchPublicCatalog, fetchAndSanitizeBookContent } from '../services/catalog.js';
-import { analyzeLiteraryWord } from '../services/linguistics.js';
+import { searchPublicCatalog, fetchAndSanitizeBookContent, splitTextIntoChapters } from '../services/catalog.js';
+import { analyzeLiteraryWord, SupportedLanguage } from '../services/linguistics.js';
 
 export default async function bookRoutes(server: FastifyInstance) {
   // 1. Lister tous les livres du catalogue avec filtres de recherche et niveau CECR
@@ -362,6 +362,110 @@ export default async function bookRoutes(server: FastifyInstance) {
     };
   });
 
+  // 1d. Créer et sauvegarder un texte ou document personnalisé depuis l'Atelier & Studio (/reader)
+  server.post('/custom', async (request, reply) => {
+    try {
+      await request.jwtVerify();
+    } catch {
+      return reply.status(401).send({ message: 'Non autorisé' });
+    }
+
+    const decoded = request.user as { id: string };
+    const { title, author, language, contentText, cefrLevel, genre } = request.body as {
+      title?: string;
+      author?: string;
+      language?: string;
+      contentText?: string;
+      cefrLevel?: string;
+      genre?: string;
+    };
+
+    if (!contentText || !contentText.trim()) {
+      return reply.status(400).send({ message: 'Le texte du document ne peut pas être vide' });
+    }
+
+    const cleanTitle = (title || 'Texte d’étude personnalisé').trim();
+    const cleanAuthor = (author || 'Atelier de Lecture · WonderWord').trim();
+    const cleanLang = ['fr', 'de', 'en', 'es', 'ru'].includes((language || '').toLowerCase())
+      ? (language || 'fr').toLowerCase()
+      : 'fr';
+
+    const baseSlug = cleanTitle
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '') || 'texte-etude';
+
+    const chapters = splitTextIntoChapters(contentText, cleanLang);
+    const totalWords = chapters.reduce((sum, ch) => sum + ch.wordCount, 0);
+
+    const coverColors = ['sauge', 'prune', 'soleil', 'terre', 'bleuet'] as const;
+    const chosenColor = coverColors[cleanTitle.length % coverColors.length];
+
+    const book = await server.prisma.book.create({
+      data: {
+        slug: `${baseSlug}-${Math.floor(1000 + Math.random() * 9000)}`,
+        title: cleanTitle,
+        author: cleanAuthor,
+        language: cleanLang,
+        cefrLevel: cefrLevel || 'B1',
+        publisher: 'Atelier de Lecture & Studio Phonétique',
+        description: contentText.trim().slice(0, 240) + (contentText.trim().length > 240 ? '…' : ''),
+        coverColor: chosenColor,
+        year: new Date().getFullYear(),
+        genre: genre || 'Document d’étude & Atelier',
+        totalChapters: chapters.length,
+        totalWords,
+        chapters: {
+          create: chapters.map((ch) => ({
+            number: ch.number,
+            title: ch.title,
+            contentHtml: ch.contentHtml,
+            wordCount: ch.wordCount,
+          })),
+        },
+      },
+      include: {
+        chapters: {
+          select: {
+            id: true,
+            number: true,
+            title: true,
+            wordCount: true,
+          },
+          orderBy: { number: 'asc' },
+        },
+      },
+    });
+
+    await server.prisma.userBook.upsert({
+      where: {
+        userId_bookId: {
+          userId: decoded.id,
+          bookId: book.id,
+        },
+      },
+      update: {
+        status: 'reading',
+        currentChapter: 1,
+      },
+      create: {
+        userId: decoded.id,
+        bookId: book.id,
+        currentChapter: 1,
+        progressPercent: 0,
+        status: 'reading',
+      },
+    });
+
+    return {
+      success: true,
+      message: `« ${book.title} » a été enregistré dans votre bibliothèque !`,
+      book,
+    };
+  });
+
   // 2. Bibliothèque personnelle de l'utilisateur connecté ("Mes Livres")
   server.get('/my-library', async (request, reply) => {
     try {
@@ -569,7 +673,7 @@ export default async function bookRoutes(server: FastifyInstance) {
   server.post('/analyze-word', async (request, reply) => {
     const { word, language, sentence } = request.body as {
       word: string;
-      language?: 'fr' | 'de';
+      language?: SupportedLanguage;
       sentence?: string;
     };
 
@@ -577,7 +681,9 @@ export default async function bookRoutes(server: FastifyInstance) {
       return reply.status(400).send({ message: 'Mot requis pour l’analyse' });
     }
 
-    const lang = language === 'de' ? 'de' : 'fr';
+    const supported: SupportedLanguage[] = ['fr', 'de', 'en', 'es', 'ru'];
+    const lang: SupportedLanguage =
+      language && supported.includes(language) ? language : 'fr';
     const analysis = await analyzeLiteraryWord(word, lang, sentence);
     return analysis;
   });
@@ -676,7 +782,22 @@ export default async function bookRoutes(server: FastifyInstance) {
     return { success: true };
   });
 
-  // 4f. Sauvegarder un mot inspecté dans les cartes de vocabulaire FSRS
+  // 4f. Lister et sauvegarder les mots inspectés dans les cartes de vocabulaire FSRS
+  server.get('/vocabulary', async (request, reply) => {
+    try {
+      await request.jwtVerify();
+    } catch {
+      return reply.status(401).send({ message: 'Non autorisé' });
+    }
+
+    const decoded = request.user as { id: string };
+    const cards = await server.prisma.vocabularyCard.findMany({
+      where: { userId: decoded.id },
+      orderBy: { createdAt: 'desc' },
+    });
+    return cards;
+  });
+
   server.post('/vocabulary', async (request, reply) => {
     try {
       await request.jwtVerify();
@@ -701,7 +822,8 @@ export default async function bookRoutes(server: FastifyInstance) {
       return reply.status(400).send({ message: 'Mot requis' });
     }
 
-    const lang = language === 'de' ? 'de' : 'fr';
+    const supported = ['fr', 'de', 'en', 'es', 'ru'];
+    const lang = language && supported.includes(language.toLowerCase()) ? language.toLowerCase() : 'fr';
     const cleanWord = word.trim();
 
     const card = await server.prisma.vocabularyCard.upsert({

@@ -344,11 +344,31 @@ export async function fetchAndSanitizeBookContent(item: {
     `;
   }
 
-  // Découper le texte en chapitres ou en sections équilibrées de 1 200 à 1 800 mots
+  return { chapters: splitTextIntoChapters(rawText, item.language) };
+}
+
+/**
+ * Découpe un texte brut en chapitres équilibrés (~1 200 à 1 600 mots par chapitre, jusqu'à 30 chapitres)
+ */
+export function splitTextIntoChapters(
+  rawText: string,
+  language = 'fr'
+): { number: number; title: string; contentHtml: string; wordCount: number }[] {
   const paragraphs = rawText
     .split(/\r?\n\r?\n+/)
     .map((p) => p.trim())
     .filter((p) => p.length > 0 && !p.startsWith('***'));
+
+  const chapterLabel =
+    language === 'de'
+      ? 'Kapitel'
+      : language === 'en'
+      ? 'Chapter'
+      : language === 'es'
+      ? 'Capítulo'
+      : language === 'ru'
+      ? 'Глава'
+      : 'Chapitre';
 
   const chapters: { number: number; title: string; contentHtml: string; wordCount: number }[] = [];
   let currentChapterParas: string[] = [];
@@ -356,15 +376,15 @@ export async function fetchAndSanitizeBookContent(item: {
   let chapterIndex = 1;
 
   for (const para of paragraphs) {
-    const wordsInPara = para.split(/\s+/).length;
+    const wordsInPara = para.split(/\s+/).filter(Boolean).length;
     currentChapterParas.push(`<p>${escapeHtml(para)}</p>`);
     currentWordCount += wordsInPara;
 
-    // Quand on atteint environ 1 400 mots, on forme un chapitre (jusqu'à 6 chapitres équilibrés)
-    if (currentWordCount >= 1400 && chapters.length < 5) {
+    // Quand on atteint environ 1 200 mots, on forme un chapitre (jusqu'à 30 chapitres équilibrés)
+    if (currentWordCount >= 1200 && chapters.length < 29) {
       chapters.push({
         number: chapterIndex,
-        title: item.language === 'de' ? `Kapitel ${chapterIndex}` : `Chapitre ${chapterIndex}`,
+        title: `${chapterLabel} ${chapterIndex}`,
         contentHtml: currentChapterParas.join('\n'),
         wordCount: currentWordCount,
       });
@@ -378,22 +398,23 @@ export async function fetchAndSanitizeBookContent(item: {
   if (currentChapterParas.length > 0) {
     chapters.push({
       number: chapterIndex,
-      title: item.language === 'de' ? `Kapitel ${chapterIndex}` : `Chapitre ${chapterIndex}`,
+      title: `${chapterLabel} ${chapterIndex}`,
       contentHtml: currentChapterParas.join('\n'),
-      wordCount: Math.max(currentWordCount, 150),
+      wordCount: Math.max(currentWordCount, 1),
     });
   }
 
   if (chapters.length === 0) {
+    const fallbackWords = rawText.trim().split(/\s+/).filter(Boolean).length;
     chapters.push({
       number: 1,
-      title: item.language === 'de' ? 'Kapitel I' : 'Chapitre I',
-      contentHtml: `<p>${escapeHtml(rawText.slice(0, 3000))}</p>`,
-      wordCount: 500,
+      title: `${chapterLabel} 1`,
+      contentHtml: `<p>${escapeHtml(rawText.slice(0, 3000) || 'Texte vide')}</p>`,
+      wordCount: Math.max(fallbackWords, 1),
     });
   }
 
-  return { chapters };
+  return chapters;
 }
 
 function escapeHtml(str: string): string {
