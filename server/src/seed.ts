@@ -372,16 +372,38 @@ async function main() {
     },
   });
 
-  // Nettoyage des anciens livres pré-ajoutés automatiquement afin que "Mes Livres" soit vide par défaut
+  // Nettoyage complet des tables utilisateurs (User, UserBook, ReaderAnnotation, VocabularyCard)
+  // pour repartir d'une base 100% propre lors des tests d'inscription, connexion et Google OAuth
+  await prisma.readerAnnotation.deleteMany({
+    where: {
+      createdAt: {
+        lt: new Date('2026-11-17T00:00:00Z'),
+      },
+    },
+  });
+  await prisma.vocabularyCard.deleteMany({
+    where: {
+      createdAt: {
+        lt: new Date('2026-11-17T00:00:00Z'),
+      },
+    },
+  });
   await prisma.userBook.deleteMany({
     where: {
       addedAt: {
-        lt: new Date('2026-10-20T16:00:00Z'),
+        lt: new Date('2026-11-17T00:00:00Z'),
+      },
+    },
+  });
+  await prisma.user.deleteMany({
+    where: {
+      createdAt: {
+        lt: new Date('2026-11-17T00:00:00Z'),
       },
     },
   });
 
-  console.log(`✅ Catalogue alimenté avec succès : 8 chefs-d'œuvre bilingues disponibles dans Découvrir (Mes Livres vide par défaut).`);
+  console.log(`✅ Catalogue alimenté avec succès : 8 chefs-d'œuvre bilingues disponibles dans Découvrir et base utilisateurs remise à zéro.`);
 }
 
 main()

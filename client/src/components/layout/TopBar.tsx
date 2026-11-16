@@ -1,33 +1,48 @@
 import React from 'react';
-import { Sun, Book, Moon, Bell } from 'lucide-react';
-import type { ThemeType } from '../../types';
+import { Sun, Book, Moon, LogOut, User as UserIcon } from 'lucide-react';
+import type { ThemeType, User, ViewType } from '../../types';
 
 interface TopBarProps {
   currentTheme: ThemeType;
   onThemeChange: (theme: ThemeType) => void;
   breadcrumb?: string;
+  user?: User | null;
+  onLogout?: () => void;
+  onNavigate?: (view: ViewType) => void;
 }
 
-export const TopBar: React.FC<TopBarProps> = ({ currentTheme, onThemeChange, breadcrumb = "Le Petit Prince / Chapitre IV / 18 min restants" }) => {
+export const TopBar: React.FC<TopBarProps> = ({
+  currentTheme,
+  onThemeChange,
+  breadcrumb = 'Tableau de bord',
+  user,
+  onLogout,
+  onNavigate,
+}) => {
+  const displayUserName =
+    user?.displayName?.trim() || user?.email?.split('@')[0] || 'Lecteur';
+  const userInitial = displayUserName.charAt(0).toUpperCase();
+
   return (
-    <header className="sticky top-0 z-30 bg-rail h-14 px-10 flex items-center justify-between select-none">
+    <header className="sticky top-0 z-30 bg-rail h-14 px-8 md:px-10 flex items-center justify-between select-none border-b border-white/5">
       {/* Halo discret */}
-      <div 
-        aria-hidden="true" 
+      <div
+        aria-hidden="true"
         className="absolute inset-0 pointer-events-none opacity-40"
         style={{
-          background: 'radial-gradient(90% 200% at 6% 50%, rgba(196,99,47,.2), transparent 58%), radial-gradient(70% 180% at 74% 50%, rgba(0,106,100,.2), transparent 62%)'
+          background:
+            'radial-gradient(90% 200% at 6% 50%, rgba(196,99,47,.2), transparent 58%), radial-gradient(70% 180% at 74% 50%, rgba(0,106,100,.2), transparent 62%)',
         }}
       />
 
       {/* Fil d'Ariane */}
-      <div className="relative flex items-center gap-2.5 text-[11.5px] text-rail-ink-2 tracking-wide font-medium">
-        <span>{breadcrumb}</span>
+      <div className="relative flex items-center gap-2.5 text-[11.5px] text-rail-ink-2 tracking-wide font-medium truncate max-w-[50%]">
+        <span className="truncate">{breadcrumb}</span>
       </div>
 
       {/* Contrôles de Droite */}
-      <div className="relative flex items-center gap-5">
-        {/* Sélecteur de Thème Ergonmique */}
+      <div className="relative flex items-center gap-4">
+        {/* Sélecteur de Thème Ergonomique */}
         <div className="flex items-center gap-1 p-1 bg-black/30 rounded-full border border-white/5">
           <button
             type="button"
@@ -69,20 +84,41 @@ export const TopBar: React.FC<TopBarProps> = ({ currentTheme, onThemeChange, bre
 
         <span className="w-px h-4 bg-white/10" />
 
-        {/* Cloche Notifications */}
-        <button 
-          type="button" 
-          aria-label="Notifications"
-          className="relative text-rail-ink-2 hover:text-white transition-colors"
+        {/* Profil Utilisateur Dynamique */}
+        <button
+          type="button"
+          onClick={() => onNavigate && onNavigate('settings')}
+          title={`Profil de ${displayUserName} (${user?.email || ''}) — Cliquer pour modifier`}
+          className="flex items-center gap-2.5 px-2.5 py-1 rounded-full hover:bg-white/10 transition-colors cursor-pointer"
         >
-          <Bell size={15} />
-          <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-soleil" />
+          {user?.avatarUrl ? (
+            <img
+              src={user.avatarUrl}
+              alt={displayUserName}
+              className="w-6 h-6 rounded-full object-cover border border-soleil/60"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <span className="w-6 h-6 rounded-full bg-sauge text-white text-[11px] font-bold flex items-center justify-center border border-white/20">
+              {userInitial || <UserIcon size={12} />}
+            </span>
+          )}
+          <span className="text-[11.5px] tracking-wider uppercase text-rail-ink font-semibold max-w-[160px] truncate">
+            {displayUserName}
+          </span>
         </button>
 
-        {/* Profil Utilisateur */}
-        <span className="text-[11px] tracking-wider uppercase text-rail-ink-2 font-semibold">
-          Kevin
-        </span>
+        {/* Bouton Déconnexion */}
+        {onLogout && (
+          <button
+            type="button"
+            onClick={onLogout}
+            title="Se déconnecter (Cerrar sesión)"
+            className="text-rail-ink-2 hover:text-soleil p-1.5 rounded-full hover:bg-white/10 transition-colors cursor-pointer"
+          >
+            <LogOut size={15} />
+          </button>
+        )}
       </div>
     </header>
   );

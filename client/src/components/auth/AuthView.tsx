@@ -11,10 +11,12 @@ export function AuthView({ onAuthSuccess }: AuthViewProps) {
   const [mode, setMode] = useState<'login' | 'register' | 'forgot' | 'reset'>('login');
   const [resetToken, setResetToken] = useState<string | null>(null);
 
-  const [email, setEmail] = useState('luis@paris8.fr');
-  const [password, setPassword] = useState('WonderWord2026!');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [pendingSession, setPendingSession] = useState<{ token: string; user: User } | null>(null);
+  const [resetDbMessage, setResetDbMessage] = useState<string | null>(null);
   
   const [verificationNotice, setVerificationNotice] = useState<{ email: string; emailSent?: boolean; verifyUrl?: string } | null>(null);
   const [forgotNotice, setForgotNotice] = useState<{ email: string; emailSent?: boolean; resetUrl?: string } | null>(null);
@@ -182,8 +184,8 @@ export function AuthView({ onAuthSuccess }: AuthViewProps) {
 
       const endpoint = mode === 'login' ? '/auth/login' : '/auth/register';
       const body = mode === 'login' 
-        ? { email, password }
-        : { email, password, displayName, nativeLang: 'fr', targetLang: 'es' };
+        ? { email: email.trim().toLowerCase(), password }
+        : { email: email.trim().toLowerCase(), password, displayName: displayName.trim(), nativeLang: 'fr', targetLang: 'de' };
 
       const response = await apiFetch<AuthResponse>(endpoint, {
         method: 'POST',
@@ -191,8 +193,9 @@ export function AuthView({ onAuthSuccess }: AuthViewProps) {
       });
 
       if (mode === 'register' && (response.emailSent || response.verifyUrl)) {
+        setPendingSession({ token: response.token, user: response.user });
         setVerificationNotice({
-          email,
+          email: response.user.email,
           emailSent: response.emailSent,
           verifyUrl: response.verifyUrl,
         });
@@ -244,14 +247,23 @@ export function AuthView({ onAuthSuccess }: AuthViewProps) {
               <strong className="text-ink font-semibold">{verificationNotice.email}</strong>.
             </p>
             {verificationNotice.verifyUrl && (
-              <div className="p-3 bg-[#f4ecdc]/70 border border-terre/20 rounded-xl space-y-2 text-left">
-                <p className="text-xs text-terre font-semibold">Accès Direct Évaluateur / Simulation :</p>
+              <div className="p-3.5 bg-[#f4ecdc]/70 border border-terre/20 rounded-xl space-y-2.5 text-left">
+                <p className="text-xs text-terre font-semibold">Accès Direct Évaluateur / Test Immédiat :</p>
                 <a
                   href={verificationNotice.verifyUrl}
                   className="block text-center text-xs bg-prune hover:bg-prune-2 text-white font-medium px-4 py-2.5 rounded-full transition-colors"
                 >
-                  Activer immédiatement le compte
+                  Valider l'email et entrer dans l'application
                 </a>
+                {pendingSession && (
+                  <button
+                    type="button"
+                    onClick={() => onAuthSuccess(pendingSession.token, pendingSession.user)}
+                    className="w-full text-center text-xs bg-sauge hover:bg-sauge-2 text-white font-medium px-4 py-2 rounded-full transition-colors cursor-pointer"
+                  >
+                    Entrer immédiatement en tant que « {pendingSession.user.displayName} »
+                  </button>
+                )}
               </div>
             )}
             <div className="pt-4 border-t border-terre/10">
@@ -537,6 +549,34 @@ export function AuthView({ onAuthSuccess }: AuthViewProps) {
 
                   <div className="flex justify-center w-full min-h-[44px]">
                     <div id="googleSignInBtn" className="flex justify-center w-full" />
+                  </div>
+
+                  {/* Outil de test : Vider les comptes utilisateurs pour tester Register / Login / Google depuis zéro */}
+                  <div className="pt-4 mt-2 border-t border-terre/15 text-center space-y-1.5">
+                    {resetDbMessage && (
+                      <p className="text-[11.5px] font-semibold text-sauge">{resetDbMessage}</p>
+                    )}
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          setResetDbMessage(null);
+                          const res = await apiFetch<{ message: string; deletedUsers: number }>(
+                            '/auth/reset-users',
+                            { method: 'POST' }
+                          );
+                          localStorage.removeItem('wonderword_token');
+                          setResetDbMessage(
+                            `Base vidée (${res.deletedUsers} compte(s) supprimé(s)). Prêt pour vos tests !`
+                          );
+                        } catch {
+                          setResetDbMessage('Erreur lors de la réinitialisation.');
+                        }
+                      }}
+                      className="text-[11px] text-ink-3 hover:text-terre underline transition-colors cursor-pointer"
+                    >
+                      Vider les comptes utilisateurs (Reset DB pour tester Register / Google)
+                    </button>
                   </div>
                 </div>
               )}

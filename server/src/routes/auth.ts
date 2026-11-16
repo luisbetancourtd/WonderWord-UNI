@@ -7,7 +7,10 @@ import { config } from '../config.js';
 export default async function authRoutes(server: FastifyInstance) {
   // Inscription avec génération de jeton de confirmation et envoi d'email
   server.post('/register', async (request, reply) => {
-    const { email, password, displayName } = request.body as any;
+    const { email: rawEmail, password, displayName: rawDisplayName, nativeLang, targetLang } = request.body as any;
+
+    const email = rawEmail ? String(rawEmail).trim().toLowerCase() : '';
+    const displayName = rawDisplayName ? String(rawDisplayName).trim() : '';
 
     if (!email || !password || !displayName) {
       return reply.status(400).send({ message: 'Données manquantes' });
@@ -28,13 +31,15 @@ export default async function authRoutes(server: FastifyInstance) {
 
     const passwordHash = await bcrypt.hash(password, 12);
     const verifyToken = crypto.randomBytes(32).toString('hex');
-    const isSpecialDemo = email.toLowerCase() === 'luis@paris8.fr';
+    const isSpecialDemo = email === 'luis@paris8.fr';
 
     const user = await server.prisma.user.create({
       data: {
         email,
         passwordHash,
         displayName,
+        nativeLang: nativeLang || 'fr',
+        targetLang: targetLang || 'de',
         isVerified: isSpecialDemo, // Compte démo enseignant pré-validé
         verifyToken: isSpecialDemo ? null : verifyToken,
       },
@@ -116,7 +121,8 @@ export default async function authRoutes(server: FastifyInstance) {
 
   // Connexion standard
   server.post('/login', async (request, reply) => {
-    const { email, password } = request.body as any;
+    const { email: rawEmail, password } = request.body as any;
+    const email = rawEmail ? String(rawEmail).trim().toLowerCase() : '';
 
     if (!email || !password) {
       return reply.status(400).send({ message: 'Données manquantes' });
@@ -353,12 +359,13 @@ export default async function authRoutes(server: FastifyInstance) {
       });
 
       if (user) {
-        // Mettre à jour l'identifiant Google, avatar et statut vérifié
+        // Mettre à jour l'identifiant Google, le nom s'il était générique, l'avatar et le statut vérifié
         user = await server.prisma.user.update({
           where: { id: user.id },
           data: {
             googleId: user.googleId || payload.sub,
-            avatarUrl: user.avatarUrl || payload.picture || null,
+            displayName: payload.name || user.displayName,
+            avatarUrl: payload.picture || user.avatarUrl || null,
             isVerified: true, // Garanti par Google
           },
         });
@@ -397,5 +404,19 @@ export default async function authRoutes(server: FastifyInstance) {
       server.log.error(err);
       return reply.status(500).send({ message: 'Erreur lors de la validation Google' });
     }
+  });
+
+  // Réinitialisation des comptes utilisateurs et données associées (conserve uniquement les 8 classiques du catalogue Découvrir)
+  server.post('/reset-users', async () => {
+    await server.prisma.readerAnnotation.deleteMany({});
+    await server.prisma.vocabularyCard.deleteMany({});
+    await server.prisma.userBook.deleteMany({});
+    const deletedUsers = await server.prisma.user.deleteMany({});
+
+    return {
+      success: true,
+      deletedUsers: deletedUsers.count,
+      message: 'Base de données utilisateurs vidée avec succès (les 8 classiques du catalogue Découvrir sont conservés).',
+    };
   });
 }
