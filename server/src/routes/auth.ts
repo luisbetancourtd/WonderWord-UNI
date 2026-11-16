@@ -45,14 +45,15 @@ export default async function authRoutes(server: FastifyInstance) {
       },
     });
 
-    let emailSent = false;
-    let verifyUrl = '';
-
-    if (!isSpecialDemo) {
-      const emailResult = await sendVerificationEmail(email, displayName, verifyToken);
-      emailSent = emailResult.success;
-      verifyUrl = emailResult.verifyUrl;
-    }
+    // Toujours envoyer l'e-mail de notification d'inscription à l'adresse utilisée
+    const emailResult = await sendVerificationEmail(
+      email,
+      displayName,
+      isSpecialDemo ? null : verifyToken,
+      'email'
+    );
+    const emailSent = emailResult.success;
+    const verifyUrl = emailResult.verifyUrl;
 
     const token = server.jwt.sign({ id: user.id, email: user.email });
 
@@ -60,11 +61,10 @@ export default async function authRoutes(server: FastifyInstance) {
       token,
       emailSent,
       verifyUrl, // Fourni pour test direct / évaluation si besoin
-      message: isSpecialDemo 
-        ? 'Compte démo activé !' 
-        : (emailSent 
-            ? 'Compte créé ! Un e-mail de confirmation vous a été envoyé.' 
-            : 'Compte créé ! Veuillez valider votre compte via le lien direct.'),
+      providerNote: emailResult.providerNote,
+      message: emailSent
+        ? `Compte créé ! Un e-mail de confirmation d'inscription a été envoyé à ${email}.`
+        : 'Compte créé ! Veuillez valider votre compte via le lien direct.',
       user: {
         id: user.id,
         email: user.email,
@@ -358,6 +358,7 @@ export default async function authRoutes(server: FastifyInstance) {
         },
       });
 
+      let isNewGoogleUser = false;
       if (user) {
         // Mettre à jour l'identifiant Google, le nom s'il était générique, l'avatar et le statut vérifié
         user = await server.prisma.user.update({
@@ -370,6 +371,7 @@ export default async function authRoutes(server: FastifyInstance) {
           },
         });
       } else {
+        isNewGoogleUser = true;
         // Créer automatiquement le compte avec le profil vérifié
         user = await server.prisma.user.create({
           data: {
@@ -384,12 +386,27 @@ export default async function authRoutes(server: FastifyInstance) {
         });
       }
 
+      // Envoyer un e-mail de bienvenue / notification d'inscription lors de la création via Google
+      let emailSent = false;
+      if (isNewGoogleUser) {
+        const emailRes = await sendVerificationEmail(
+          user.email,
+          user.displayName,
+          null,
+          'google'
+        );
+        emailSent = emailRes.success;
+      }
+
       // 3. Générer le jeton JWT WonderWord de session
       const token = server.jwt.sign({ id: user.id, email: user.email });
 
       return {
         token,
-        message: 'Connexion réussie avec votre compte Google !',
+        emailSent,
+        message: isNewGoogleUser
+          ? `Inscription réussie avec Google ! Un e-mail de bienvenue a été envoyé à ${user.email}.`
+          : 'Connexion réussie avec votre compte Google !',
         user: {
           id: user.id,
           email: user.email,
