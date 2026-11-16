@@ -8,6 +8,7 @@ export interface User {
   displayName: string;
   nativeLang: string;
   targetLang: string;
+  avatarUrl?: string | null;
   isVerified?: boolean;
 }
 
