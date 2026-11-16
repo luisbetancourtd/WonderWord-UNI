@@ -519,13 +519,18 @@
 
     <div class="switcher-links">
       <a href="index.html" class="switcher-btn" title="Consulter la première livraison (Prototypes & Vision)">
-        <i data-lucide="arrow-left" width="13" height="13"></i>
+        <i data-lucide="file-text" width="13" height="13"></i>
         Livraison 01 : Prototypage (index.html)
       </a>
 
       <a href="index0.html" class="switcher-btn active" title="Deuxième livraison actuellement affichée">
         <i data-lucide="check-circle" width="13" height="13"></i>
-        Livraison 02 : Cloud & Déploiement (index0.html)
+        Livraison 02 : Cloud &amp; Bibliothèque (index0.html)
+      </a>
+
+      <a href="index2.html" class="switcher-btn" title="Consulter la troisième livraison (Atelier de Lecture & Phonétique)">
+        <i data-lucide="book-open-check" width="13" height="13"></i>
+        Livraison 03 : Atelier de Lecture (index2.html)
       </a>
 
       <a href="https://wonderword.luisbetancourt.fr" target="_blank" class="live-status-pill" title="Accéder à l'application déployée en direct sur Azure">
@@ -1047,6 +1052,13 @@
           <li><strong>Récupération de mot de passe (« Mot de passe oublié ? ») :</strong> Génération d'un jeton éphémère (validité stricte de 60 minutes). Dès que le mot de passe est redéfini, le jeton est immédiatement purgé (usage unique) pour prévenir toute réutilisation frauduleuse.</li>
           <li><strong>Normalisation d'adresses courriel :</strong> Nettoyage systématique des espaces et conversion en minuscules (<code>.trim().toLowerCase()</code>) côté frontend et backend afin d'éviter tout doublon insensible à la casse.</li>
         </ul>
+
+        <h3 style="font-family:'Libre Caslon Text', serif; font-size:20px; margin: 28px 0 12px; color:var(--ink);">
+          3. Authentification Fédérée avec Google OAuth 2.0 (Google Identity Services)
+        </h3>
+        <p>
+          En complément de l'inscription classique par courriel, nous avons intégré l'authentification fédérée <strong>Google Sign-In (GSI)</strong> dans <code>AuthView.tsx</code> et <code>server/src/routes/auth.ts</code> (<code>POST /api/auth/google</code>). Le jeton cryptographique JWT émis par Google est vérifié côté serveur, rattachant ou créant automatiquement le compte utilisateur avec son identifiant unique <code>googleId</code> et son avatar.
+        </p>
       </div>
     </section>
 
@@ -1339,8 +1351,14 @@ print(f"{len(livres)} livres trouvés !")</pre>
           Avec une infrastructure cloud pérenne, un système d'authentification validé et une bibliothèque littéraire fonctionnelle, le socle technique est désormais prêt pour la <strong>Phase 3</strong> : le laboratoire d'analyse acoustique.
         </p>
         <p>
-          Comme documenté dans le Chapitre 03 de la première livraison, notre choix architectural d'indépendance repose sur un microservice Python utilisant <strong>parselmouth (moteur Praat)</strong> en mode <em>headless</em>. Ce service sera déployé dans un quatrième conteneur Docker sur le même réseau privé, permettant l'analyse formantique F1/F2 des voyelles critiques françaises sans aucune dépendance vis-à-vis d'API tierces payantes.
+          Comme documenté dans le Chapitre 03 de la première livraison, notre choix architectural d'indépendance repose sur un microservice Python utilisant <strong>parselmouth (moteur Praat)</strong> en mode <em>headless</em>, articulé avec le nouvel <strong>Atelier de Lecture Critique</strong> présenté en détail dans la <a href="index2.html" style="color:var(--prune); font-weight:700;">Troisième Livraison (index2.html)</a>.
         </p>
+        <div style="margin-top:18px;">
+          <a href="index2.html" class="btn-action">
+            <i data-lucide="arrow-right" width="14" height="14"></i>
+            Consulter la Livraison 03 : L'Atelier de Lecture Critique (index2.html)
+          </a>
+        </div>
       </div>
     </section>
 

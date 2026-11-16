@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WonderWord-UNI — Livraison 03 : L'Atelier de Lecture Critique, Moteur Phonétique & Écosystème Interconnecté</title>
+  <meta name="description" content="Carnet de bord scientifique et technique de WonderWord-UNI (Livraison 3) - Atelier de Lecture Critique (/reader et /reader/1), ingestion EPUB/PDF/TXT, moteur G2P 5 langues, liaisons françaises, marginalia Prisma et pont vers FSRS & Shadowing." />
+
+  <!-- Polices Littéraires & Typographie Système -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Charis+SIL:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@0.462.0/dist/umd/lucide.js"></script>
+
+  <style>
+    :root {
+      /* ── Les Cinq Pigments Littéraires ── */
+      --prune: #53335a;
+      --prune-2: #6f4877;
+      --prune-wash: rgba(83, 51, 90, 0.08);
+      
+      --sauge: #006a64;
+      --sauge-2: #0f8c84;
+      --sauge-wash: rgba(0, 106, 100, 0.09);
+      
+      --soleil: #ffcd11;
+      --soleil-ink: #463605;
+      --soleil-wash: rgba(255, 205, 17, 0.22);
+      
+      --terre: #c4632f;
+      --terre-ink: #9c4a1e;
+      --terre-wash: rgba(196, 99, 47, 0.12);
+      
+      --bleuet: #7b9bd1;
+      --bleuet-ink: #3f5f96;
+      --bleuet-wash: rgba(123, 155, 209, 0.16);
+
+      --canvas: #fbf7ee;
+      --paper: #ffffff;
+      --paper-warm: #fcf9f2;
+      --paper-2: #f4ecdc;
+      --ink: #241d24;
+      --ink-2: #4f4550;
+      --ink-3: #756a77;
+      --rule: rgba(36, 29, 36, 0.12);
+      --rule-soft: rgba(36, 29, 36, 0.06);
+
+      --rail: #282031;
+      --rail-ink: #f2ecf1;
+      --rail-ink-2: #a99fac;
+      --code-bg: #1c1824;
+      --code-rule: rgba(255, 255, 255, 0.12);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--canvas);
+      color: var(--ink);
+      font-family: 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* Texture de papier pressé */
+    .paper-texture {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 50;
+      mix-blend-mode: multiply;
+      opacity: 0.07;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    /* Barre de bascule entre livraisons */
+    .delivery-switcher {
+      background: #191321;
+      color: #fff;
+      padding: 10px 20px;
+      font-size: 12.5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      flex-wrap: wrap;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      backdrop-filter: blur(8px);
+    }
+    .switcher-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--soleil);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 11px;
+    }
+    .switcher-links {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .switcher-btn {
+      color: var(--rail-ink-2);
+      text-decoration: none;
+      padding: 5px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .switcher-btn:hover {
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.35);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .switcher-btn.active {
+      color: #fff;
+      background: var(--sauge);
+      border-color: var(--sauge);
+      font-weight: 700;
+    }
+    .live-status-pill {
+      background: rgba(16, 185, 129, 0.18);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #10b981;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+      display: inline-block;
+      animation: pulse 1.8s infinite;
+    }
+    @keyframes pulse {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    /* En-tête */
+    header.site-header {
+      background: var(--rail);
+      color: var(--rail-ink);
+      padding: 44px 24px 36px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      position: relative;
+    }
+    .header-inner {
+      max-width: 1060px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .academic-banner {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11.5px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--soleil);
+      font-weight: 700;
+    }
+    .site-title {
+      font-family: 'Libre Caslon Text', Georgia, serif;
+      font-size: clamp(32px, 5.2vw, 46px);
+      font-weight: 400;
+      letter-spacing: -0.025em;
+      color: #ffffff;
+      line-height: 1.18;
+    }
+    .site-subtitle {
+      font-size: 16px;
+      color: var(--rail-ink-2);
+      max-width: 860px;
+      line-height: 1.6;
+    }
+    .header-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-top: 6px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 12.5px;
+    }
+    .meta-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 6px 14px;
+      border-radius: 999px;
+      color: #fff;
+    }
+    .meta-tag a { color: var(--soleil); text-decoration: none; font-weight: 600; }
+    .meta-tag a:hover { text-decoration: underline; }
+
+    /* Layout Principal */
+    main.content-wrap {
+      max-width: 1060px;
+      margin: 0 auto;
+      padding: 54px 24px 90px;
+    }
+
+    /* Sections */
+    section.log-section {
+      margin-bottom: 68px;
+    }
+    .section-heading {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 26px;
+    }
+    .section-number {
+      font-family: 'Libre Caslon Text', serif;
+      font-size: 13.5px;
+      color: var(--terre);
+      background: var(--terre-wash);
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+    .section-title {
+      font-family: 'Libre Caslon Text', serif;
+      font-size: clamp(23px, 3.2vw, 29px);
+      color: var(--ink);
+      font-weight: 400;
+    }
+    .heading-rule {
+      flex: 1;
+      height: 1px;
+      background: var(--rule);
+    }
+
+    /* Cartes Éditoriales */
+    .editorial-card {
+      background: var(--paper);
+      border-radius: 22px;
+      border: 1px solid var(--rule);
+      padding: 38px 42px;
+      box-shadow: 0 4px 20px -8px rgba(36,29,36,0.07);
+      margin-bottom: 28px;
+      position: relative;
+    }
+    .editorial-card p {
+      color: var(--ink-2);
+      font-size: 15.5px;
+      margin-bottom: 18px;
+    }
+    .editorial-card p:last-child { margin-bottom: 0; }
+    .editorial-card strong { color: var(--ink); }
+
+    /* Callouts */
+    .callout-box {
+      background: var(--paper-warm);
+      border-left: 4px solid var(--sauge);
+      padding: 20px 24px;
+      border-radius: 0 14px 14px 0;
+      margin: 24px 0;
+      font-size: 15px;
+      color: var(--ink-2);
+    }
+    .callout-box.warn {
+      border-left-color: var(--terre);
+      background: #fdf5f0;
+    }
+    .callout-box.info {
+      border-left-color: var(--bleuet-ink);
+      background: #f4f7fc;
+    }
+
+    /* Terminal & Code Blocks */
+    .terminal-box {
+      background: var(--code-bg);
+      border-radius: 16px;
+      border: 1px solid var(--code-rule);
+      overflow: hidden;
+      margin: 24px 0;
+      box-shadow: 0 8px 24px -8px rgba(0,0,0,0.3);
+    }
+    .terminal-header {
+      background: #15121b;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--code-rule);
+      font-size: 12px;
+      color: var(--rail-ink-2);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .terminal-dots {
+      display: flex;
+      gap: 6px;
+    }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .dot-red { background: #ff5f56; }
+    .dot-yellow { background: #ffbd2e; }
+    .dot-green { background: #27c93f; }
+    .terminal-body {
+      padding: 18px 20px;
+      color: #e5e0ea;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.65;
+      overflow-x: auto;
+    }
+    .terminal-body pre { margin: 0; }
+    .terminal-body code { font-family: inherit; }
+    .code-comment { color: #8e8399; }
+    .code-cmd { color: #7ee787; }
+    .code-param { color: #79c0ff; }
+    .code-val { color: #ffa657; }
+    .code-keyword { color: #d2a8ff; }
+
+    /* Grilles d'Architecture */
+    .arch-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin: 24px 0;
+    }
+    .arch-card {
+      background: var(--paper-warm);
+      border: 1px solid var(--rule);
+      border-radius: 16px;
+      padding: 24px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+    }
+    .arch-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .arch-pill {
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 3px 10px;
+      border-radius: 999px;
+    }
+    .arch-title {
+      font-family: 'Libre Caslon Text', serif;
+      font-size: 19px;
+      color: var(--ink);
+    }
+    .arch-desc {
+      font-size: 13.5px;
+      color: var(--ink-2);
+      line-height: 1.55;
+    }
+
+    /* Tableau des spécifications */
+    .specs-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid var(--rule);
+      margin: 20px 0;
+      font-size: 14px;
+    }
+    .specs-table th {
+      background: #f0e8d8;
+      color: var(--ink);
+      padding: 12px 18px;
+      text-align: left;
+      font-weight: 700;
+      border-bottom: 1px solid var(--rule);
+    }
+    .specs-table td {
+      background: var(--paper);
+      padding: 12px 18px;
+      color: var(--ink-2);
+      border-bottom: 1px solid var(--rule-soft);
+      vertical-align: top;
+    }
+    .specs-table tr:last-child td {
+      border-bottom: none;
+    }
+    .specs-table td:first-child {
+      font-weight: 600;
+      color: var(--ink);
+      background: var(--paper-warm);
+      width: 28%;
+    }
+
+    /* Badge & Boutons */
+    .tag-pill {
+      font-size: 11.5px;
+      padding: 4px 11px;
+      border-radius: 999px;
+      background: var(--paper-warm);
+      border: 1px solid var(--rule);
+      color: var(--ink-3);
+      font-weight: 500;
+    }
+    .tag-pill.accent {
+      background: var(--sauge-wash);
+      color: var(--sauge);
+      border-color: rgba(0, 106, 100, 0.25);
+      font-weight: 700;
+    }
+
+    .ipa-sample {
+      font-family: 'Charis SIL', serif;
+      font-size: 15.5px;
+      color: var(--sauge);
+      font-weight: 700;
+      background: var(--sauge-wash);
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+
+    ruby { ruby-position: over; padding: 0 2px; }
+    rt {
+      font-family: 'Charis SIL', serif;
+      font-size: 11px;
+      color: var(--sauge);
+      font-weight: 700;
+    }
+
+    .btn-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 26px;
+      border-radius: 999px;
+      background: var(--prune);
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      box-shadow: 0 4px 14px -3px rgba(83,51,90,0.4);
+      transition: all 0.2s ease;
+    }
+    .btn-action:hover {
+      background: var(--prune-2);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px -4px rgba(83,51,90,0.5);
+      color: #ffffff;
+    }
+
+    .eval-badge-box {
+      background: linear-gradient(135deg, rgba(83,51,90,0.06) 0%, rgba(0,106,100,0.06) 100%);
+      border: 1.5px dashed var(--prune);
+      border-radius: 16px;
+      padding: 22px 26px;
+      margin: 24px 0;
+    }
+    .eval-badge-box h4 {
+      font-family: 'Libre Caslon Text', serif;
+      font-size: 18px;
+      color: var(--prune);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Schéma d'interconnexion visuel */
+    .hub-diagram {
+      background: var(--paper-warm);
+      border: 1px solid var(--rule);
+      border-radius: 18px;
+      padding: 28px;
+      margin: 26px 0;
+    }
+    .hub-center {
+      background: linear-gradient(135deg, var(--prune) 0%, #38223d 100%);
+      color: #fff;
+      border-radius: 16px;
+      padding: 22px 26px;
+      text-align: center;
+      max-width: 680px;
+      margin: 0 auto 24px;
+      box-shadow: 0 10px 26px -8px rgba(83,51,90,0.45);
+    }
+    .hub-center h4 {
+      font-family: 'Libre Caslon Text', serif;
+      font-size: 22px;
+      font-weight: 400;
+      margin-bottom: 6px;
+      color: var(--soleil);
+    }
+    .hub-spokes {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 14px;
+    }
+    .spoke-box {
+      background: var(--paper);
+      border: 1px solid var(--rule);
+      border-radius: 14px;
+      padding: 16px;
+      font-size: 13px;
+    }
+    .spoke-box strong {
+      display: block;
+      font-family: 'Libre Caslon Text', serif;
+      font-size: 15.5px;
+      margin-bottom: 6px;
+      color: var(--ink);
+    }
+    .spoke-arrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--sauge);
+      display: inline-block;
+      margin-bottom: 4px;
+    }
+
+    /* Pied de page */
+    footer.site-footer {
+      border-top: 1px solid var(--rule);
+      background: var(--paper-warm);
+      padding: 46px 24px;
+      text-align: center;
+      font-size: 13.5px;
+      color: var(--ink-3);
+    }
+    footer a {
+      color: var(--prune);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+      .editorial-card { padding: 26px 20px; }
+      .delivery-switcher { flex-direction: column; align-items: flex-start; }
+      .specs-table td:first-child { width: 42%; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="paper-texture"></div>
+
+  <!-- Barre de bascule et état de production -->
+  <div class="delivery-switcher">
+    <div class="switcher-badge">
+      <i data-lucide="layers" width="15" height="15"></i>
+      <span>Carnet de Bord Universitaire · Master NET Paris 8</span>
+    </div>
+
+    <div class="switcher-links">
+      <a href="index.html" class="switcher-btn" title="Consulter la première livraison (Prototypes & Vision)">
+        <i data-lucide="file-text" width="13" height="13"></i>
+        Livraison 01 : Prototypage (index.html)
+      </a>
+
+      <a href="index0.html" class="switcher-btn" title="Consulter la deuxième livraison (Cloud Azure, Docker & Bibliothèque)">
+        <i data-lucide="server" width="13" height="13"></i>
+        Livraison 02 : Cloud &amp; Bibliothèque (index0.html)
+      </a>
+
+      <a href="index2.html" class="switcher-btn active" title="Troisième livraison actuellement affichée (Atelier de Lecture & Phonétique)">
+        <i data-lucide="check-circle" width="13" height="13"></i>
+        Livraison 03 : Atelier de Lecture (index2.html)
+      </a>
+
+      <a href="https://wonderword.luisbetancourt.fr" target="_blank" class="live-status-pill" title="Accéder à l'application déployée en direct sur Azure">
+        <span class="pulse-dot"></span>
+        Production Live : wonderword.luisbetancourt.fr
+      </a>
+    </div>
+  </div>
+
+  <!-- En-tête Académique -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="academic-banner">
+        <i data-lucide="graduation-cap" width="16" height="16"></i>
+        <span>Université Paris 8 · Master Humanités Numériques (parcours NET) · 2026</span>
+      </div>
+      
+      <h1 class="site-title">WonderWord-UNI : Troisième Livraison</h1>
+      <p class="site-subtitle">
+        Ingénierie didactique et développement complet de l'<strong>Atelier de Lecture — Lecteur Critique Interactif</strong>. Architecture duale (Studio &amp; Taller <code>/reader</code> vs Visor de Libro <code>/reader/:id</code>), ingestion documentaire multi-formats (<code>.EPUB</code>, <code>.PDF</code>, <code>.TXT</code>), moteur phonétique G2P en 5 langues, détection des liaisons françaises (<code>‿</code>), marginalia relationnelle et interconnexion avec les cartes FSRS et le Studio de Shadowing.
+      </p>
+
+      <div class="header-meta">
+        <span class="meta-tag"><i data-lucide="user" width="13" height="13"></i> Luis Betancourt D.</span>
+        <span class="meta-tag"><i data-lucide="folder-git-2" width="13" height="13"></i> Dépôt : <a href="https://github.com/luisbetancourtd/WonderWord-UNI" target="_blank">luisbetancourtd/WonderWord-UNI</a></span>
+        <span class="meta-tag"><i data-lucide="book-open-check" width="13" height="13"></i> Composant Central : <code>ReaderView.tsx</code> + <code>linguistics.ts</code></span>
+        <span class="meta-tag"><i data-lucide="globe" width="13" height="13"></i> Production : <a href="https://wonderword.luisbetancourt.fr" target="_blank">wonderword.luisbetancourt.fr</a></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenu Principal -->
+  <main class="content-wrap">
+
+    <!-- ======================================================================
+         0. SYNTHÈSE DE LA TROISIÈME ÉTAPE
+         ====================================================================== -->
+    <section class="log-section">
+      <div class="section-heading">
+        <span class="section-number">Synthèse</span>
+        <h2 class="section-title">Qu'est-ce que l'Atelier de Lecture ? Vision &amp; Portée</h2>
+        <div class="heading-rule"></div>
+      </div>
+
+      <div class="editorial-card">
+        <p>
+          Après avoir établi l'identité visuelle aquarelle et les prototypes lors de la <a href="index.html" style="color:var(--prune); font-weight:600;">Livraison 01</a>, puis déployé l'infrastructure infonuagique (VM Azure Ubuntu, Docker Compose, Nginx SSL, CI/CD) et la Bibliothèque Littéraire connectée lors de la <a href="index0.html" style="color:var(--prune); font-weight:600;">Livraison 02</a>, cette <strong>troisième livraison</strong> concrétise le cœur pédagogique de la plateforme : <strong>l'Atelier de Lecture Critique Interactif</strong>.
+        </p>
+        <p>
+          Dans <strong>WonderWord-UNI</strong>, l'Atelier de Lecture n'est pas une simple liseuse passive. Il a été conçu comme un <strong>laboratoire de lecture augmentée et de phonétique vivante</strong> qui résout la fracture classique dans l'acquisition des langues étrangères (notamment le français et l'allemand) : <em>l'apprenant reconnaît la forme graphique d'un mot littéraire mais ignore sa réalisation prosodique orale ou oublie son sens hors contexte</em>.
+        </p>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin: 24px 0;">
+          <div style="background:var(--paper-warm); border-left:4px solid var(--prune); padding:16px; border-radius:10px;">
+            <p style="font-size:11px; text-transform:uppercase; letter-spacing:.1em; font-weight:800; color:var(--prune); margin-bottom:4px;">1. Architecture Duale</p>
+            <p style="font-size:13.5px; color:var(--ink-2); margin:0;">Bascule fluide entre le <em>Studio &amp; Taller</em> (<code>/reader</code>) à 2 colonnes et le <em>Visor de Libro</em> (<code>/reader/1</code>).</p>
+          </div>
+          <div style="background:var(--paper-warm); border-left:4px solid var(--sauge); padding:16px; border-radius:10px;">
+            <p style="font-size:11px; text-transform:uppercase; letter-spacing:.1em; font-weight:800; color:var(--sauge); margin-bottom:4px;">2. Ingestion EPUB / PDF / TXT</p>
+            <p style="font-size:13.5px; color:var(--ink-2); margin:0;">Décompression ZIP/Deflate côté client, extraction XHTML et sauvegarde en chapitres dans PostgreSQL.</p>
+          </div>
+          <div style="background:var(--paper-warm); border-left:4px solid var(--terre); padding:16px; border-radius:10px;">
+            <p style="font-size:11px; text-transform:uppercase; letter-spacing:.1em; font-weight:800; color:var(--terre); margin-bottom:4px;">3. Phonétique &amp; Liaisons</p>
+            <p style="font-size:13.5px; color:var(--ink-2); margin:0;">Gloses <code>&lt;ruby&gt;&lt;rt&gt;</code> en <em>Charis SIL</em>, moteur G2P 5 langues et arcs de liaison obligatoire (<code>‿</code>).</p>
+          </div>
+          <div style="background:var(--paper-warm); border-left:4px solid var(--soleil-ink); padding:16px; border-radius:10px;">
+            <p style="font-size:11px; text-transform:uppercase; letter-spacing:.1em; font-weight:800; color:var(--soleil-ink); margin-bottom:4px;">4. Hub Interconnecté</p>
+            <p style="font-size:13.5px; color:var(--ink-2); margin:0;">Filtre de rétention FSRS adaptatif, marginalia à 4 pigments et pont direct vers le Studio de Shadowing.</p>
+          </div>
+        </div>
+
+        <div class="eval-badge-box">
+          <h4><i data-lucide="sparkles" width="18" height="18"></i> Vérification en Direct et Prototype de Référence</h4>
+          <p style="font-size:14px; color:var(--ink-2); margin-bottom:14px;">
+            L'intégralité des fonctionnalités documentées dans cette livraison peut être testée en production sur Azure (via le compte évaluateur <code>luis@paris8.fr</code> / <code>WonderWord2026!</code> ou via <strong>Google Sign-In OAuth 2.0</strong>) ainsi que sur la maquette de référence :
+          </p>
+          <div style="display:flex; gap:14px; flex-wrap:wrap;">
+            <a href="https://wonderword.luisbetancourt.fr" target="_blank" class="btn-action">
+              <i data-lucide="external-link" width="14" height="14"></i>
+              Tester l'Atelier en Production (Azure)
+            </a>
+            <a href="prototype/lector.html" target="_blank" class="btn-action" style="background:var(--sauge);">
+              <i data-lucide="layout" width="14" height="14"></i>
+              Voir le Prototype HTML de Référence (lector.html)
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         1. ARCHITECTURE D'INTERCONNEXION : COMMENT L'ATELIER SE CONNECTE AUX AUTRES SECTIONS
+         ====================================================================== -->
+    <section class="log-section">
+      <div class="section-heading">
+        <span class="section-number">Chapitre 01</span>
+        <h2 class="section-title">Topologie de l'Application : L'Atelier comme Hub Central</h2>
+        <div class="heading-rule"></div>
+      </div>
+
+      <div class="editorial-card">
+        <p>
+          Pour éviter le cloisonnement fonctionnel (où le lecteur, le gestionnaire de vocabulaire et le laboratoire phonétique agiraient comme des silos isolés), l'architecture de <strong>WonderWord-UNI</strong> place l'<strong>Atelier de Lecture</strong> (<code>ReaderView.tsx</code>) au centre d'un graphe de flux de données bidirectionnels avec les cinq autres modules de la plateforme :
+        </p>
+
+        <!-- Diagramme Visuel du Hub -->
+        <div class="hub-diagram">
+          <div class="hub-center">
+            <span style="font-size:10px; text-transform:uppercase; letter-spacing:0.2em; font-weight:800; opacity:0.85;">Nœud Central Pédagogique</span>
+            <h4>3. ATELIER DE LECTURE CRITIQUE (ReaderView.tsx)</h4>
+            <p style="font-size:13px; color:var(--rail-ink-2); margin:0;">
+              Mode 1 : <strong>Estudio &amp; Taller (<code>/reader</code>)</strong> &nbsp;|&nbsp; Mode 2 : <strong>Visor de Libro (<code>/reader/:id</code>)</strong> &nbsp;|&nbsp; <strong>WordPanel Flotante</strong>
+            </p>
+          </div>
+
+          <div class="hub-spokes">
+            <div class="spoke-box" style="border-top: 4px solid var(--prune);">
+              <span class="spoke-arrow">⇄ FLUX BIDIRECTIONNEL 01</span>
+              <strong>1. Tableau de Bord (DashboardView)</strong>
+              <p style="color:var(--ink-2); margin:0;">
+                • <em>Dashboard → Atelier</em> : Le bouton « Continuer la lecture » ouvre directement le livre en cours au dernier chapitre lu.<br/>
+                • <em>Atelier → Dashboard</em> : Chaque changement de chapitre déclenche <code>PUT /api/books/:id/progress</code> et met à jour l'anneau de progression (%).
+              </p>
+            </div>
+
+            <div class="spoke-box" style="border-top: 4px solid var(--sauge);">
+              <span class="spoke-arrow">⇄ FLUX BIDIRECTIONNEL 02</span>
+              <strong>2. Bibliothèque Littéraire (LibraryView)</strong>
+              <p style="color:var(--ink-2); margin:0;">
+                • <em>Bibliothèque → Atelier</em> : Ouverture en Mode 2 de tout livre issu de « Mes Livres » ou importé depuis Gutenberg/DraCor.<br/>
+                • <em>Atelier (Mode 1) → Bibliothèque</em> : Le bouton « Guardar en Biblioteca » (<code>POST /api/books/custom</code>) transforme un texte collé ou un <code>.EPUB</code> en livre complet dans « Mes Livres ».
+              </p>
+            </div>
+
+            <div class="spoke-box" style="border-top: 4px solid var(--soleil);">
+              <span class="spoke-arrow">⇄ FLUX BIDIRECTIONNEL 03</span>
+              <strong>4. Vocabulaire &amp; FSRS (VocabularyCard)</strong>
+              <p style="color:var(--ink-2); margin:0;">
+                • <em>Atelier → FSRS</em> : Le WordPanel sauvegarde le lemme, l'IPA, la grammaire et la phrase exacte du livre (<code>POST /api/books/vocabulary</code>).<br/>
+                • <em>FSRS → Atelier</em> : <code>GET /api/books/vocabulary</code> alimente le <strong>Filtre de Rétention FSRS</strong> (<code>&lt; 80%</code> à <code>&lt; 98%</code>) pour afficher les gloses <code>&lt;ruby&gt;</code> sur les mots à consolider.
+              </p>
+            </div>
+
+            <div class="spoke-box" style="border-top: 4px solid var(--terre);">
+              <span class="spoke-arrow">→ PONT PHONÉTIQUE 04</span>
+              <strong>5. Studio de Shadowing (ShadowingView)</strong>
+              <p style="color:var(--ink-2); margin:0;">
+                • <em>Atelier (WordPanel) → Shadowing</em> : Le bouton « Practicar en Shadowing » transfère le mot cible, son API (<span class="ipa-sample">/kʁwaʁ/</span>), la phrase complète du chapitre et le titre de l'œuvre vers <code>ShadowingView.tsx</code> pour l'entraînement articulatoire immédiat.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <table class="specs-table">
+          <thead>
+            <tr>
+              <th>Module Connecté</th>
+              <th>Mécanisme Technique &amp; Endpoint API</th>
+              <th>Valeur Pédagogique pour l'Apprenant</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Tableau de Bord</strong><br/>(<code>DashboardView.tsx</code>)</td>
+              <td><code>GET /api/books/my-library</code><br/><code>PUT /api/books/:id/progress</code><br/>Prop <code>onSelectBook(slug, chapter)</code></td>
+              <td>Reprise sans friction (« 0 clic superflu ») exactement au chapitre en cours avec synchronisation instantanée du pourcentage lu.</td>
+            </tr>
+            <tr>
+              <td><strong>Bibliothèque Littéraire</strong><br/>(<code>LibraryView.tsx</code>)</td>
+              <td><code>POST /api/books/import</code> (Gutenberg/DraCor)<br/><code>POST /api/books/custom</code> (Studio → Bibliothèque)</td>
+              <td>Permet aussi bien de lire les classiques patrimoniaux que de créer sa propre bibliothèque à partir de ses documents personnels (<code>.EPUB</code>, <code>.PDF</code>, <code>.TXT</code>).</td>
+            </tr>
+            <tr>
+              <td><strong>Mémorisation FSRS</strong><br/>(<code>VocabularyCard</code>)</td>
+              <td><code>GET /api/books/vocabulary</code><br/><code>POST /api/books/vocabulary</code></td>
+              <td>Ancrage mémoriel épisodique : chaque carte de révision conserve la phrase littéraire exacte (<code>contextSentence</code>) et l'œuvre dans laquelle le mot a été découvert.</td>
+            </tr>
+            <tr>
+              <td><strong>Studio de Shadowing</strong><br/>(<code>ShadowingView.tsx</code>)</td>
+              <td><code>onPracticeShadowing(payload)</code> + persistance dans <code>wonderword_shadowing_target</code></td>
+              <td>Continuité lecture → parole : dès qu'une phrase présente un défi prosodique (liaison, voyelle antérieure arrondie, /ʁ/ uvulaire), l'étudiant bascule au laboratoire vocal avec cette même phrase.</td>
+            </tr>
+            <tr>
+              <td><strong>TopBar &amp; Ergonomie</strong><br/>(<code>TopBar.tsx</code>)</td>
+              <td>Attribut racine <code>data-theme="papel | sepia | noche"</code> + fil d'Ariane dynamique</td>
+              <td>Adaptation de la luminance et des pigments d'aquarelle aux conditions de lecture diurne ou nocturne sans fatigue visuelle.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         2. ARCHITECTURE DUALE : STUDIO & TALLER (/READER) VS VISOR DE LIBRO (/READER/1)
+         ====================================================================== -->
+    <section class="log-section">
+      <div class="section-heading">
+        <span class="section-number">Chapitre 02</span>
+        <h2 class="section-title">Architecture Duale : Studio de Lecture Rapide vs Visor Critique</h2>
+        <div class="heading-rule"></div>
+      </div>
+
+      <div class="editorial-card">
+        <p>
+          L'observation des pratiques d'étude universitaire en langues vivantes montre deux besoins distincts : d'une part, le besoin d'<strong>analyser rapidement un texte court ou un document externe</strong> (un poème étudié en cours, un article de presse, un fichier EPUB personnel) ; d'autre part, la <strong>lecture au long cours d'une œuvre complète</strong> structurée en chapitres. L'Atelier de Lecture répond à cette dualité par deux vues commutables en un clic en haut de l'écran :
+        </p>
+
+        <div class="arch-grid">
+          <!-- Mode 1 -->
+          <div class="arch-card" style="border-top: 4px solid var(--prune);">
+            <div class="arch-card-header">
+              <span class="arch-pill" style="background:var(--prune-wash); color:var(--prune);">Mode 01 · /reader</span>
+              <span style="font-family:'JetBrains Mono', monospace; font-size:11px;">Grille 2 Colonnes Live</span>
+            </div>
+            <h4 class="arch-title">1. Estudio &amp; Taller de Lectura Rápida</h4>
+            <p class="arch-desc">
+              <strong>Colonne Gauche (Entrée &amp; Contrôles) :</strong> Zone de saisie en direct avec compteur de caractères/mots, pastilles d'exemples rapides (<em>Saint-Exupéry, Baudelaire, Kafka, Goethe</em>), sélecteur de 5 langues (<code>fr, de, en, es, ru</code>), bascules <em>Mostrar IPA</em> et <em>Liaisons (‿)</em>, champs <em>Título / Autor</em>, zone de dépôt de fichiers (<code>.TXT, .PDF, .EPUB</code>) et 3 boutons d'action (<em>Previsualizar</em>, <em>Guardar en Biblioteca</em>, <em>Abrir en Visor Completo</em>).
+            </p>
+            <p class="arch-desc" style="margin-top:6px;">
+              <strong>Colonne Droite (Visor de Papel en Vivo) :</strong> Rendu instantané sur papier d'aquarelle avec lettrine (drop-cap), gloses <code>&lt;ruby&gt;&lt;rt&gt;</code>, liaisons françaises, mots cliquables et synthèse vocale directe.
+            </p>
+          </div>
+
+          <!-- Mode 2 -->
+          <div class="arch-card" style="border-top: 4px solid var(--sauge);">
+            <div class="arch-card-header">
+              <span class="arch-pill" style="background:var(--sauge-wash); color:var(--sauge);">Mode 02 · /reader/:id</span>
+              <span style="font-family:'JetBrains Mono', monospace; font-size:11px;">Édition Critique Paginée</span>
+            </div>
+            <h4 class="arch-title">2. Visor de Libro Completo</h4>
+            <p class="arch-desc">
+              <strong>Barre d'Outils Supérieure :</strong> Tiroir latéral d'<em>Índice de Capítulos (TOC)</em>, tiroir de <em>Marcadores y Notas</em>, mode <em>Subrayar</em> avec sélecteur des 4 pigments (<em>Soleil, Sauge, Prune, Terre</em>), sélecteur cyclique du <em>Filtro FSRS</em> (<code>&lt; 80%</code>, <code>&lt; 90%</code>, <code>&lt; 95%</code>, <code>&lt; 98%</code>, <code>IPA Oculto</code>), lecteur <em>Audio V.O.</em> et contrôles typographiques <code>A+ / A-</code>.
+            </p>
+            <p class="arch-desc" style="margin-top:6px;">
+              <strong>Pagination par Sous-Pages :</strong> Chaque chapitre est découpé en sous-pages confortables (4 paragraphes par sous-page) avec indicateur de <code>% Vocabulario Dominado</code>, temps restant estimé et navigation <em>Anterior / Siguiente</em>.
+            </p>
+          </div>
+        </div>
+
+        <div class="callout-box">
+          <strong>Continuité entre le Mode 1 et le Mode 2 :</strong><br />
+          Lorsqu'un étudiant colle un texte ou importe un fichier <code>.EPUB</code> dans le <em>Mode 1 (Estudio &amp; Taller)</em> et clique sur le bouton d'ouverture externe (<code>Abrir en Visor Completo</code>), l'application sauvegarde automatiquement l'ouvrage dans PostgreSQL via <code>POST /api/books/custom</code>, génère son identifiant unique (<code>slug</code>) et bascule immédiatement en <em>Mode 2 (Visor de Libro)</em> avec toutes les fonctionnalités d'annotation, d'indice de chapitres et de suivi de progression activées.
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         3. INGÉNIERIE DOCUMENTAIRE : INGESTION EPUB / PDF / TXT & SEGMENTATION
+         ====================================================================== -->
+    <section class="log-section">
+      <div class="section-heading">
+        <span class="section-number">Chapitre 03</span>
+        <h2 class="section-title">Ingénierie Documentaire : Extraction EPUB/PDF/TXT &amp; Chapitrage</h2>
+        <div class="heading-rule"></div>
+      </div>
+
+      <div class="editorial-card">
+        <p>
+          La zone <strong>« Importar Documento »</strong> du Studio (<code>ReaderView.tsx</code>) permet de glisser-déposer (<em>Drag &amp; Drop</em>) ou de sélectionner des fichiers <code>.TXT</code>, <code>.MD</code>, <code>.HTML</code>, <code>.EPUB</code> et <code>.PDF</code> pour les transformer en éditions phonétiques interactives.
+        </p>
+
+        <h3 style="font-family:'Libre Caslon Text', serif; font-size:20px; margin: 24px 0 12px; color:var(--ink);">
+          1. Décodage Binaire d'Archives <code>.EPUB</code> dans le Navigateur (Zero-Dependency)
+        </h3>
+        <p>
+          Un fichier <code>.epub</code> est structurellement une archive <strong>ZIP</strong> (norme OCF — <em>Open Container Format</em>) contenant des fichiers <code>.xhtml</code> ou <code>.html</code> compressés avec l'algorithme <em>Deflate</em>. Pour garantir une légèreté maximale sans alourdir le bundle client avec des dépendances externes lourdes, nous avons implémenté un analyseur binaire utilisant directement les APIs natives modernes du navigateur (<code>DataView</code>, <code>DecompressionStream('deflate-raw')</code> et <code>DOMParser</code>) :
+        </p>
+
+        <div class="terminal-box">
+          <div class="terminal-header">
+            <div class="terminal-dots">
+              <span class="dot dot-red"></span>
+              <span class="dot dot-yellow"></span>
+              <span class="dot dot-green"></span>
+            </div>
+            <span>typescript — client/src/components/reader/ReaderView.tsx (Extraction EPUB native)</span>
+          </div>
+          <div class="terminal-body">
+<pre><span class="code-comment">// Parcours des Local File Headers ZIP (Signature 0x04034b50) et décompression Deflate</span>
+<span class="code-keyword">while</span> (offset + 30 &lt; bytes.length) {
+  <span class="code-keyword">if</span> (view.getUint32(offset, <span class="code-val">true</span>) !== <span class="code-val">0x04034b50</span>) { offset++; <span class="code-keyword">continue</span>; }
+  <span class="code-keyword">const</span> compressionMethod = view.getUint16(offset + 8, <span class="code-val">true</span>);
+  <span class="code-keyword">const</span> compressedSize    = view.getUint32(offset + 18, <span class="code-val">true</span>);
+  <span class="code-keyword">const</span> fileNameLength    = view.getUint16(offset + 26, <span class="code-val">true</span>);
+  <span class="code-keyword">const</span> extraFieldLength  = view.getUint16(offset + 28, <span class="code-val">true</span>);
+
+  <span class="code-keyword">const</span> entryName = <span class="code-keyword">new</span> TextDecoder().decode(bytes.slice(offset + 30, offset + 30 + fileNameLength));
+  <span class="code-keyword">if</span> (<span class="code-val">/\.(xhtml|html|htm|xml)$/i</span>.test(entryName) &amp;&amp; !entryName.includes(<span class="code-val">'toc'</span>)) {
+    <span class="code-keyword">const</span> ds = <span class="code-keyword">new</span> DecompressionStream(<span class="code-val">'deflate-raw'</span>);
+    <span class="code-comment">// Décompression du flux XHTML et extraction propre des balises &lt;p&gt;, &lt;h1..h3&gt;, &lt;blockquote&gt;</span>
+    <span class="code-keyword">const</span> doc = <span class="code-keyword">new</span> DOMParser().parseFromString(htmlContent, <span class="code-val">'text/html'</span>);
+  }
+}</pre>
+          </div>
+        </div>
+
+        <h3 style="font-family:'Libre Caslon Text', serif; font-size:20px; margin: 28px 0 12px; color:var(--ink);">
+          2. Segmentation Automatique en Chapitres et Persistance PostgreSQL (<code>POST /api/books/custom</code>)
+        </h3>
+        <p>
+          Côté serveur (<code>server/src/services/catalog.ts</code> et <code>server/src/routes/books.ts</code>), la fonction <code>splitTextIntoChapters(rawText, language)</code> découpe intelligemment tout texte ou livre importé en chapitres calibrés d'environ <strong>1 200 mots</strong> (jusqu'à 30 chapitres par ouvrage), nettoie les artefacts typographiques, calcule le nombre exact de mots par chapitre et l'enregistre dans les tables <code>Book</code>, <code>Chapter</code> et <code>UserBook</code>.
+        </p>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         4. MOTEUR LINGUISTIQUE, G2P 5 LANGUES & LIAISONS OBLIGATOIRES
+         ====================================================================== -->
+    <section class="log-section">
+      <div class="section-heading">
+        <span class="section-number">Chapitre 04</span>
+        <h2 class="section-title">Moteur Linguistique Hybride, G2P &amp; Liaisons Françaises (<code>‿</code>)</h2>
+        <div class="heading-rule"></div>
+      </div>
+
+      <div class="editorial-card">
+        <p>
+          Pour offrir à la fois des gloses phonétiques interlinéaires instantanées (balises <code>&lt;ruby&gt;&lt;rt&gt;</code>) et une analyse morphologique approfondie lors du clic sur un mot dans le <strong>WordPanel</strong>, nous avons développé un moteur linguistique à trois niveaux dans <code>server/src/services/linguistics.ts</code> :
+        </p>
+
+        <div class="arch-grid">
+          <div class="arch-card" style="border-top: 4px solid var(--sauge);">
+            <div class="arch-card-header">
+              <span class="arch-pill" style="background:var(--sauge-wash); color:var(--sauge);">Niveau 1 · Instantané</span>
+              <span style="font-family:'JetBrains Mono', monospace; font-size:11px;">0 ms</span>
+            </div>
+            <h4 class="arch-title">Lexique Critique Curé</h4>
+            <p class="arch-desc">
+              Dictionnaire académique embarqué couvrant le vocabulaire clé des œuvres du corpus Paris 8 (<em>Saint-Exupéry, Baudelaire, Voltaire, Kafka, Goethe, Grimm</em>) avec lemme exact, API syllabique, traduction et note stylistique.
+            </p>
+          </div>
+
+          <div class="arch-card" style="border-top: 4px solid var(--bleuet-ink);">
+            <div class="arch-card-header">
+              <span class="arch-pill" style="background:var(--bleuet-wash); color:var(--bleuet-ink);">Niveau 2 · Temps Réel</span>
+              <span style="font-family:'JetBrains Mono', monospace; font-size:11px;">REST API + Cache</span>
+            </div>
+            <h4 class="arch-title">Fédération Wiktionary &amp; MyMemory</h4>
+            <p class="arch-desc">
+              Interrogation asynchrone avec <code>AbortController</code> (timeout strict de 2 s) et mise en cache mémoire (<code>wordCache</code>) des APIs ouvertes de <strong>Wiktionary</strong> (<code>fr/en/es.wiktionary.org/api/rest_v1/page/definition</code>) et <strong>MyMemory</strong>.
+            </p>
+          </div>
+
+          <div class="arch-card" style="border-top: 4px solid var(--terre);">
+            <div class="arch-card-header">
+              <span class="arch-pill" style="background:var(--terre-wash); color:var(--terre-ink);">Niveau 3 · Souverain</span>
+              <span style="font-family:'JetBrains Mono', monospace; font-size:11px;">5 Langues (G2P)</span>
+            </div>
+            <h4 class="arch-title">Transducteur Graphème-Phonème (G2P)</h4>
+            <p class="arch-desc">
+              Automate de règles phonologiques garantissant une transcription API (<span class="ipa-sample">/…/</span>) et une inférence morphosyntaxique pour 100 % des mots en <strong>Français, Allemand, Anglais, Espagnol et Russe</strong>, même hors-ligne.
+            </p>
+          </div>
+        </div>
+
+        <h3 style="font-family:'Libre Caslon Text', serif; font-size:20px; margin: 28px 0 12px; color:var(--ink);">
+          Détection Automatique des Liaisons Obligatoires en Français (<code>‿</code>)
+        </h3>
+        <p>
+          En français littéraire et soutenu, la prosodie repose sur l'enchaînement consonantique : une consonne finale latente (<code>-s, -x, -z, -t, -n</code>) se lie à la voyelle ou au <em>h muet</em> initial du mot suivant (ex. <span style="font-family:'Libre Caslon Text',serif; font-size:18px;">les<span style="color:var(--terre); font-weight:700;">‿</span>hommes</span> <span class="ipa-sample">/le.z‿ɔm/</span>, <span style="font-family:'Libre Caslon Text',serif; font-size:18px;">un<span style="color:var(--terre); font-weight:700;">‿</span>albatros</span>, <span style="font-family:'Libre Caslon Text',serif; font-size:18px;">sans<span style="color:var(--terre); font-weight:700;">‿</span>elle</span>).
+        </p>
+        <p>
+          Le moteur de rendu de <code>ReaderView.tsx</code> analyse chaque paire de jetons adjacents (<code>shouldShowLiaison(prevWord, nextWord)</code>) en vérifiant :
+        </p>
+        <ol style="margin: 8px 0 18px 24px; color:var(--ink-2); font-size:15px;">
+          <li>L'absence de ponctuation séparatrice entre les deux mots ;</li>
+          <li>L'appartenance du premier mot à l'ensemble des déclencheurs syntagmatiques (déterminants <code>les, des, ces, mes, aux, un, mon, tout</code>, prépositions <code>dans, sans, sous, chez</code>, pronoms et auxiliaires <code>on, ils, est, sont, ont</code>, adverbes et adjectifs antéposés <code>très, plus, bien, petit, grand, deux, trois, six, dix</code>) ;</li>
+          <li>L'attaque vocalique (<code>/^[aeiouyéèêëàâîïôùûüœæ]/</code>) du mot suivant, injectant alors l'arc typographique <code>&lt;span class="liaison-mark"&gt;‿&lt;/span&gt;</code> en pigment <em>Terre</em>.</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         5. MARGINALIA NUMÉRIQUE & PERSISTANCE PRISMA ORM
+         ====================================================================== -->
+    <section class="log-section">
+      <div class="section-heading">
+        <span class="section-number">Chapitre 05</span>
+        <h2 class="section-title">Marginalia Numérique, Surlignage à 4 Pigments &amp; Schéma Prisma</h2>
+        <div class="heading-rule"></div>
+      </div>
+
+      <div class="editorial-card">
+        <p>
+          Dans la tradition humaniste, la lecture savante est indissociable de l'annotation marginale (<em>marginalia</em>). L'Atelier de Lecture transpose cette pratique dans PostgreSQL grâce aux modèles relationnels <code>ReaderAnnotation</code> et <code>VocabularyCard</code> :
+        </p>
+
+        <div class="terminal-box">
+          <div class="terminal-header">
+            <div class="terminal-dots">
+              <span class="dot dot-red"></span>
+              <span class="dot dot-yellow"></span>
+              <span class="dot dot-green"></span>
+            </div>
+            <span>prisma — server/prisma/schema.prisma (Modèles complets de l'Atelier &amp; FSRS)</span>
+          </div>
+          <div class="terminal-body">
+<pre><span class="code-comment">// Signets (Bookmarks) et Surlignages (Highlights) en 4 pigments d'aquarelle</span>
+<span class="code-keyword">model</span> <span class="code-param">ReaderAnnotation</span> {
+  id            String   @id @default(uuid())
+  userId        String
+  bookId        String
+  chapterNumber Int      @default(1)
+  type          String   @default(<span class="code-val">"bookmark"</span>) <span class="code-comment">// "bookmark" | "highlight"</span>
+  selectedText  String   @db.Text
+  note          String?  @db.Text
+  color         String   @default(<span class="code-val">"soleil"</span>)   <span class="code-comment">// "soleil" | "sauge" | "prune" | "terre"</span>
+  createdAt     DateTime @default(now())
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book          Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+}
+
+<span class="code-comment">// Cartes de Vocabulaire FSRS (1:1) extraites en contexte depuis le WordPanel</span>
+<span class="code-keyword">model</span> <span class="code-param">VocabularyCard</span> {
+  id              String   @id @default(uuid())
+  userId          String
+  bookId          String?
+  word            String
+  ipa             String
+  translation     String
+  definition      String   @db.Text
+  grammatical     String   @default(<span class="code-val">"Nom"</span>)
+  contextSentence String?  @db.Text
+  language        String   @default(<span class="code-val">"fr"</span>)
+  stability       Float    @default(2.5)
+  difficulty      Float    @default(5.0)
+  nextReviewAt    DateTime @default(now())
+  status          String   @default(<span class="code-val">"learning"</span>) <span class="code-comment">// "learning" | "review" | "mastered"</span>
+  createdAt       DateTime @default(now())
+}</pre>
+          </div>
+        </div>
+
+        <h3 style="font-family:'Libre Caslon Text', serif; font-size:20px; margin: 24px 0 12px; color:var(--ink);">
+          Surlignage Chromatique Temps Réel dans le Texte
+        </h3>
+        <p>
+          Lorsque l'utilisateur active le bouton <strong>« Subrayar »</strong> dans la barre d'outils du lecteur et choisit l'un des quatre pigments (<em>Soleil</em> pour le vocabulaire clé, <em>Sauge</em> pour la phonétique, <em>Prune</em> pour les tournures grammaticales, <em>Terre</em> pour les figures de style), toute sélection à la souris déclenche immédiatement <code>POST /api/books/:id/annotations</code>. Le moteur de rendu colorie alors dynamiquement les passages correspondants à l'intérieur même de la prose du chapitre et les indexe dans le tiroir latéral <strong>« Marcadores &amp; Notas »</strong>.
+        </p>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         6. ÉCHAFAUDAGE COGNITIF FSRS & PONT VERS LE SHADOWING
+         ====================================================================== -->
+    <section class="log-section">
+      <div class="section-heading">
+        <span class="section-number">Chapitre 06</span>
+        <h2 class="section-title">Échafaudage Cognitif : Filtre FSRS Adaptatif &amp; Pont vers le Shadowing</h2>
+        <div class="heading-rule"></div>
+      </div>
+
+      <div class="editorial-card">
+        <p>
+          Un risque bien documenté en ergonomie cognitive des liseuses annotées est la <strong>surcharge visuelle</strong> : si chaque mot d'une page affiche perpétuellement sa transcription phonétique en <code>&lt;ruby&gt;</code>, l'œil de l'apprenant avancé est ralenti. À l'inverse, un débutant a besoin d'un soutien phonétique dense.
+        </p>
+
+        <h3 style="font-family:'Libre Caslon Text', serif; font-size:20px; margin: 24px 0 12px; color:var(--ink);">
+          1. Le Filtre de Rétention FSRS (<code>&lt; 80%</code>, <code>&lt; 90%</code>, <code>&lt; 95%</code>, <code>&lt; 98%</code>, <code>IPA Oculto</code>)
+        </h3>
+        <p>
+          Le sélecteur central de la barre d'outils ajuste dynamiquement la fonction prédicative <code>shouldDisplayRuby(token, index, isStudyMode)</code> :
+        </p>
+        <ul style="margin: 10px 0 22px 24px; color:var(--ink-2); font-size:15px; line-height:1.7;">
+          <li><strong>Priorité absolue au mazo FSRS personnel :</strong> Tout mot présent dans les cartes <code>VocabularyCard</code> de l'utilisateur (chargées via <code>GET /api/books/vocabulary</code>) ou dans le lexique critique affiche systématiquement sa glose <code>&lt;ruby&gt;&lt;rt&gt;</code> pour renforcer sa rétention lors de la lecture.</li>
+          <li><strong>Graduation de densité :</strong> Le seuil <code>Retención &lt; 98%</code> annote la quasi-totalité des mots lexicaux (&ge; 5 lettres), tandis que les seuils <code>&lt; 90%</code> et <code>&lt; 80%</code> ne conservent les gloses que sur les termes rares ou morphologiquement complexes, et <code>IPA Oculto</code> offre une page littéraire pure (les transcriptions restant accessibles au clic via le <em>WordPanel</em>).</li>
+        </ul>
+
+        <h3 style="font-family:'Libre Caslon Text', serif; font-size:20px; margin: 24px 0 12px; color:var(--ink);">
+          2. Du WordPanel au Studio de Shadowing en 1 Clic
+        </h3>
+        <p>
+          Lorsque l'apprenant clique sur un mot dans le texte, le <strong>WordPanel Flotante</strong> s'ouvre en bas à droite de l'écran et propose deux actions complémentaires :
+        </p>
+        <ol style="margin: 10px 0 20px 24px; color:var(--ink-2); font-size:15px; line-height:1.7;">
+          <li><strong>« Guardar en Mazo FSRS (1:1) » :</strong> Crée instantanément une carte de révision espacée contenant le mot, son IPA, sa traduction, sa catégorie grammaticale et la phrase complète du livre.</li>
+          <li><strong>« Practicar en Shadowing » :</strong> Encapsule la phrase du chapitre et le mot cible dans un objet <code>ShadowingPracticePayload</code> et bascule la vue principale vers <code>ShadowingView.tsx</code>. Le Studio de Shadowing affiche alors la phrase exacte extraite du livre avec le mot cible surligné en <code>&lt;ruby&gt;</code> et configure le synthétiseur vocal natif sur la langue de l'œuvre (<code>fr-FR</code>, <code>de-DE</code>, etc.) aux tempos <code>0.75x</code>, <code>1.0x</code> et <code>1.25x</code>.</li>
+        </ol>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Pied de page -->
+  <footer class="site-footer">
+    <p>
+      <strong>WonderWord-UNI</strong> · Carnet de recherche pour le Master Humanités Numériques : parcours NET · 
+      <a href="https://www.univ-paris8.fr/" target="_blank">Université Paris 8 Vincennes – Saint-Denis</a>
+    </p>
+    <p style="margin-top:6px;">
+      Auteur : <strong>Luis Betancourt D.</strong> · Dépôt GitHub : <a href="https://github.com/luisbetancourtd/WonderWord-UNI" target="_blank">luisbetancourtd/WonderWord-UNI</a> · Production : <a href="https://wonderword.luisbetancourt.fr" target="_blank">wonderword.luisbetancourt.fr</a>
+    </p>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>

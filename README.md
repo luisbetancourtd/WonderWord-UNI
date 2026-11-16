@@ -9,7 +9,7 @@
 
 ---
 
-[🇫🇷 Version Française](#-version-française) | [🇪🇸 Versión en Español](#-versión-en-español) | [📖 Carnet de Bord (GitHub Pages)](https://luisbetancourtd.github.io/WonderWord-UNI/)
+[🇫🇷 Version Française](#-version-française) | [🇪🇸 Versión en Español](#-versión-en-español) | [📖 Livraison 01](https://luisbetancourtd.github.io/WonderWord-UNI/index.html) | [☁️ Livraison 02](https://luisbetancourtd.github.io/WonderWord-UNI/index0.html) | [📚 Livraison 03 (Atelier de Lecture)](https://luisbetancourtd.github.io/WonderWord-UNI/index2.html)
 
 ---
 
@@ -55,25 +55,27 @@ Le projet explore l'intersection entre **l'édition numérique**, le **traitemen
 ### 📁 Organisation du Répertoire
 ```text
 WonderWord-UNI/
-├── docs/            # Site du Carnet de Bord académique (déployé sur GitHub Pages)
+├── index.html       # Livraison 01 : Genèse, Identité Aquarelle & Prototypes
+├── index0.html      # Livraison 02 : Cloud Azure, Docker Compose, SSL, CI/CD & Bibliothèque
+├── index2.html      # Livraison 03 : Atelier de Lecture Critique, G2P 5 Langues & Hub FSRS/Shadowing
+├── docs/            # Miroir synchronisé du Carnet de Bord académique (GitHub Pages)
 │   ├── assets/      # Captures d'écran haute définition des interfaces
 │   └── prototype/   # Démos interactives HTML autonomes (Dashboard, Lecteur, Bibliothèque, Shadowing)
-├── client/          # Application Web Frontend (React + TypeScript + Tailwind)
-├── server/          # API REST & Serveur WebSockets en temps réel (Node.js + Fastify)
-├── phonetics/       # Microservice acoustique et formantique (Python + Parselmouth / Praat)
-├── prisma/          # Schéma de base de données relationnelle & migrations (PostgreSQL)
+├── client/          # Application Web Frontend (React 19 + TypeScript + Tailwind CSS + Nginx)
+├── server/          # API REST & Moteur Linguistique G2P (Node.js + Fastify 5 + Prisma ORM)
+├── docker-compose.yml # Orchestration multi-conteneurs (PostgreSQL 17, Fastify, React)
 └── README.md        # Présentation bilingue officielle du projet
 ```
 
 ---
 
 ### 🗺️ Feuilles de Route (Roadmap)
-- [x] **Phase 1** : Carnet de bord initial (GitHub Pages) & Démos interactives des 4 prototypes clés.
-- [ ] **Phase 2** : Initialisation du schéma de base de données relationnelle (PostgreSQL + Prisma) et authentification Google OAuth.
-- [ ] **Phase 3** : Frontend React + Tailwind intégrant les 5 pigments, le grain papier et le lecteur avec gloses API (`<ruby><rt>`).
-- [ ] **Phase 4** : Microservice Python / Praat pour l'analyse formantique des voyelles et le diagnostic de Shadowing.
+- [x] **Phase 1 (Livraison 01)** : Carnet de bord initial (GitHub Pages) & Démos interactives des 4 prototypes clés (`index.html`).
+- [x] **Phase 2 (Livraison 02)** : Infrastructure Cloud Azure (`wonderword.luisbetancourt.fr`), Docker Compose, PostgreSQL + Prisma, Auth (Bcrypt, Resend, Google OAuth 2.0) & Bibliothèque Littéraire connectée à Gutenberg/DraCor (`index0.html`).
+- [x] **Phase 3 (Livraison 03)** : Atelier de Lecture Critique complet (`ReaderView.tsx`) avec Studio 2 colonnes (`/reader`), import `.EPUB/.PDF/.TXT`, Visor paginé (`/reader/:id`), moteur G2P 5 langues, liaisons françaises (`‿`), filtre FSRS adaptatif et pont vers le Shadowing (`index2.html`).
+- [ ] **Phase 4** : Microservice Python / Praat (`parselmouth`) pour l'analyse formantique acoustique des voyelles et le diagnostic de Shadowing.
 - [ ] **Phase 5** : Système social, cercles de lecture, partage de livres annotés et messagerie WebSockets.
-- [ ] **Phase 6** : Déploiement en production sur Azure (`wonderword.luisbetancourt.fr`) et soutenance du Master à Paris 8.
+- [ ] **Phase 6** : Consolidation finale et soutenance du Master à l'Université Paris 8.
 
 ---
 
