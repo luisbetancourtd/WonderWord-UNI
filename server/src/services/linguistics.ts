@@ -331,7 +331,19 @@ export function generateFrenchIpa(word: string): string {
   p = p.replace(/ait$/, 'ɛ');
   p = p.replace(/aient$/, 'ɛ');
 
-  // Digrammes et trigrammes vocaliques / consonantiques
+  // Digrammes et trigrammes vocaliques / consonantiques (ill mouillé préservé via @YOD@ avant j -> ʒ)
+  p = p.replace(/eill(e?s?)$/g, 'ɛ@YOD@$1');
+  p = p.replace(/aill(e?s?)$/g, 'a@YOD@$1');
+  p = p.replace(/(?:eu|œu)ill(e?s?)$/g, 'œ@YOD@$1');
+  p = p.replace(/ouill(e?s?)$/g, 'u@YOD@$1');
+  p = p.replace(/eil(s?)$/g, 'ɛ@YOD@$1');
+  p = p.replace(/ail(s?)$/g, 'a@YOD@$1');
+  p = p.replace(/(?:eu|œu)il(s?)$/g, 'œ@YOD@$1');
+  p = p.replace(/ouil(s?)$/g, 'u@YOD@$1');
+  if (!/^(?:ville|mille|tranquille|distill|oscill|bacill|pupill|capill)/i.test(w)) {
+    p = p.replace(/(?<=[aeioyuéèê])ill/g, '@YOD@');
+    p = p.replace(/ill/g, 'i@YOD@');
+  }
   p = p.replace(/ou/g, 'u');
   p = p.replace(/oi/g, 'wa');
   p = p.replace(/eau/g, 'o');
@@ -345,7 +357,6 @@ export function generateFrenchIpa(word: string): string {
   p = p.replace(/ch/g, 'ʃ');
   p = p.replace(/qu/g, 'k');
   p = p.replace(/gu(?=[eiyéèê])/g, 'ɡ');
-  p = p.replace(/ill/g, 'j');
 
   // Voyelles nasales (exclure également les symboles IPA déjà transcrits)
   p = p.replace(/(?:an|am|en|em)(?![aeiouyéèêëîïôùûümnɑɔɛøœə@])/g, 'ɑ̃');
@@ -353,6 +364,8 @@ export function generateFrenchIpa(word: string): string {
   p = p.replace(/(?:in|im|ain|aim|ein|yn|ym)(?![aeiouyéèêëîïôùûümnɑɔɛøœə@])/g, 'ɛ̃');
 
   // Consonnes contextuelles
+  p = p.replace(/^ex(?=[aeiouyéèêh])/g, 'ɛɡz');
+  p = p.replace(/x(?!$)/g, 'ks');
   p = p.replace(/c(?=[eiyéèêëîï])/g, 's');
   p = p.replace(/ç/g, 's');
   p = p.replace(/c/g, 'k');
@@ -368,6 +381,7 @@ export function generateFrenchIpa(word: string): string {
   p = p.replace(/rr/g, 'ʁ');
   p = p.replace(/r/g, 'ʁ');
   p = p.replace(/j/g, 'ʒ');
+  p = p.replace(/@YOD@/g, 'j');
   p = p.replace(/h/g, '');
 
   // Voyelles accentuées et u français
@@ -571,6 +585,12 @@ export function inferGrammaticalCategory(rawWord: string, language: SupportedLan
   }
 
   // Français
+  const isProperInitial =
+    clean.length > 1 &&
+    clean[0] === clean[0].toUpperCase() &&
+    clean[0] !== clean[0].toLowerCase() &&
+    clean.slice(1) === clean.slice(1).toLowerCase();
+
   if (lower.endsWith('tion') || lower.endsWith('sion') || lower.endsWith('ence') || lower.endsWith('ance') || lower.endsWith('té') || lower.endsWith('tude')) {
     return 'Nom féminin · Français littéraire';
   }
@@ -579,6 +599,9 @@ export function inferGrammaticalCategory(rawWord: string, language: SupportedLan
   }
   if (lower.endsWith('isme') || lower.endsWith('age') || lower.endsWith('eur')) {
     return 'Nom masculin · Français littéraire';
+  }
+  if (isProperInitial && !lower.endsWith('er') && !lower.endsWith('ir')) {
+    return 'Nom propre / Terme initial';
   }
   if (lower.endsWith('er') || lower.endsWith('ir') || lower.endsWith('re') || lower.endsWith('oir')) {
     return 'Verbe à l’infinitif';
@@ -655,7 +678,13 @@ export async function analyzeLiteraryWord(
     if (transRes.ok) {
       const transJson = (await transRes.json()) as any;
       const translatedText = transJson?.responseData?.translatedText;
-      if (translatedText && translatedText.toLowerCase() !== lower) {
+      const matchScore = Number(transJson?.responseData?.match ?? 1);
+      const looksLikeNoise =
+        grammatical.startsWith('Nom propre') &&
+        translatedText &&
+        translatedText.toLowerCase() !== lower &&
+        matchScore < 0.85;
+      if (translatedText && translatedText.toLowerCase() !== lower && matchScore >= 0.4 && !looksLikeNoise) {
         translation = translatedText;
       }
     }
