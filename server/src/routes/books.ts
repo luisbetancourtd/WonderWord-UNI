@@ -128,17 +128,44 @@ export default async function bookRoutes(server: FastifyInstance) {
       // Utilisateur anonyme
     }
 
-    const userBookByTitle = new Map<string, { slug: string; id: string; currentChapter: number }>();
+    const userBookByTitle = new Map<
+      string,
+      {
+        slug: string;
+        id: string;
+        currentChapter: number;
+        totalChapters: number;
+        totalWords: number;
+        chapters: { id: string; number: number; title: string; wordCount: number }[];
+      }
+    >();
     if (userId) {
       const userBooks = await server.prisma.userBook.findMany({
         where: { userId },
-        include: { book: { select: { id: true, slug: true, title: true } } },
+        include: {
+          book: {
+            select: {
+              id: true,
+              slug: true,
+              title: true,
+              totalChapters: true,
+              totalWords: true,
+              chapters: {
+                select: { id: true, number: true, title: true, wordCount: true },
+                orderBy: { number: 'asc' },
+              },
+            },
+          },
+        },
       });
       for (const ub of userBooks) {
         userBookByTitle.set(ub.book.title.toLowerCase().trim(), {
           id: ub.book.id,
           slug: ub.book.slug,
           currentChapter: ub.currentChapter,
+          totalChapters: ub.book.totalChapters,
+          totalWords: ub.book.totalWords,
+          chapters: ub.book.chapters,
         });
       }
     }
@@ -228,6 +255,11 @@ export default async function bookRoutes(server: FastifyInstance) {
           slug: matchedUb?.slug,
           currentChapter: matchedUb?.currentChapter || 1,
           isImported: Boolean(matchedUb),
+          ...(matchedUb && {
+            totalChapters: matchedUb.totalChapters,
+            totalWords: matchedUb.totalWords,
+            chapters: matchedUb.chapters,
+          }),
         };
       });
 
@@ -281,6 +313,12 @@ export default async function bookRoutes(server: FastifyInstance) {
     let book = await server.prisma.book.findFirst({
       where: {
         OR: [{ id }, { slug: id }, { slug: baseSlug }, { title: { equals: title, mode: 'insensitive' } }],
+      },
+      include: {
+        chapters: {
+          select: { id: true, number: true, title: true, wordCount: true },
+          orderBy: { number: 'asc' },
+        },
       },
     });
 
@@ -359,6 +397,12 @@ export default async function bookRoutes(server: FastifyInstance) {
               contentHtml: ch.contentHtml,
               wordCount: ch.wordCount,
             })),
+          },
+        },
+        include: {
+          chapters: {
+            select: { id: true, number: true, title: true, wordCount: true },
+            orderBy: { number: 'asc' },
           },
         },
       });

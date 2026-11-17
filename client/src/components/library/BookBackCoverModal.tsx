@@ -252,12 +252,12 @@ export const BookBackCoverModal: React.FC<BookBackCoverModalProps> = ({
               )}
 
               {/* Sommaire des chapitres */}
-              {chapters.length > 0 && (
-                <div className="space-y-2">
-                  <h3 className="text-xs uppercase tracking-widest font-bold text-ink-3 flex items-center gap-1.5">
-                    <Bookmark size={13} className="text-sauge" />
-                    Sommaire des Chapitres ({chapters.length})
-                  </h3>
+              <div className="space-y-2">
+                <h3 className="text-xs uppercase tracking-widest font-bold text-ink-3 flex items-center gap-1.5">
+                  <Bookmark size={13} className="text-sauge" />
+                  Sommaire des Chapitres ({chapters.length})
+                </h3>
+                {chapters.length > 0 ? (
                   <div className="max-h-36 overflow-y-auto space-y-1.5 pr-2">
                     {chapters.map((ch) => (
                       <div
@@ -282,8 +282,14 @@ export const BookBackCoverModal: React.FC<BookBackCoverModalProps> = ({
                       </div>
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="p-3 rounded-xl bg-paper-warm border border-rule-soft text-xs text-ink-2">
+                    Catalogue distant ({source}) — Cliquez sur{' '}
+                    <strong>« Ajouter à ma bibliothèque »</strong> pour télécharger le texte
+                    intégral et générer automatiquement les chapitres.
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Boutons d'action en bas de modale */}
