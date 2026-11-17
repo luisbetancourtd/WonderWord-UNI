@@ -89,7 +89,7 @@ async function main() {
   await prisma.book.upsert({
     where: { slug: 'candide' },
     update: {
-      coverImage: 'https://www.gutenberg.org/cache/epub/4650/pg4650.cover.medium.jpg',
+      coverImage: 'https://covers.openlibrary.org/b/id/12736044-M.jpg',
     },
     create: {
       slug: 'candide',
@@ -97,7 +97,7 @@ async function main() {
       author: 'Voltaire',
       description: 'Le jeune Candide est chassé du paradisiaque château de Thunder-ten-tronckh et parcourt un monde ravagé par les guerres, les catastrophes et le fanatisme religieux.',
       coverColor: 'prune',
-      coverImage: 'https://www.gutenberg.org/cache/epub/4650/pg4650.cover.medium.jpg',
+      coverImage: 'https://covers.openlibrary.org/b/id/12736044-M.jpg',
       publisher: 'Domaine Public (1759)',
       language: 'fr',
       cefrLevel: 'B2',
@@ -127,7 +127,7 @@ async function main() {
   await prisma.book.upsert({
     where: { slug: 'vingt-mille-lieues' },
     update: {
-      coverImage: 'https://www.gutenberg.org/cache/epub/5081/pg5081.cover.medium.jpg',
+      coverImage: 'https://covers.openlibrary.org/b/id/6573517-M.jpg',
     },
     create: {
       slug: 'vingt-mille-lieues',
@@ -135,7 +135,7 @@ async function main() {
       author: 'Jules Verne',
       description: 'L\'expédition du professeur Aronnax à la poursuite d\'un mystérieux monstre marin les mène à bord du Nautilus, le sous-marin révolutionnaire du fascinant Capitaine Nemo.',
       coverColor: 'bleuet',
-      coverImage: 'https://www.gutenberg.org/cache/epub/5081/pg5081.cover.medium.jpg',
+      coverImage: 'https://covers.openlibrary.org/b/id/6573517-M.jpg',
       publisher: 'Éditions Hetzel (1870)',
       language: 'fr',
       cefrLevel: 'B1',
@@ -164,7 +164,7 @@ async function main() {
     where: { slug: 'tour-du-monde' },
     update: {
       cefrLevel: 'B1',
-      coverImage: 'https://www.gutenberg.org/cache/epub/800/pg800.cover.medium.jpg',
+      coverImage: 'https://covers.openlibrary.org/b/id/6976035-M.jpg',
     },
     create: {
       slug: 'tour-du-monde',
@@ -172,7 +172,7 @@ async function main() {
       author: 'Jules Verne',
       description: 'Phileas Fogg, gentleman londonien à la ponctualité maniaque, parie vingt mille livres avec ses pairs du Reform Club qu\'il fera le tour de la terre en quatre-vingts jours seulement.',
       coverColor: 'sauge',
-      coverImage: 'https://www.gutenberg.org/cache/epub/800/pg800.cover.medium.jpg',
+      coverImage: 'https://covers.openlibrary.org/b/id/6976035-M.jpg',
       publisher: 'Éditions Hetzel (1872)',
       language: 'fr',
       cefrLevel: 'B1',
@@ -200,7 +200,7 @@ async function main() {
   await prisma.book.upsert({
     where: { slug: 'fleurs-du-mal' },
     update: {
-      coverImage: 'https://www.gutenberg.org/cache/epub/6099/pg6099.cover.medium.jpg',
+      coverImage: 'https://covers.openlibrary.org/b/id/8236412-M.jpg',
     },
     create: {
       slug: 'fleurs-du-mal',
@@ -208,7 +208,7 @@ async function main() {
       author: 'Charles Baudelaire',
       description: 'Chef-d\'œuvre de la poésie moderne française explorant la tension entre le Spleen et l\'Idéal, la beauté cachée dans la douleur et la mélancolie urbaine.',
       coverColor: 'terre',
-      coverImage: 'https://www.gutenberg.org/cache/epub/6099/pg6099.cover.medium.jpg',
+      coverImage: 'https://covers.openlibrary.org/b/id/8236412-M.jpg',
       publisher: 'Auguste Poulet-Malassis (1857)',
       language: 'fr',
       cefrLevel: 'C1',
@@ -247,7 +247,7 @@ async function main() {
   const dieVerwandlung = await prisma.book.upsert({
     where: { slug: 'die-verwandlung' },
     update: {
-      coverImage: 'https://www.gutenberg.org/cache/epub/22367/pg22367.cover.medium.jpg',
+      coverImage: 'https://covers.openlibrary.org/b/id/12820198-M.jpg',
     },
     create: {
       slug: 'die-verwandlung',
@@ -255,7 +255,7 @@ async function main() {
       author: 'Franz Kafka',
       description: 'Gregor Samsa, commis voyageur dévoué à sa famille, se réveille un matin métamorphosé en un monstrueux insecte. Un chef-d\'œuvre absolu de la littérature germanophone explorant l\'aliénation, la culpabilité et l\'absurde.',
       coverColor: 'terre',
-      coverImage: 'https://www.gutenberg.org/cache/epub/22367/pg22367.cover.medium.jpg',
+      coverImage: 'https://covers.openlibrary.org/b/id/12820198-M.jpg',
       publisher: 'Kurt Wolff Verlag (1915) / Domaine Public',
       language: 'de',
       cefrLevel: 'B1',
@@ -286,7 +286,7 @@ async function main() {
     update: {
       cefrLevel: 'B1',
       description: 'Le recueil fondamental des contes populaires allemands collectés par Jacob et Wilhelm Grimm. Une langue limpide, musicale et idéale pour débuter la lecture littéraire au niveau B1.',
-      coverImage: 'https://www.gutenberg.org/cache/epub/5314/pg5314.cover.medium.jpg',
+      coverImage: 'https://covers.openlibrary.org/b/id/8236293-M.jpg',
     },
     create: {
       slug: 'grimms-maerchen',
@@ -294,7 +294,7 @@ async function main() {
       author: 'Brüder Grimm',
       description: 'Le recueil fondamental des contes populaires allemands collectés par Jacob et Wilhelm Grimm. Une langue limpide, musicale et idéale pour débuter la lecture littéraire au niveau B1.',
       coverColor: 'sauge',
-      coverImage: 'https://www.gutenberg.org/cache/epub/5314/pg5314.cover.medium.jpg',
+      coverImage: 'https://covers.openlibrary.org/b/id/8236293-M.jpg',
       publisher: 'Realschulbuchhandlung Berlin (1812) / Domaine Public',
       language: 'de',
       cefrLevel: 'B1',
@@ -323,7 +323,7 @@ async function main() {
   await prisma.book.upsert({
     where: { slug: 'faust-goethe' },
     update: {
-      coverImage: 'https://www.gutenberg.org/cache/epub/2229/pg2229.cover.medium.jpg',
+      coverImage: 'https://covers.openlibrary.org/b/id/6499459-M.jpg',
     },
     create: {
       slug: 'faust-goethe',
@@ -331,7 +331,7 @@ async function main() {
       author: 'Johann Wolfgang von Goethe',
       description: 'Sommet de la dramaturgie et de la poésie philosophique allemande. Le docteur Faust, désespéré par les limites du savoir humain, conclut un pacte avec Méphistophélès.',
       coverColor: 'prune',
-      coverImage: 'https://www.gutenberg.org/cache/epub/2229/pg2229.cover.medium.jpg',
+      coverImage: 'https://covers.openlibrary.org/b/id/6499459-M.jpg',
       publisher: 'Cotta\'sche Verlagsbuchhandlung (1808) / Domaine Public',
       language: 'de',
       cefrLevel: 'C1',
@@ -381,10 +381,10 @@ async function main() {
     data: { cefrLevel: 'B1' },
   });
 
-  // Nettoyage d'anciens livres importés avec le texte de substitution de 66 mots
+  // Nettoyage d'anciens livres importés avec le texte de substitution (<= 160 mots)
   await prisma.book.deleteMany({
     where: {
-      totalWords: { lte: 100 },
+      totalWords: { lte: 160 },
       slug: {
         notIn: [
           'le-petit-prince',

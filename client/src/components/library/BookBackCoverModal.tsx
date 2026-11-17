@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, BookOpen, Download, Quote, Globe, Calendar, Layers, Bookmark, Trash2 } from 'lucide-react';
 import type { BookSummary, CatalogBookItem } from '../../types';
 
@@ -21,6 +21,12 @@ export const BookBackCoverModal: React.FC<BookBackCoverModalProps> = ({
   onRemoveBook,
   isImporting = false,
 }) => {
+  const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [book?.id]);
+
   // Fermer la modale avec la touche Échap
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -130,27 +136,32 @@ export const BookBackCoverModal: React.FC<BookBackCoverModalProps> = ({
           <div className="md:col-span-4 flex flex-col items-center text-center space-y-4">
             {/* Portada con efecto de libro físico */}
             <div className="relative group w-full max-w-[210px] aspect-[2/3] rounded-xl overflow-hidden shadow-2xl border border-black/10 bg-black/5 flex-shrink-0 transition-transform duration-300 hover:scale-[1.02]">
-              {coverUrl ? (
+              {coverUrl && !imgError ? (
                 <img
                   src={coverUrl}
                   alt={book.title}
+                  onError={() => setImgError(true)}
                   className="w-full h-full object-cover"
                 />
               ) : (
-                /* Couverture typographique de substitution si aucune image */
-                <div className={`w-full h-full ${themeColors.bg} p-5 flex flex-col justify-between text-white shadow-inner`}>
-                  <div className="text-[10px] uppercase tracking-widest opacity-80">
+                /* Couverture typographique de substitution si aucune image ou erreur réseau */
+                <div
+                  className={`w-full h-full ${themeColors.bg} p-5 flex flex-col justify-between ${
+                    book.coverColor === 'soleil' || !book.coverColor ? 'text-soleil-ink' : 'text-white'
+                  } shadow-inner`}
+                >
+                  <div className="text-[10px] uppercase tracking-widest opacity-80 truncate">
                     {publisher}
                   </div>
-                  <div className="space-y-1 my-auto">
-                    <h4 className="font-serif text-lg font-normal leading-tight">
+                  <div className="space-y-1.5 my-auto border-t border-b border-current/20 py-3">
+                    <h4 className="font-serif text-lg font-normal leading-tight line-clamp-3">
                       {book.title}
                     </h4>
-                    <p className="text-xs opacity-90 italic">
+                    <p className="text-xs opacity-90 italic line-clamp-2">
                       {book.author}
                     </p>
                   </div>
-                  <div className="text-[10px] uppercase tracking-wider font-bold opacity-75">
+                  <div className="text-[10px] uppercase tracking-wider font-bold opacity-80">
                     {year} · {language === 'de' ? 'Deutsch' : 'Français'}
                   </div>
                 </div>

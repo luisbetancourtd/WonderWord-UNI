@@ -9,6 +9,52 @@ interface LibraryViewProps {
   onSelectBook?: (bookId: string, chapterNumber?: number) => void;
 }
 
+const BookCoverMini: React.FC<{
+  title: string;
+  author: string;
+  coverUrl?: string;
+  sizeClass?: string;
+}> = ({ title, author, coverUrl, sizeClass = 'w-[84px] h-[126px]' }) => {
+  const [failed, setFailed] = useState(false);
+
+  if (coverUrl && !failed) {
+    return (
+      <div
+        className={`${sizeClass} flex-shrink-0 rounded-r-lg rounded-l-sm shadow-md overflow-hidden bg-black/10 border border-white/25 self-center transition-transform duration-200 group-hover:scale-105 relative`}
+      >
+        <img
+          src={coverUrl}
+          alt={title}
+          className="w-full h-full object-cover"
+          loading="lazy"
+          onError={() => setFailed(true)}
+        />
+        <div className="absolute inset-y-0 left-0 w-1.5 bg-gradient-to-r from-black/35 to-transparent pointer-events-none" />
+      </div>
+    );
+  }
+
+  // Reliure typographique éditoriale (style Gallimard / Papier Crème)
+  return (
+    <div
+      className={`${sizeClass} flex-shrink-0 rounded-r-lg rounded-l-sm shadow-md overflow-hidden bg-[#fbf7ee] border border-black/15 self-center transition-transform duration-200 group-hover:scale-105 p-2 flex flex-col justify-between text-ink relative`}
+    >
+      <div className="absolute inset-y-0 left-0 w-1.5 bg-gradient-to-r from-black/20 to-transparent pointer-events-none" />
+      <span className="text-[6.5px] uppercase tracking-[0.16em] text-terre-ink font-bold truncate pl-1">
+        WonderWord
+      </span>
+      <div className="border-t border-b border-ink/15 py-1.5 pl-1">
+        <p className="font-serif text-[10px] leading-tight text-ink line-clamp-3 m-0 font-normal">
+          {title}
+        </p>
+      </div>
+      <p className="text-[7.5px] text-ink-3 italic truncate pl-1 m-0">
+        {author}
+      </p>
+    </div>
+  );
+};
+
 export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBook }) => {
   // Navigation entre onglets : 'my_books' (Mes Livres) vs 'discover' (Découvrir)
   const [activeTab, setActiveTab] = useState<'my_books' | 'discover'>('my_books');
@@ -441,19 +487,12 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
                   >
                     {/* Haut de la carte : Couverture */}
                     <div className={`p-5 ${colors.bg} relative flex gap-4 min-h-[175px] border-b ${colors.border}`}>
-                      {(book.coverImage || book.coverUrl) && (
-                        <div className="w-[88px] h-[130px] flex-shrink-0 rounded shadow-md overflow-hidden bg-black/10 border border-white/20 self-center transition-transform duration-200 group-hover:scale-105">
-                          <img
-                            src={book.coverImage || book.coverUrl}
-                            alt={book.title}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                            onError={(e) => {
-                              (e.currentTarget.parentElement as HTMLElement).style.display = 'none';
-                            }}
-                          />
-                        </div>
-                      )}
+                      <BookCoverMini
+                        title={book.title}
+                        author={book.author}
+                        coverUrl={book.coverImage || book.coverUrl}
+                        sizeClass="w-[88px] h-[130px]"
+                      />
 
                       <div className="flex-1 flex flex-col justify-between min-w-0">
                         <div className="flex items-center justify-between gap-1">
@@ -613,19 +652,12 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
                     <div>
                       {/* En-tête de carte avec source */}
                       <div className={`p-5 ${colors.bg} relative flex gap-4 min-h-[165px] border-b ${colors.border}`}>
-                        {item.coverUrl && (
-                          <div className="w-[82px] h-[122px] flex-shrink-0 rounded shadow-md overflow-hidden bg-black/10 border border-white/20 self-center transition-transform duration-200 group-hover:scale-105">
-                            <img
-                              src={item.coverUrl}
-                              alt={item.title}
-                              className="w-full h-full object-cover"
-                              loading="lazy"
-                              onError={(e) => {
-                                (e.currentTarget.parentElement as HTMLElement).style.display = 'none';
-                              }}
-                            />
-                          </div>
-                        )}
+                        <BookCoverMini
+                          title={item.title}
+                          author={item.author}
+                          coverUrl={item.coverUrl}
+                          sizeClass="w-[82px] h-[122px]"
+                        />
 
                         <div className="flex-1 flex flex-col justify-between min-w-0">
                           <div className="flex items-center justify-between gap-1">
