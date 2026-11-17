@@ -164,7 +164,7 @@ const CURATED_CATALOG: CatalogBookItem[] = [
     excerpt: "Le 24 février 1815, la vigie de Notre-Dame de la Garde signala le trois-mâts le Pharaon, venant de Smyrne, Trieste et Naples, sous le commandement du jeune Edmond Dantès, second du navire...",
   },
   {
-    id: 'patrimoine:fr:moliere-avare',
+    id: 'dracor:fre:moliere-avare',
     source: 'DraCor',
     title: "L'Avare",
     author: 'Molière',
@@ -174,7 +174,6 @@ const CURATED_CATALOG: CatalogBookItem[] = [
     genre: 'Comédie classique en prose',
     coverColor: 'soleil',
     coverUrl: 'https://covers.openlibrary.org/b/id/7199852-M.jpg',
-    downloadUrl: 'https://www.gutenberg.org/cache/epub/5799/pg5799.txt.utf-8',
     description: 'Comédie de caractère en prose dépeignant la tyrannie domestique d\'Harpagon et l\'obsession dévorante de sa cassette d\'or face aux désirs d\'amour de ses enfants.',
     excerpt: "Valère : Hé quoi ! charmante Élise, vous devenez mélancolique, après les obligeantes assurances que vous avez eu la bonté de me donner de votre foi ? Je vous vois soupirer, hélas ! au milieu de ma joie !",
   },
@@ -190,9 +189,9 @@ const CURATED_CATALOG: CatalogBookItem[] = [
     genre: 'Roman allégorique & existentiel',
     coverColor: 'terre',
     coverUrl: 'https://covers.openlibrary.org/b/id/997423-M.jpg',
-    downloadUrl: 'https://www.gutenberg.org/cache/epub/24373/pg24373.txt.utf-8',
+    downloadUrl: 'https://www.gutenberg.org/cache/epub/69327/pg69327.txt.utf-8',
     description: 'Josef K. wird eines Morgens grundlos verhaftet und durchläuft ein absurdes, unerbittliches und undurchdringliches Rechtssystem, das seine Existenz schrittweise erstickt.',
-    excerpt: "Jemand mußte Josef K. verleumdet haben, denn ohne daß er etwas Böses getan hätte, wurde er eines Morgens verhaftet. Die Köchin der Frau Grubach, die ihm jeden Tag gegen acht Uhr früh das Frühstück brachte, kam diesmal nicht...",
+    excerpt: "Jemand musste Josef K. verleumdet haben, denn ohne dass er etwas Böses getan hätte, wurde er eines Morgens verhaftet. Die Köchin der Frau Grubach, die ihm jeden Tag gegen acht Uhr früh das Frühstück brachte, kam diesmal nicht...",
   },
   {
     id: 'patrimoine:de:goethe-werther',
@@ -210,7 +209,7 @@ const CURATED_CATALOG: CatalogBookItem[] = [
     excerpt: "Wie froh bin ich, daß ich weg bin! Bester Freund, was ist das Herz des Menschen! Dich zu verlassen, den ich so liebe, von dem ich unzertrennlich war, und froh zu sein! Ich weiß, du verzeihst mir's...",
   },
   {
-    id: 'patrimoine:de:schiller-raeuber',
+    id: 'dracor:ger:schiller-die-raeuber',
     source: 'DraCor',
     title: 'Die Räuber',
     author: 'Friedrich Schiller',
@@ -220,7 +219,6 @@ const CURATED_CATALOG: CatalogBookItem[] = [
     genre: 'Drame tragique (Sturm und Drang)',
     coverColor: 'prune',
     coverUrl: 'https://covers.openlibrary.org/b/id/6093905-M.jpg',
-    downloadUrl: 'https://www.gutenberg.org/cache/epub/6782/pg6782.txt.utf-8',
     description: 'Rebellisches Drama über den bitteren Konflikt zweier ungleicher Brüder: Karl Moor, der edle Räuberhauptmann in den Wäldern, und sein heimtückischer Bruder Franz.',
     excerpt: "Franz : Aber ist dir auch wohl, Vater? Du siehst so blaß. / Der alte Moor : Ganz wohl, mein Sohn – was hattest du mir zu sagen? / Franz : Die Post ist angekommen – ein Brief von unserm Korrespondenten in Leipzig...",
   },
@@ -235,11 +233,23 @@ const CURATED_CATALOG: CatalogBookItem[] = [
     genre: 'Volksmärchen',
     coverColor: 'sauge',
     coverUrl: 'https://covers.openlibrary.org/b/id/8236293-M.jpg',
-    downloadUrl: 'https://www.gutenberg.org/cache/epub/5314/pg5314.txt.utf-8',
+    downloadUrl: 'https://www.gutenberg.org/cache/epub/77905/pg77905.txt.utf-8',
     description: 'Klassische deutsche Kinder- und Hausmärchen. Sprachlich klar, rhythmisch und didaktisch ideal für den Wortschatzerwerb frankophoner Germanistik-Studierender.',
     excerpt: "Vor einem großen Walde wohnte ein armer Holzhacker mit seiner Frau und seinen zwei Kindern; das Bübchen hieß Hänsel und das Mädchen Gretel. Er hatte wenig zu beißen und zu brechen...",
   },
 ];
+
+/**
+ * Retourne l'entrée patrimoniale correspondante pour résoudre son URL source lors d'une ré-importation.
+ */
+export function findCuratedCatalogEntry(title?: string, id?: string): CatalogBookItem | undefined {
+  const normalizedTitle = (title || '').toLowerCase().trim();
+  return CURATED_CATALOG.find(
+    (entry) =>
+      (id && entry.id === id) ||
+      (normalizedTitle && entry.title.toLowerCase().trim() === normalizedTitle)
+  );
+}
 
 async function getDracorCorpusDramas(corpus: string): Promise<any[]> {
   const cached = dracorCorpusCache.get(corpus);
@@ -543,11 +553,15 @@ export async function fetchAndSanitizeBookContent(item: {
       throw new Error('Impossible de télécharger le texte intégral depuis le Projet Gutenberg.');
     }
 
-    // Nettoyage des notices légales de Gutenberg
+    // Nettoyage des notices légales et crédits initiaux de Gutenberg
     const startMatch = rawText.match(GUTENBERG_START_REGEX);
     if (startMatch && startMatch.index !== undefined) {
       rawText = rawText.slice(startMatch.index + startMatch[0].length);
     }
+    rawText = rawText.replace(
+      /^\s*(?:Produced by|This eBook was produced by)[^\n]*(?:\r?\n[^\r\n]+){0,8}\s*(?:\r?\n){1,2}/i,
+      ''
+    );
     const endMatch = rawText.match(GUTENBERG_END_REGEX);
     if (endMatch && endMatch.index !== undefined) {
       rawText = rawText.slice(0, endMatch.index);
@@ -555,6 +569,11 @@ export async function fetchAndSanitizeBookContent(item: {
   } else {
     throw new Error("Source textuelle introuvable pour l'importation.");
   }
+
+  rawText = rawText
+    .replace(/&quot;/g, '"')
+    .replace(/&#0*39;|&apos;/g, "'")
+    .replace(/&amp;/g, '&');
 
   const computedCefrLevel = classifyTextReadability(rawText, {
     language: item.language,
@@ -721,7 +740,5 @@ function escapeHtml(str: string): string {
   return str
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+    .replace(/>/g, '&gt;');
 }

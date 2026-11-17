@@ -4,6 +4,7 @@ import {
   fetchAndSanitizeBookContent,
   splitTextIntoChapters,
   classifyTextReadability,
+  findCuratedCatalogEntry,
 } from '../services/catalog.js';
 import { analyzeLiteraryWord, SupportedLanguage } from '../services/linguistics.js';
 
@@ -322,24 +323,50 @@ export default async function bookRoutes(server: FastifyInstance) {
       },
     });
 
-    // Si un livre importé précédemment avait un texte trop court ou un chapitre final géant (ancien plafond à 30), le rafraîchir
+    // Résoudre la source canonique (utile si l'ouvrage vient déjà de la base locale sans downloadUrl)
+    const curatedMatch = findCuratedCatalogEntry(title, id);
+    const resolvedSourceId = curatedMatch?.id || id || '';
+    const resolvedSource = curatedMatch?.source || source || 'Catalogue Public';
+    const resolvedDownloadUrl = curatedMatch?.downloadUrl || downloadUrl;
+
+    // Si un livre importé précédemment a un texte cassé, tronqué, un plafond à 30 chapitres ou des entités brutes, le rafraîchir
+    let hasLegacyDefect = false;
+    if (book) {
+      const ch1 = await server.prisma.chapter.findFirst({
+        where: { bookId: book.id, number: 1 },
+        select: { contentHtml: true },
+      });
+      const sample = ch1?.contentHtml || '';
+      hasLegacyDefect =
+        /Life and Letters of Thomas Henry Huxley|Mornings in the College Chapel|eBook of The Robbers|Household Tales by Brothers Grimm/i.test(
+          sample
+        ) || /&quot;|&#0*39;/.test(sample);
+    }
+
+    const canRefetchSource =
+      Boolean(resolvedDownloadUrl) ||
+      resolvedSourceId.startsWith('dracor:') ||
+      resolvedSourceId.startsWith('gutenberg:');
+
     const needsRefresh =
       book &&
       (book.totalWords <= 160 ||
         (book.totalChapters === 1 && book.totalWords > 2500) ||
-        (book.totalChapters === 30 && book.totalWords > 60000)) &&
-      (Boolean(downloadUrl) || id.startsWith('dracor:') || id.startsWith('gutenberg:'));
+        (book.totalChapters === 30 && book.totalWords > 60000) ||
+        hasLegacyDefect) &&
+      canRefetchSource;
+
     if (book && needsRefresh) {
       try {
         const content = await fetchAndSanitizeBookContent({
-          id,
-          source: source || 'Catalogue Public',
+          id: resolvedSourceId,
+          source: resolvedSource,
           title,
           author,
           language: language === 'de' ? 'de' : 'fr',
           genre,
           year,
-          downloadUrl,
+          downloadUrl: resolvedDownloadUrl,
         });
         const totalWords = content.chapters.reduce((sum, ch) => sum + ch.wordCount, 0);
         await server.prisma.chapter.deleteMany({ where: { bookId: book.id } });
@@ -347,6 +374,7 @@ export default async function bookRoutes(server: FastifyInstance) {
           where: { id: book.id },
           data: {
             cefrLevel: content.computedCefrLevel,
+            publisher: `${resolvedSource} (Édition Numérique Libre)`,
             totalChapters: content.chapters.length,
             totalWords,
             ...(coverUrl && !book.coverImage && { coverImage: coverUrl }),
@@ -374,14 +402,14 @@ export default async function bookRoutes(server: FastifyInstance) {
     if (!book) {
       // Télécharger et découper le contenu
       const content = await fetchAndSanitizeBookContent({
-        id,
-        source: source || 'Catalogue Public',
+        id: resolvedSourceId,
+        source: resolvedSource,
         title,
         author,
         language: language === 'de' ? 'de' : 'fr',
         genre,
         year,
-        downloadUrl,
+        downloadUrl: resolvedDownloadUrl,
       });
 
       const totalWords = content.chapters.reduce((sum, ch) => sum + ch.wordCount, 0);
@@ -394,8 +422,8 @@ export default async function bookRoutes(server: FastifyInstance) {
           author,
           language: language === 'de' ? 'de' : 'fr',
           cefrLevel: content.computedCefrLevel,
-          publisher: `${source || 'Domaine Public'} (Édition Numérique Libre)`,
-          description: `Ouvrage importé depuis le catalogue public ${source || 'Gutenberg/DraCor'}.`,
+          publisher: `${resolvedSource} (Édition Numérique Libre)`,
+          description: `Ouvrage importé depuis le catalogue public ${resolvedSource || 'Gutenberg/DraCor'}.`,
           coverColor: language === 'de' ? 'prune' : 'sauge',
           coverImage: coverUrl || null,
           year: typeof year === 'number' ? year : 1850,
