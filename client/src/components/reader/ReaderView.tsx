@@ -42,6 +42,7 @@ interface SelectedWord {
   word: string;
   lemma?: string;
   ipa: string;
+  synonyms?: string[];
   translation: string;
   definition: string;
   grammatical: string;
@@ -515,6 +516,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
   const [wordLoading, setWordLoading] = useState(false);
   const [savedToFsrs, setSavedToFsrs] = useState(false);
   const [savingFsrs, setSavingFsrs] = useState(false);
+  const [showTranslationRescue, setShowTranslationRescue] = useState(false);
   const [userVocabWords, setUserVocabWords] = useState<Set<string>>(new Set());
 
   // Contrôles de la barre d'outils du livre (Typographie, Seuil FSRS, Audio TTS, Tiroirs)
@@ -879,6 +881,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
 
     const alreadyInFsrs = userVocabWords.has(cleaned.toLowerCase());
     setSavedToFsrs(alreadyInFsrs);
+    setShowTranslationRescue(false);
     setWordLoading(true);
 
     const immediateIpa = quickClientIpa(cleaned, lang, enrichedIpaMap);
@@ -886,10 +889,9 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
       word: cleaned,
       lemma: cleaned,
       ipa: immediateIpa,
-      translation: 'Analyse lexicale en cours…',
-      definition: `Extraction du contexte dans « ${
-        readerMode === 'study' ? studyTitle : chapterData?.book.title || 'l’ouvrage'
-      } »…`,
+      synonyms: [],
+      translation: '',
+      definition: `Immersion ${lang.toUpperCase()} : recherche des synonymes et définition…`,
       grammatical: `Analyse lexicale · ${lang.toUpperCase()}`,
       sentence: matchingSentence,
     });
@@ -899,6 +901,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
         word: string;
         lemma: string;
         ipa: string;
+        synonyms?: string[];
         translation: string;
         definition: string;
         grammatical: string;
@@ -919,7 +922,8 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
         word: analysis.word || cleaned,
         lemma: analysis.lemma || cleaned,
         ipa: analysis.ipa || immediateIpa,
-        translation: analysis.translation,
+        synonyms: Array.isArray(analysis.synonyms) ? analysis.synonyms : [],
+        translation: analysis.translation || '',
         definition: analysis.definition,
         grammatical: analysis.grammatical,
         sentence: matchingSentence,
@@ -929,8 +933,9 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
         word: cleaned,
         lemma: cleaned,
         ipa: immediateIpa,
-        translation: `Terme « ${cleaned} » (${lang.toUpperCase()})`,
-        definition: `Employé dans le passage : « ${matchingSentence.slice(0, 140)} »`,
+        synonyms: [],
+        translation: '',
+        definition: `Employé dans ce passage : « ${matchingSentence.slice(0, 140)} »`,
         grammatical: `Vocabulaire littéraire · ${lang.toUpperCase()}`,
         sentence: matchingSentence,
       });
@@ -944,13 +949,18 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
     if (!selectedWord || savingFsrs || savedToFsrs) return;
     try {
       setSavingFsrs(true);
+      const fallbackTranslation =
+        selectedWord.translation ||
+        (selectedWord.synonyms && selectedWord.synonyms.length > 0
+          ? selectedWord.synonyms.slice(0, 3).join(' · ')
+          : selectedWord.definition.slice(0, 80));
       await apiFetch('/books/vocabulary', {
         method: 'POST',
         body: JSON.stringify({
           bookId: readerMode === 'book' ? chapterData?.book.id : undefined,
           word: selectedWord.lemma || selectedWord.word,
           ipa: selectedWord.ipa,
-          translation: selectedWord.translation,
+          translation: fallbackTranslation,
           definition: selectedWord.definition,
           grammatical: selectedWord.grammatical,
           contextSentence: selectedWord.sentence,
@@ -2165,19 +2175,71 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
             </button>
           </div>
 
-          <div className="bg-paper-warm rounded-xl border border-rule-soft p-3 mb-4 space-y-1.5">
+          <div className="bg-paper-warm rounded-xl border border-rule-soft p-3.5 mb-4 space-y-2.5">
             {wordLoading ? (
               <p className="text-xs text-ink-3 italic animate-pulse m-0">
-                Consultando léxico crítico y morfológico…
+                Immersion {activeLang.toUpperCase()} : synonymes simples et définition…
               </p>
             ) : (
               <>
-                <p className="text-xs font-semibold text-prune m-0">
-                  {selectedWord.translation}
-                </p>
-                <p className="text-[12.5px] text-ink leading-[1.45] m-0">
+                {selectedWord.synonyms && selectedWord.synonyms.length > 0 && (
+                  <div>
+                    <p className="text-[9.5px] uppercase tracking-[0.11em] font-bold text-ink-3 mb-1.5 m-0">
+                      {activeLang === 'de'
+                        ? 'Einfache Synonyme'
+                        : activeLang === 'en'
+                        ? 'Simpler synonyms'
+                        : activeLang === 'es'
+                        ? 'Sinónimos simples'
+                        : 'Synonymes plus simples'}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {selectedWord.synonyms.map((syn) => (
+                        <button
+                          key={syn}
+                          type="button"
+                          onClick={() =>
+                            handleInteractiveWordClick(
+                              syn,
+                              selectedWord.sentence || '',
+                              activeLang
+                            )
+                          }
+                          className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-sauge-wash text-sauge border border-sauge/20 hover:bg-sauge hover:text-white transition-colors"
+                          title={`Explorer « ${syn} » en immersion`}
+                        >
+                          {syn}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <p className="text-[12.5px] text-ink leading-[1.48] m-0">
                   {selectedWord.definition}
                 </p>
+
+                {selectedWord.translation && (
+                  <div className="pt-1 border-t border-rule-soft">
+                    <button
+                      type="button"
+                      onClick={() => setShowTranslationRescue((prev) => !prev)}
+                      className="inline-flex items-center gap-1.5 text-[10.5px] font-semibold text-ink-3 hover:text-prune transition-colors"
+                    >
+                      <Eye size={12} />
+                      <span>
+                        {showTranslationRescue
+                          ? 'Masquer la traduction'
+                          : 'Afficher la traduction (secours)'}
+                      </span>
+                    </button>
+                    {showTranslationRescue && (
+                      <p className="text-xs font-semibold text-prune mt-1.5 mb-0 bg-prune-wash/60 px-2.5 py-1.5 rounded-lg">
+                        {selectedWord.translation}
+                      </p>
+                    )}
+                  </div>
+                )}
               </>
             )}
           </div>
