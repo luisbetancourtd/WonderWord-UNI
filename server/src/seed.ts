@@ -372,38 +372,7 @@ async function main() {
     },
   });
 
-  // Nettoyage complet des tables utilisateurs (User, UserBook, ReaderAnnotation, VocabularyCard)
-  // pour repartir d'une base 100% propre lors des tests d'inscription, connexion et Google OAuth
-  await prisma.readerAnnotation.deleteMany({
-    where: {
-      createdAt: {
-        lt: new Date('2026-11-17T00:00:00Z'),
-      },
-    },
-  });
-  await prisma.vocabularyCard.deleteMany({
-    where: {
-      createdAt: {
-        lt: new Date('2026-11-17T00:00:00Z'),
-      },
-    },
-  });
-  await prisma.userBook.deleteMany({
-    where: {
-      addedAt: {
-        lt: new Date('2026-11-17T00:00:00Z'),
-      },
-    },
-  });
-  await prisma.user.deleteMany({
-    where: {
-      createdAt: {
-        lt: new Date('2026-11-17T00:00:00Z'),
-      },
-    },
-  });
-
-  console.log(`✅ Catalogue alimenté avec succès : 8 chefs-d'œuvre bilingues disponibles dans Découvrir et base utilisateurs remise à zéro.`);
+  console.log(`✅ Catalogue alimenté avec succès : 8 chefs-d'œuvre bilingues disponibles dans Découvrir.`);
 }
 
 main()

@@ -258,7 +258,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-6 border-b border-rule">
         <div>
           <p className="text-[10px] uppercase tracking-[0.24em] font-semibold text-terre-ink mb-3">
-            {formattedToday} · Master HN Paris 8
+            {formattedToday}
           </p>
           <h1 className="font-serif text-[46px] md:text-[58px] font-normal leading-none tracking-tight text-ink m-0">
             Bienvenue, {displayUserName}.
