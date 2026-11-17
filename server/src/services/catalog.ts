@@ -494,20 +494,39 @@ export async function fetchAndSanitizeBookContent(item: {
     if (!resp.ok) throw new Error('Impossible de télécharger la pièce depuis DraCor.');
     rawText = await resp.text();
   } else if (item.id.startsWith('gutenberg:') || item.downloadUrl) {
-    // Importation depuis Gutenberg ou URL directe du patrimoine (avec URLs de secours officielles)
-    const gutenbergId = item.id.replace('gutenberg:', '');
+    // Extraire l'identifiant numérique Gutenberg (fonctionne pour gutenberg:ID et patrimoine:* avec downloadUrl)
+    const idMatch =
+      item.id.match(/gutenberg:(\d+)/i) ||
+      (item.downloadUrl || '').match(/(?:epub|ebooks)\/(\d+)/i);
+    const gutenbergId = idMatch ? idMatch[1] : '';
+
     const candidateUrls = [
+      ...(gutenbergId
+        ? [
+            `https://gutenberg.pglaf.org/cache/epub/${gutenbergId}/pg${gutenbergId}.txt`,
+            `https://gutenberg.pglaf.org/cache/epub/${gutenbergId}/pg${gutenbergId}.txt.utf-8`,
+          ]
+        : []),
+      item.downloadUrl ? item.downloadUrl.replace('https://www.gutenberg.org/', 'https://gutenberg.pglaf.org/') : undefined,
       item.downloadUrl,
-      `https://www.gutenberg.org/ebooks/${gutenbergId}.txt.utf-8`,
-      `https://www.gutenberg.org/cache/epub/${gutenbergId}/pg${gutenbergId}.txt.utf-8`,
-      `https://www.gutenberg.org/cache/epub/${gutenbergId}/pg${gutenbergId}.txt`,
-    ].filter((u): u is string => Boolean(u) && !u.includes('undefined'));
+      ...(gutenbergId
+        ? [
+            `https://www.gutenberg.org/ebooks/${gutenbergId}.txt.utf-8`,
+            `https://www.gutenberg.org/cache/epub/${gutenbergId}/pg${gutenbergId}.txt.utf-8`,
+            `https://www.gutenberg.org/cache/epub/${gutenbergId}/pg${gutenbergId}.txt`,
+          ]
+        : []),
+    ].filter((u, idx, arr): u is string => Boolean(u) && !u.includes('undefined') && arr.indexOf(u) === idx);
 
     for (const url of candidateUrls) {
       try {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 8000);
         const resp = await fetch(url, {
           headers: { 'User-Agent': 'WonderWord-UNI-Paris8/1.0' },
+          signal: controller.signal,
         });
+        clearTimeout(tid);
         if (resp.ok) {
           const text = await resp.text();
           if (text && text.length > 500) {
@@ -551,16 +570,84 @@ export async function fetchAndSanitizeBookContent(item: {
 }
 
 /**
- * Découpe un texte brut en chapitres équilibrés (~1 200 à 1 600 mots par chapitre, jusqu'à 30 chapitres)
+ * Segmente un texte brut en paragraphes lisibles (~60 à 120 mots max), y compris pour
+ * les pièces DraCor qui utilisent des retours ligne simples sans double saut de ligne.
+ */
+function normalizeTextIntoParagraphs(rawText: string): string[] {
+  const doubleSplit = rawText
+    .split(/\r?\n\s*\r?\n+/)
+    .map((p) => p.trim())
+    .filter((p) => p.length > 0 && !p.startsWith('***'));
+
+  const normalized: string[] = [];
+
+  for (const block of doubleSplit) {
+    const cleanSingleLineBlock = block.replace(/\s+/g, ' ').trim();
+    const blockWords = cleanSingleLineBlock.split(/\s+/).filter(Boolean).length;
+
+    if (blockWords <= 140) {
+      normalized.push(cleanSingleLineBlock);
+      continue;
+    }
+
+    // Si le bloc est très long et contient des retours à la ligne simples (ex: DraCor /spoken-text)
+    const lines = block
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter(Boolean);
+
+    if (lines.length > 4) {
+      let buf: string[] = [];
+      let bufWords = 0;
+
+      for (const line of lines) {
+        const lw = line.split(/\s+/).filter(Boolean).length;
+        buf.push(line);
+        bufWords += lw;
+
+        const endsSentence = /[.!?…»"]$/.test(line);
+        if ((bufWords >= 55 && endsSentence) || bufWords >= 95) {
+          normalized.push(buf.join(' '));
+          buf = [];
+          bufWords = 0;
+        }
+      }
+      if (buf.length > 0) {
+        normalized.push(buf.join(' '));
+      }
+      continue;
+    }
+
+    // Dernier recours : bloc continu très long sans sauts de ligne -> découper par phrases
+    const sentences = cleanSingleLineBlock.split(/(?<=[.!?…])\s+/).filter(Boolean);
+    let buf: string[] = [];
+    let bufWords = 0;
+    for (const s of sentences) {
+      const sw = s.split(/\s+/).filter(Boolean).length;
+      buf.push(s);
+      bufWords += sw;
+      if (bufWords >= 80) {
+        normalized.push(buf.join(' '));
+        buf = [];
+        bufWords = 0;
+      }
+    }
+    if (buf.length > 0) {
+      normalized.push(buf.join(' '));
+    }
+  }
+
+  return normalized;
+}
+
+/**
+ * Découpe un texte brut en chapitres équilibrés (~1 200 mots par chapitre, jusqu'à 30 chapitres)
  */
 export function splitTextIntoChapters(
   rawText: string,
   language = 'fr'
 ): { number: number; title: string; contentHtml: string; wordCount: number }[] {
-  const paragraphs = rawText
-    .split(/\r?\n\r?\n+/)
-    .map((p) => p.trim())
-    .filter((p) => p.length > 0 && !p.startsWith('***'));
+  const paragraphs = normalizeTextIntoParagraphs(rawText);
 
   const chapterLabel =
     language === 'de'

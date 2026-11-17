@@ -322,8 +322,12 @@ export default async function bookRoutes(server: FastifyInstance) {
       },
     });
 
-    // Si un livre importé précédemment avait un texte de substitution trop court et qu'une downloadUrl existe, le mettre à jour
-    if (book && book.totalWords <= 160 && downloadUrl) {
+    // Si un livre importé précédemment avait un texte trop court ou un seul chapitre géant non découpé, le rafraîchir
+    const needsRefresh =
+      book &&
+      (book.totalWords <= 160 || (book.totalChapters === 1 && book.totalWords > 2500)) &&
+      (Boolean(downloadUrl) || id.startsWith('dracor:') || id.startsWith('gutenberg:'));
+    if (book && needsRefresh) {
       try {
         const content = await fetchAndSanitizeBookContent({
           id,
@@ -351,6 +355,12 @@ export default async function bookRoutes(server: FastifyInstance) {
                 contentHtml: ch.contentHtml,
                 wordCount: ch.wordCount,
               })),
+            },
+          },
+          include: {
+            chapters: {
+              select: { id: true, number: true, title: true, wordCount: true },
+              orderBy: { number: 'asc' },
             },
           },
         });

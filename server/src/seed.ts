@@ -381,10 +381,13 @@ async function main() {
     data: { cefrLevel: 'B1' },
   });
 
-  // Nettoyage d'anciens livres importés avec le texte de substitution (<= 160 mots)
+  // Nettoyage d'anciens livres importés avec texte incomplet (<= 160 mots) ou bloc unique non chapitré
   await prisma.book.deleteMany({
     where: {
-      totalWords: { lte: 160 },
+      OR: [
+        { totalWords: { lte: 160 } },
+        { totalChapters: 1, totalWords: { gt: 2500 } },
+      ],
       slug: {
         notIn: [
           'le-petit-prince',

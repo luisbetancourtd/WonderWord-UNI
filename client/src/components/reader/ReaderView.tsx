@@ -1053,10 +1053,19 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Découper le HTML du chapitre en paragraphes propres
+  // Découper le HTML du chapitre en paragraphes propres en décodant les entités HTML
   const parsedParagraphs = useMemo(() => {
     const rawHtml = chapterData?.chapter.contentHtml || '';
     if (!rawHtml) return [];
+
+    const decodeEntities = (str: string) =>
+      str
+        .replace(/&#0*39;|&#x0*27;|&apos;/gi, '’')
+        .replace(/&quot;|&#0*34;/gi, '"')
+        .replace(/&lt;/gi, '<')
+        .replace(/&gt;/gi, '>')
+        .replace(/&nbsp;/gi, ' ')
+        .replace(/&amp;/gi, '&');
 
     const matches = Array.from(
       rawHtml.matchAll(/<(p|blockquote)[^>]*>([\s\S]*?)<\/\1>/gi)
@@ -1066,16 +1075,14 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
       return matches
         .map((m) => ({
           tag: m[1].toLowerCase() as 'p' | 'blockquote',
-          text: m[2]
-            .replace(/<[^>]*>/g, '')
-            .replace(/\s+/g, ' ')
-            .trim(),
+          text: decodeEntities(
+            m[2].replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+          ),
         }))
         .filter((p) => p.text.length > 0);
     }
 
-    return rawHtml
-      .replace(/<[^>]*>/g, '\n')
+    return decodeEntities(rawHtml.replace(/<[^>]*>/g, '\n'))
       .split(/\n+/)
       .map((t) => t.trim())
       .filter(Boolean)
