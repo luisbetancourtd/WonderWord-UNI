@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Search, BookOpen, Check, Filter, BookMarked, Globe, Sparkles, Download, Eye, Trash2, X } from 'lucide-react';
+import { Search, BookOpen, Check, Filter, BookMarked, Globe, Sparkles, Download, Eye, Trash2, X, ChevronDown } from 'lucide-react';
 import { apiFetch } from '../../lib/api';
-import type { BookSummary, CatalogBookItem, ViewType } from '../../types';
+import type { BookSummary, CatalogBookItem, DiscoverCatalogResponse, ViewType } from '../../types';
 import { BookBackCoverModal } from './BookBackCoverModal';
 
 interface LibraryViewProps {
@@ -21,9 +21,13 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
   // État de la modale de quatrième de couverture (Fiche Ouvrage)
   const [selectedBackCoverBook, setSelectedBackCoverBook] = useState<(BookSummary | CatalogBookItem) | null>(null);
 
-  // État du catalogue public découvert
+  // État du catalogue public découvert (avec pagination)
   const [discoverBooks, setDiscoverBooks] = useState<CatalogBookItem[]>([]);
   const [discoverLoading, setDiscoverLoading] = useState(false);
+  const [discoverLoadingMore, setDiscoverLoadingMore] = useState(false);
+  const [discoverPage, setDiscoverPage] = useState(1);
+  const [discoverHasMore, setDiscoverHasMore] = useState(false);
+  const [discoverTotalAvailable, setDiscoverTotalAvailable] = useState(0);
   const [importingId, setImportingId] = useState<string | null>(null);
 
   // Filtres
@@ -51,22 +55,49 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
     }
   };
 
-  // 2. Charger ou rechercher dans le catalogue public ouvert (8 classiques + Gutendex & DraCor)
-  const fetchDiscoverCatalog = async (customQuery?: string) => {
+  // 2. Charger ou paginer le catalogue public ouvert (Patrimoine Paris 8 + Gutendex & DraCor)
+  const fetchDiscoverCatalog = async (customQuery?: string, targetPage = 1, append = false) => {
     try {
-      setDiscoverLoading(true);
+      if (append) {
+        setDiscoverLoadingMore(true);
+      } else {
+        setDiscoverLoading(true);
+      }
       const q = customQuery !== undefined ? customQuery : searchQuery;
       const params = new URLSearchParams();
+      params.append('paginated', '1');
+      params.append('page', String(targetPage));
       if (q) params.append('query', q);
       if (selectedLanguage !== 'ALL') params.append('lang', selectedLanguage);
       if (selectedLevel !== 'ALL') params.append('level', selectedLevel);
 
-      const data = await apiFetch<CatalogBookItem[]>(`/books/discover?${params.toString()}`);
-      setDiscoverBooks(data);
+      const data = await apiFetch<DiscoverCatalogResponse>(`/books/discover?${params.toString()}`);
+      setDiscoverPage(data.page || targetPage);
+      setDiscoverHasMore(Boolean(data.hasMore));
+      if (typeof data.totalAvailable === 'number' && data.totalAvailable > 0) {
+        setDiscoverTotalAvailable(data.totalAvailable);
+      }
+
+      if (append) {
+        setDiscoverBooks((prev) => {
+          const seen = new Set(prev.map((item) => item.id));
+          const merged = [...prev];
+          for (const item of data.items || []) {
+            if (!seen.has(item.id)) {
+              seen.add(item.id);
+              merged.push(item);
+            }
+          }
+          return merged;
+        });
+      } else {
+        setDiscoverBooks(data.items || []);
+      }
     } catch (err) {
       console.error('Erreur découverte catalogue externe:', err);
     } finally {
       setDiscoverLoading(false);
+      setDiscoverLoadingMore(false);
     }
   };
 
@@ -74,7 +105,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
     if (activeTab === 'my_books') {
       fetchMyBooks();
     } else {
-      fetchDiscoverCatalog();
+      fetchDiscoverCatalog(undefined, 1, false);
     }
   }, [activeTab, selectedLevel, selectedLanguage]);
 
@@ -83,7 +114,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
     if (activeTab === 'my_books') {
       fetchMyBooks();
     } else {
-      fetchDiscoverCatalog();
+      fetchDiscoverCatalog(undefined, 1, false);
     }
   };
 
@@ -92,7 +123,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
     if (activeTab === 'my_books') {
       fetchMyBooks('');
     } else {
-      fetchDiscoverCatalog('');
+      fetchDiscoverCatalog('', 1, false);
     }
   };
 
@@ -301,7 +332,11 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
             }`}
           >
             <Globe size={14} />
-            <span>Découvrir (+70 000 Ouvrages)</span>
+            <span>
+              {discoverTotalAvailable > 0
+                ? `Découvrir (${discoverTotalAvailable.toLocaleString('fr-FR')} ouvrages)`
+                : 'Découvrir (Gutenberg & DraCor)'}
+            </span>
           </button>
         </div>
 
@@ -535,10 +570,18 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
                 <span>Interconnexion Fédérée des Bibliothèques Numériques Ouvertes</span>
               </div>
               <p className="text-xs text-ink-2 max-w-2xl">
-                Accès direct au <strong>Projet Gutenberg (+70 000 ouvrages)</strong> et au corpus théâtral universitaire <strong>DraCor (FreDraCor & GerDraCor)</strong>. Cliquez sur « Ajouter » pour importer et assainir automatiquement l'œuvre dans votre lecteur.
+                Accès direct au corpus franco-germanophone de <strong>Project Gutenberg (Gutendex)</strong> et au corpus théâtral universitaire <strong>DraCor (FreDraCor &amp; GerDraCor)</strong>.
+                {discoverTotalAvailable > 0 && (
+                  <>
+                    {' '}
+                    Affichage de <strong>{discoverBooks.length}</strong> ouvrages sur{' '}
+                    <strong>{discoverTotalAvailable.toLocaleString('fr-FR')}</strong> disponibles
+                    (Page {discoverPage}).
+                  </>
+                )}
               </p>
             </div>
-            <div className="flex items-center gap-2 text-[11px] font-mono text-ink-3">
+            <div className="flex items-center gap-2 text-[11px] font-mono text-ink-3 flex-shrink-0">
               <span className="px-2 py-1 bg-paper border border-rule rounded">API Gutendex</span>
               <span className="px-2 py-1 bg-paper border border-rule rounded">API DraCor</span>
             </div>
@@ -698,6 +741,36 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {/* Bouton de pagination : Charger plus d'ouvrages (Page 2, 3, 4...) */}
+          {!discoverLoading && discoverHasMore && (
+            <div className="pt-4 flex flex-col items-center gap-2">
+              <button
+                type="button"
+                disabled={discoverLoadingMore}
+                onClick={() => fetchDiscoverCatalog(undefined, discoverPage + 1, true)}
+                className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-paper border border-rule hover:border-sauge hover:bg-sauge hover:text-white text-xs font-bold uppercase tracking-wider text-ink shadow-sm transition-all disabled:opacity-60 cursor-pointer"
+              >
+                {discoverLoadingMore ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    <span>Chargement de la page {discoverPage + 1}…</span>
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown size={16} />
+                    <span>
+                      Charger plus d’ouvrages (Page {discoverPage + 1}) ·{' '}
+                      {discoverBooks.length} affichés
+                      {discoverTotalAvailable > 0
+                        ? ` / ${discoverTotalAvailable.toLocaleString('fr-FR')}`
+                        : ''}
+                    </span>
+                  </>
+                )}
+              </button>
             </div>
           )}
         </div>

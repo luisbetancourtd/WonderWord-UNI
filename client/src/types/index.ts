@@ -83,3 +83,10 @@ export interface CatalogBookItem {
   totalWords?: number;
   chapters?: ChapterSummary[];
 }
+
+export interface DiscoverCatalogResponse {
+  items: CatalogBookItem[];
+  page: number;
+  hasMore: boolean;
+  totalAvailable: number;
+}

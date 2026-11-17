@@ -104,14 +104,17 @@ export default async function bookRoutes(server: FastifyInstance) {
     });
   });
 
-  // 1b. Découverte d'ouvrages dans le catalogue public (8 classiques Paris 8 + Gutendex & DraCor)
+  // 1b. Découverte d'ouvrages dans le catalogue public (8 classiques Paris 8 + Gutendex & DraCor) avec pagination
   server.get('/discover', async (request) => {
-    const { query, lang, level } = request.query as {
+    const { query, lang, level, page: rawPage, paginated } = request.query as {
       query?: string;
       lang?: string;
       level?: string;
+      page?: string;
+      paginated?: string;
     };
     const language = (lang === 'fr' || lang === 'de') ? lang : 'all';
+    const page = Math.max(1, parseInt(rawPage || '1', 10) || 1);
 
     // Identifier l'utilisateur connecté pour savoir quels livres sont dans "Mes Livres"
     let userId: string | null = null;
@@ -140,79 +143,82 @@ export default async function bookRoutes(server: FastifyInstance) {
       }
     }
 
-    // 1. Récupérer les œuvres du catalogue local (les 8 classiques Paris 8)
-    const dbWhere: any = {};
-    if (language !== 'all') {
-      dbWhere.language = language;
-    }
-    if (level && level !== 'ALL') {
-      dbWhere.cefrLevel = level.toUpperCase();
-    }
-    if (query && query.trim()) {
-      dbWhere.OR = [
-        { title: { contains: query.trim(), mode: 'insensitive' } },
-        { author: { contains: query.trim(), mode: 'insensitive' } },
-        { genre: { contains: query.trim(), mode: 'insensitive' } },
-      ];
-    }
+    // 1. Récupérer les œuvres du catalogue local uniquement sur la page 1
+    let localCatalogItems: any[] = [];
+    if (page === 1) {
+      const dbWhere: any = {};
+      if (language !== 'all') {
+        dbWhere.language = language;
+      }
+      if (level && level !== 'ALL') {
+        dbWhere.cefrLevel = level.toUpperCase();
+      }
+      if (query && query.trim()) {
+        dbWhere.OR = [
+          { title: { contains: query.trim(), mode: 'insensitive' } },
+          { author: { contains: query.trim(), mode: 'insensitive' } },
+          { genre: { contains: query.trim(), mode: 'insensitive' } },
+        ];
+      }
 
-    const dbBooks = await server.prisma.book.findMany({
-      where: dbWhere,
-      include: {
-        chapters: {
-          select: {
-            id: true,
-            number: true,
-            title: true,
-            wordCount: true,
-            contentHtml: true,
+      const dbBooks = await server.prisma.book.findMany({
+        where: dbWhere,
+        include: {
+          chapters: {
+            select: {
+              id: true,
+              number: true,
+              title: true,
+              wordCount: true,
+              contentHtml: true,
+            },
+            orderBy: { number: 'asc' },
           },
-          orderBy: { number: 'asc' },
         },
-      },
-      orderBy: { year: 'asc' },
-    });
+        orderBy: { year: 'asc' },
+      });
 
-    const localCatalogItems = dbBooks.map((b) => {
-      const rawText = b.chapters?.[0]?.contentHtml
-        ? b.chapters[0].contentHtml.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
-        : '';
-      const excerpt = rawText ? rawText.slice(0, 280) + '...' : b.description || undefined;
-      const cleanChapters = b.chapters?.map((ch) => ({
-        id: ch.id,
-        number: ch.number,
-        title: ch.title,
-        wordCount: ch.wordCount,
-      }));
-      const matchedUb = userBookByTitle.get(b.title.toLowerCase().trim());
+      localCatalogItems = dbBooks.map((b) => {
+        const rawText = b.chapters?.[0]?.contentHtml
+          ? b.chapters[0].contentHtml.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+          : '';
+        const excerpt = rawText ? rawText.slice(0, 280) + '...' : b.description || undefined;
+        const cleanChapters = b.chapters?.map((ch) => ({
+          id: ch.id,
+          number: ch.number,
+          title: ch.title,
+          wordCount: ch.wordCount,
+        }));
+        const matchedUb = userBookByTitle.get(b.title.toLowerCase().trim());
 
-      return {
-        id: b.slug || b.id,
-        slug: b.slug,
-        source: 'Patrimoine' as const,
-        title: b.title,
-        author: b.author,
-        language: (b.language === 'de' ? 'de' : 'fr') as 'fr' | 'de',
-        cefrLevel: (b.cefrLevel === 'C1' || b.cefrLevel === 'B2' ? b.cefrLevel : 'B1') as 'B1' | 'B2' | 'C1',
-        year: b.year,
-        coverUrl: b.coverImage || undefined,
-        coverColor: (b.coverColor || 'soleil') as any,
-        description: b.description || 'Œuvre patrimoniale annotée pour la lecture critique.',
-        excerpt,
-        genre: b.genre,
-        totalChapters: b.totalChapters,
-        totalWords: b.totalWords,
-        chapters: cleanChapters,
-        currentChapter: matchedUb?.currentChapter || 1,
-        isImported: Boolean(matchedUb),
-      };
-    });
+        return {
+          id: b.slug || b.id,
+          slug: b.slug,
+          source: 'Patrimoine' as const,
+          title: b.title,
+          author: b.author,
+          language: (b.language === 'de' ? 'de' : 'fr') as 'fr' | 'de',
+          cefrLevel: (b.cefrLevel === 'C1' || b.cefrLevel === 'B2' ? b.cefrLevel : 'B1') as 'B1' | 'B2' | 'C1',
+          year: b.year,
+          coverUrl: b.coverImage || undefined,
+          coverColor: (b.coverColor || 'soleil') as any,
+          description: b.description || 'Œuvre patrimoniale annotée pour la lecture critique.',
+          excerpt,
+          genre: b.genre,
+          totalChapters: b.totalChapters,
+          totalWords: b.totalWords,
+          chapters: cleanChapters,
+          currentChapter: matchedUb?.currentChapter || 1,
+          isImported: Boolean(matchedUb),
+        };
+      });
+    }
 
-    // 2. Récupérer le catalogue externe (Gutendex & DraCor)
-    const externalBooks = await searchPublicCatalog(query || '', language);
+    // 2. Récupérer le catalogue externe paginé (Gutendex & DraCor)
+    const externalResult = await searchPublicCatalog(query || '', language, page);
     const seenTitles = new Set(localCatalogItems.map((item) => item.title.toLowerCase().trim()));
 
-    const mergedExternal = externalBooks
+    const mergedExternal = externalResult.items
       .filter((book) => !seenTitles.has(book.title.toLowerCase().trim()))
       .filter((book) => !level || level === 'ALL' || book.cefrLevel === level.toUpperCase())
       .map((book) => {
@@ -225,7 +231,18 @@ export default async function bookRoutes(server: FastifyInstance) {
         };
       });
 
-    return [...localCatalogItems, ...mergedExternal];
+    const combined = [...localCatalogItems, ...mergedExternal];
+
+    if (paginated === '1' || paginated === 'true') {
+      return {
+        items: combined,
+        page,
+        hasMore: externalResult.hasMore,
+        totalAvailable: externalResult.totalExternalCount + localCatalogItems.length,
+      };
+    }
+
+    return combined;
   });
 
   // 1c. Importer un livre depuis le catalogue public dans sa bibliothèque ("Mes Livres")

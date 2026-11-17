@@ -102,8 +102,16 @@ const GUTENBERG_START_REGEX = /\*\*\* START OF (?:THE )?PROJECT GUTENBERG EBOOK[
 const GUTENBERG_END_REGEX = /\*\*\* END OF (?:THE )?PROJECT GUTENBERG EBOOK[^*]*?\*\*\*/i;
 
 // Cache mémoire pour accélérer les requêtes récurrentes (TTL 10 min)
-const cache = new Map<string, { timestamp: number; data: CatalogBookItem[] }>();
+export interface PaginatedCatalogResult {
+  items: CatalogBookItem[];
+  totalExternalCount: number;
+  hasMore: boolean;
+}
+
+const cache = new Map<string, { timestamp: number; data: PaginatedCatalogResult }>();
+const dracorCorpusCache = new Map<string, { timestamp: number; dramas: any[] }>();
 const CACHE_TTL = 10 * 60 * 1000;
+const DRACOR_CACHE_TTL = 30 * 60 * 1000;
 
 /**
  * Sélection patrimoniale pré-indexée pour garantir une réactivité immédiate
@@ -233,121 +241,170 @@ const CURATED_CATALOG: CatalogBookItem[] = [
   },
 ];
 
+async function getDracorCorpusDramas(corpus: string): Promise<any[]> {
+  const cached = dracorCorpusCache.get(corpus);
+  if (cached && Date.now() - cached.timestamp < DRACOR_CACHE_TTL) {
+    return cached.dramas;
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
+  try {
+    const resp = await fetch(`https://dracor.org/api/corpora/${corpus}`, {
+      headers: { 'User-Agent': 'WonderWord-UNI-Paris8/1.0' },
+      signal: controller.signal,
+    }).catch(() => null);
+    clearTimeout(timeoutId);
+
+    if (resp && resp.ok) {
+      const data = (await resp.json()) as { dramas?: any[] };
+      const dramas = data.dramas || [];
+      dracorCorpusCache.set(corpus, { timestamp: Date.now(), dramas });
+      return dramas;
+    }
+  } catch (err) {
+    clearTimeout(timeoutId);
+    console.warn(`DraCor lookup non-bloquant (${corpus}):`, err);
+  }
+  return [];
+}
+
 /**
- * Recherche fédérée à travers Gutendex, DraCor et le catalogue patrimonial
+ * Recherche fédérée et paginée à travers Gutendex, DraCor et le catalogue patrimonial
  */
-export async function searchPublicCatalog(query = '', lang: 'fr' | 'de' | 'all' = 'all'): Promise<CatalogBookItem[]> {
-  const cacheKey = `${query.toLowerCase().trim()}_${lang}`;
+export async function searchPublicCatalog(
+  query = '',
+  lang: 'fr' | 'de' | 'all' = 'all',
+  page = 1
+): Promise<PaginatedCatalogResult> {
+  const safePage = Math.max(1, page);
+  const normalizedQuery = query.toLowerCase().trim();
+  const cacheKey = `${normalizedQuery}_${lang}_p${safePage}`;
   const cached = cache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
     return cached.data;
   }
 
   const results: CatalogBookItem[] = [];
-  const normalizedQuery = query.toLowerCase().trim();
 
-  // 1. Filtrer notre catalogue pré-indexé immédiat
-  const matchingCurated = CURATED_CATALOG.filter((item) => {
-    const matchLang = lang === 'all' || item.language === lang;
-    const matchText =
-      !normalizedQuery ||
-      item.title.toLowerCase().includes(normalizedQuery) ||
-      item.author.toLowerCase().includes(normalizedQuery) ||
-      item.description.toLowerCase().includes(normalizedQuery);
-    return matchLang && matchText;
-  });
-  results.push(...matchingCurated);
+  // 1. Catalogue pré-indexé (uniquement sur la page 1)
+  if (safePage === 1) {
+    const matchingCurated = CURATED_CATALOG.filter((item) => {
+      const matchLang = lang === 'all' || item.language === lang;
+      const matchText =
+        !normalizedQuery ||
+        item.title.toLowerCase().includes(normalizedQuery) ||
+        item.author.toLowerCase().includes(normalizedQuery) ||
+        item.description.toLowerCase().includes(normalizedQuery);
+      return matchLang && matchText;
+    });
+    results.push(...matchingCurated);
+  }
 
-  // 2. Interroger l'API DraCor universitaire (Corpus Théâtre)
-  try {
-    const corporaToQuery = lang === 'fr' ? ['fre'] : lang === 'de' ? ['ger'] : ['fre', 'ger'];
-    
-    for (const corpus of corporaToQuery) {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3500);
+  // 2. Interroger en parallèle DraCor (paginé sur tout FreDraCor/GerDraCor) et Gutendex (?page=N, 32 livres/page)
+  const corporaToQuery = lang === 'fr' ? ['fre'] : lang === 'de' ? ['ger'] : ['fre', 'ger'];
+  const dracorPerCorpus = corporaToQuery.length === 2 ? 6 : 12;
 
-      const resp = await fetch(`https://dracor.org/api/corpora/${corpus}`, {
+  let dracorTotalCount = 0;
+  let dracorHasMore = false;
+  let gutendexTotalCount = 0;
+  let gutendexHasMore = false;
+
+  const dracorPromise = Promise.all(
+    corporaToQuery.map(async (corpus) => {
+      const dramas = await getDracorCorpusDramas(corpus);
+      const filtered = dramas.filter((d: any) => {
+        if (!normalizedQuery) return true;
+        const titleMatch = d.title && d.title.toLowerCase().includes(normalizedQuery);
+        const authorMatch =
+          d.authors &&
+          d.authors.some((a: any) => a.name && a.name.toLowerCase().includes(normalizedQuery));
+        return titleMatch || authorMatch;
+      });
+
+      dracorTotalCount += filtered.length;
+      const start = (safePage - 1) * dracorPerCorpus;
+      const end = start + dracorPerCorpus;
+      if (end < filtered.length) {
+        dracorHasMore = true;
+      }
+
+      const pageSlice = filtered.slice(start, end);
+      return pageSlice.map((drama: any): CatalogBookItem => {
+        const authorName = drama.authors?.[0]?.name || 'Auteur classique';
+        const dramaLang: 'fr' | 'de' = corpus === 'fre' ? 'fr' : 'de';
+        const genre =
+          corpus === 'fre' ? 'Théâtre classique français' : 'Deutsches klassisches Theater';
+        const subtitleDesc = drama.subtitle ? `${drama.subtitle}. ` : '';
+        const dramaYear = drama.writtenYear || drama.yearPremiered || drama.yearPrinted || 1700;
+
+        return {
+          id: `dracor:${corpus}:${drama.name}`,
+          source: 'DraCor',
+          title: drama.title,
+          author: authorName,
+          language: dramaLang,
+          cefrLevel: classifyMetadataCefr({
+            language: dramaLang,
+            genre,
+            year: dramaYear,
+            source: 'DraCor',
+          }),
+          year: dramaYear,
+          genre,
+          coverColor: corpus === 'fre' ? 'sauge' : 'prune',
+          description: `${subtitleDesc}Corpus théâtral universitaire DraCor (${corpus.toUpperCase()}). Distribution de ${
+            drama.networkSize || 0
+          } personnages.`,
+          excerpt: `« Pièce dramatique numérisée selon les standards académiques TEI-XML. ${
+            drama.networkSize || 'Plusieurs'
+          } personnages en interaction scénique. »`,
+        };
+      });
+    })
+  );
+
+  const gutenbergLang = lang === 'all' ? 'fr,de' : lang;
+  const gutenbergSearch = normalizedQuery ? `&search=${encodeURIComponent(normalizedQuery)}` : '';
+  const gutenbergUrl = `https://gutendex.com/books/?languages=${gutenbergLang}${gutenbergSearch}&page=${safePage}`;
+
+  const gutendexPromise = (async (): Promise<CatalogBookItem[]> => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 6500);
+    try {
+      const resp = await fetch(gutenbergUrl, {
         headers: { 'User-Agent': 'WonderWord-UNI-Paris8/1.0' },
         signal: controller.signal,
       }).catch(() => null);
-
       clearTimeout(timeoutId);
 
       if (resp && resp.ok) {
-        const data = (await resp.json()) as { dramas?: any[] };
-        const dramas = data.dramas || [];
-        
-        const filteredDramas = dramas.filter((d: any) => {
-          if (!normalizedQuery) return true;
-          const titleMatch = d.title && d.title.toLowerCase().includes(normalizedQuery);
-          const authorMatch = d.authors && d.authors.some((a: any) => a.name && a.name.toLowerCase().includes(normalizedQuery));
-          return titleMatch || authorMatch;
-        }).slice(0, 8); // Prendre jusqu'à 8 résultats pertinents
+        const data = (await resp.json()) as {
+          count?: number;
+          next?: string | null;
+          results?: any[];
+        };
+        gutendexTotalCount = typeof data.count === 'number' ? data.count : 0;
+        gutendexHasMore = Boolean(data.next);
 
-        for (const drama of filteredDramas) {
-          const authorName = drama.authors?.[0]?.name || 'Auteur classique';
-          const dramaLang: 'fr' | 'de' = corpus === 'fre' ? 'fr' : 'de';
-          const genre = corpus === 'fre' ? 'Théâtre classique français' : 'Deutsches klassisches Theater';
-          const subtitleDesc = drama.subtitle ? `${drama.subtitle}. ` : '';
-          const dramaYear = drama.writtenYear || drama.yearPremiered || drama.yearPrinted || 1700;
-          results.push({
-            id: `dracor:${corpus}:${drama.name}`,
-            source: 'DraCor',
-            title: drama.title,
-            author: authorName,
-            language: dramaLang,
-            cefrLevel: classifyMetadataCefr({
-              language: dramaLang,
-              genre,
-              year: dramaYear,
-              source: 'DraCor',
-            }),
-            year: dramaYear,
-            genre,
-            coverColor: corpus === 'fre' ? 'sauge' : 'prune',
-            description: `${subtitleDesc}Corpus théâtral universitaire DraCor (${corpus.toUpperCase()}). Distribution de ${drama.networkSize || 0} personnages.`,
-            excerpt: `« Pièce dramatique numérisée selon les standards académiques TEI-XML. ${drama.networkSize || 'Plusieurs'} personnages en interaction scénique. »`,
-          });
-        }
-      }
-    }
-  } catch (err) {
-    // Si DraCor est indisponible, continuer sans bloquer
-    console.warn('DraCor lookup non-bloquant:', err);
-  }
+        const gutenbergBooks = data.results || [];
+        return gutenbergBooks.map((gb): CatalogBookItem => {
+          const gbLang: 'fr' | 'de' = gb.languages?.includes('de') ? 'de' : 'fr';
+          const authorName = gb.authors?.[0]?.name
+            ? gb.authors[0].name.split(',').reverse().join(' ').trim()
+            : 'Auteur classique';
+          const coverUrl = gb.formats?.['image/jpeg'] || undefined;
+          const txtUrl =
+            gb.formats?.['text/plain; charset=utf-8'] || gb.formats?.['text/plain'] || undefined;
+          const subjects =
+            gb.subjects && gb.subjects.length > 0
+              ? gb.subjects.slice(0, 3).join(' · ')
+              : 'Littérature générale & patrimoine';
+          const genre = gb.subjects?.[0]
+            ? gb.subjects[0].split('--')[0].trim()
+            : 'Classique du domaine public';
 
-  // 3. Interroger l'API Gutendex (Project Gutenberg)
-  try {
-    const gutenbergLang = lang === 'all' ? '' : `&languages=${lang}`;
-    const gutenbergSearch = normalizedQuery ? `&search=${encodeURIComponent(normalizedQuery)}` : '';
-    const url = `https://gutendex.com/books/?${gutenbergLang}${gutenbergSearch}`;
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 4500); // 4.5s max timeout
-
-    const resp = await fetch(url, {
-      headers: { 'User-Agent': 'WonderWord-UNI-Paris8/1.0' },
-      signal: controller.signal,
-    }).catch(() => null);
-
-    clearTimeout(timeoutId);
-
-    if (resp && resp.ok) {
-      const data = (await resp.json()) as { results?: any[] };
-      const gutenbergBooks = (data.results || []).slice(0, 10);
-
-      for (const gb of gutenbergBooks) {
-        const gbLang = gb.languages?.includes('de') ? 'de' : 'fr';
-        const authorName = gb.authors?.[0]?.name ? gb.authors[0].name.split(',').reverse().join(' ').trim() : 'Auteur classique';
-        const coverUrl = gb.formats?.['image/jpeg'] || undefined;
-        const txtUrl = gb.formats?.['text/plain; charset=utf-8'] || gb.formats?.['text/plain'] || undefined;
-        const subjects = gb.subjects && gb.subjects.length > 0 ? gb.subjects.slice(0, 3).join(' · ') : 'Littérature générale & patrimoine';
-        const genre = gb.subjects?.[0] ? gb.subjects[0].split('--')[0].trim() : 'Classique du domaine public';
-
-        // Éviter les doublons avec ce qui est déjà dans results
-        const alreadyIn = results.some((r) => r.title.toLowerCase() === gb.title.toLowerCase());
-        if (!alreadyIn) {
-          results.push({
+          return {
             id: `gutenberg:${gb.id}`,
             source: 'Gutenberg',
             title: gb.title,
@@ -363,20 +420,49 @@ export async function searchPublicCatalog(query = '', lang: 'fr' | 'de' | 'all' 
             coverUrl,
             coverColor: gbLang === 'fr' ? 'soleil' : 'bleuet',
             description: `Édition patrimoniale issue du Projet Gutenberg mondial. Thématiques : ${subjects}.`,
-            excerpt: `« Ouvrage numérisé et conservé en libre accès pour la recherche et l'étude critique. Consulté plus de ${(gb.download_count || 0).toLocaleString('fr-FR')} fois à l'international. »`,
+            excerpt: `« Ouvrage numérisé et conservé en libre accès pour la recherche et l'étude critique. Consulté plus de ${(
+              gb.download_count || 0
+            ).toLocaleString('fr-FR')} fois à l'international. »`,
             downloadUrl: txtUrl,
             downloads: gb.download_count,
-          });
-        }
+          };
+        });
+      }
+    } catch (err) {
+      clearTimeout(timeoutId);
+      console.warn('Gutendex lookup non-bloquant:', err);
+    }
+    return [];
+  })();
+
+  const [dracorGroups, gutendexItems] = await Promise.all([dracorPromise, gutendexPromise]);
+
+  const seenTitles = new Set(results.map((r) => r.title.toLowerCase().trim()));
+  for (const group of dracorGroups) {
+    for (const item of group) {
+      const key = item.title.toLowerCase().trim();
+      if (!seenTitles.has(key)) {
+        seenTitles.add(key);
+        results.push(item);
       }
     }
-  } catch (err) {
-    console.warn('Gutendex lookup non-bloquant:', err);
+  }
+  for (const item of gutendexItems) {
+    const key = item.title.toLowerCase().trim();
+    if (!seenTitles.has(key)) {
+      seenTitles.add(key);
+      results.push(item);
+    }
   }
 
-  // Stocker dans le cache mémoire
-  cache.set(cacheKey, { timestamp: Date.now(), data: results });
-  return results;
+  const payload: PaginatedCatalogResult = {
+    items: results,
+    totalExternalCount: dracorTotalCount + gutendexTotalCount,
+    hasMore: dracorHasMore || gutendexHasMore,
+  };
+
+  cache.set(cacheKey, { timestamp: Date.now(), data: payload });
+  return payload;
 }
 
 /**
