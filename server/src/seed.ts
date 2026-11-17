@@ -163,6 +163,7 @@ async function main() {
   await prisma.book.upsert({
     where: { slug: 'tour-du-monde' },
     update: {
+      cefrLevel: 'B1',
       coverImage: 'https://www.gutenberg.org/cache/epub/800/pg800.cover.medium.jpg',
     },
     create: {
@@ -174,7 +175,7 @@ async function main() {
       coverImage: 'https://www.gutenberg.org/cache/epub/800/pg800.cover.medium.jpg',
       publisher: 'Éditions Hetzel (1872)',
       language: 'fr',
-      cefrLevel: 'A2',
+      cefrLevel: 'B1',
       year: 1872,
       genre: 'Aventure géographique',
       totalChapters: 1,
@@ -279,22 +280,24 @@ async function main() {
     },
   });
 
-  // 7. KINDER- UND HAUSMÄRCHEN : ROTKÄPPCHEN (Brüder Grimm - Allemand A2)
+  // 7. KINDER- UND HAUSMÄRCHEN : ROTKÄPPCHEN (Brüder Grimm - Allemand B1)
   await prisma.book.upsert({
     where: { slug: 'grimms-maerchen' },
     update: {
+      cefrLevel: 'B1',
+      description: 'Le recueil fondamental des contes populaires allemands collectés par Jacob et Wilhelm Grimm. Une langue limpide, musicale et idéale pour débuter la lecture littéraire au niveau B1.',
       coverImage: 'https://www.gutenberg.org/cache/epub/5314/pg5314.cover.medium.jpg',
     },
     create: {
       slug: 'grimms-maerchen',
       title: 'Kinder- und Hausmärchen (Rotkäppchen)',
       author: 'Brüder Grimm',
-      description: 'Le recueil fondamental des contes populaires allemands collectés par Jacob et Wilhelm Grimm. Une langue limpide, musicale et idéale pour les apprenants francophones au niveau A2.',
+      description: 'Le recueil fondamental des contes populaires allemands collectés par Jacob et Wilhelm Grimm. Une langue limpide, musicale et idéale pour débuter la lecture littéraire au niveau B1.',
       coverColor: 'sauge',
       coverImage: 'https://www.gutenberg.org/cache/epub/5314/pg5314.cover.medium.jpg',
       publisher: 'Realschulbuchhandlung Berlin (1812) / Domaine Public',
       language: 'de',
-      cefrLevel: 'A2',
+      cefrLevel: 'B1',
       year: 1812,
       genre: 'Volksmärchen',
       totalChapters: 1,
@@ -372,7 +375,32 @@ async function main() {
     },
   });
 
-  console.log(`✅ Catalogue alimenté avec succès : 8 chefs-d'œuvre bilingues disponibles dans Découvrir.`);
+  // Migration automatique : la littérature patrimoniale démarre désormais à B1
+  await prisma.book.updateMany({
+    where: { cefrLevel: 'A2' },
+    data: { cefrLevel: 'B1' },
+  });
+
+  // Nettoyage d'anciens livres importés avec le texte de substitution de 66 mots
+  await prisma.book.deleteMany({
+    where: {
+      totalWords: { lte: 100 },
+      slug: {
+        notIn: [
+          'le-petit-prince',
+          'candide',
+          'vingt-mille-lieues',
+          'tour-du-monde',
+          'fleurs-du-mal',
+          'die-verwandlung',
+          'grimms-maerchen',
+          'faust-goethe',
+        ],
+      },
+    },
+  });
+
+  console.log(`✅ Catalogue alimenté avec succès : 8 chefs-d'œuvre bilingues (B1–C1) disponibles dans Découvrir.`);
 }
 
 main()

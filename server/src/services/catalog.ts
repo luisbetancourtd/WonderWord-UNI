@@ -3,13 +3,15 @@
  * Intègre le corpus universitaire DraCor (FreDraCor, GerDraCor) et le Projet Gutenberg (Gutendex)
  */
 
+export type CefrLevel = 'B1' | 'B2' | 'C1';
+
 export interface CatalogBookItem {
   id: string; // ex: 'gutenberg:1234' ou 'dracor:ger:schiller-die-raeuber'
   source: 'Gutenberg' | 'DraCor' | 'Patrimoine';
   title: string;
   author: string;
   language: 'fr' | 'de';
-  cefrLevel: 'A2' | 'B1' | 'B2' | 'C1';
+  cefrLevel: CefrLevel;
   year?: number;
   coverUrl?: string;
   coverColor: 'soleil' | 'prune' | 'sauge' | 'terre' | 'bleuet';
@@ -18,6 +20,81 @@ export interface CatalogBookItem {
   genre?: string;
   downloadUrl?: string;
   downloads?: number;
+}
+
+/**
+ * Classificateur stylométrique multi-facteurs (LIX + TTR + marqueurs archaïques + genre/époque).
+ * Empêche de classer à tort la littérature classique ou le théâtre en vers sous B1.
+ */
+export function classifyTextReadability(
+  rawText: string,
+  meta: { language?: string; genre?: string; year?: number; source?: string } = {}
+): CefrLevel {
+  const clean = rawText.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  const sample = clean.length > 20000 ? clean.slice(1500, 16500) : clean;
+
+  const sentences = sample.split(/(?<=[.!?…])\s+/).filter((s) => s.trim().length > 5);
+  const sentenceCount = Math.max(1, sentences.length);
+  const words = sample.match(/\p{L}+/gu) || [];
+  const wordCount = words.length;
+
+  if (wordCount < 40) {
+    return classifyMetadataCefr(meta);
+  }
+
+  const longWords = words.filter((w) => w.length > 6).length;
+  const uniqueWords = new Set(words.map((w) => w.toLowerCase())).size;
+
+  const avgSentLen = wordCount / sentenceCount;
+  const pctLong = (longWords * 100) / wordCount;
+  const lix = avgSentLen + pctLong;
+  const ttr = (uniqueWords * 100) / wordCount;
+
+  const genreLower = (meta.genre || '').toLowerCase();
+  const isDramaOrVerse =
+    meta.source === 'DraCor' ||
+    /théâtre|theater|drama|tragédie|tragödie|poésie|lyrik|verse|philosoph/i.test(genreLower);
+  const isHistorical = typeof meta.year === 'number' && meta.year > 0 && meta.year < 1830;
+
+  let score = lix;
+  if (ttr >= 46) score += 6;
+  if (isDramaOrVerse) score += 12; // Compense la brièveté des répliques théâtrales
+  if (isHistorical) score += 8;
+
+  if (score >= 54 || (isDramaOrVerse && isHistorical && score >= 45)) {
+    return 'C1';
+  }
+  if (score >= 42 || isHistorical) {
+    return 'B2';
+  }
+  return 'B1';
+}
+
+/**
+ * Estimation heuristique basée sur les métadonnées (sujets, genre, époque) avant téléchargement complet
+ */
+export function classifyMetadataCefr(meta: {
+  language?: string;
+  genre?: string;
+  subjects?: string[];
+  year?: number;
+  source?: string;
+}): CefrLevel {
+  const combined = `${meta.genre || ''} ${(meta.subjects || []).join(' ')}`.toLowerCase();
+
+  if (/philosoph|metaphys|tragéd|tragödie|poésie|poetry|lyrik|classical/.test(combined)) {
+    return 'C1';
+  }
+  if (typeof meta.year === 'number' && meta.year > 0 && meta.year < 1800) {
+    return meta.source === 'DraCor' ? 'C1' : 'B2';
+  }
+  if (/fairy tales|märchen|contes|children|juvenile|aventure|adventure|comédie|komödie/.test(combined)) {
+    return 'B1';
+  }
+  if (meta.source === 'DraCor') {
+    return 'B2';
+  }
+  return meta.language === 'de' ? 'B2' : 'B1';
 }
 
 // Nettoyeur d'en-têtes et pieds de page légaux du Projet Gutenberg
@@ -145,7 +222,7 @@ const CURATED_CATALOG: CatalogBookItem[] = [
     title: 'Hänsel und Gretel & Märchen',
     author: 'Brüder Grimm',
     language: 'de',
-    cefrLevel: 'A2',
+    cefrLevel: 'B1',
     year: 1812,
     genre: 'Volksmärchen',
     coverColor: 'sauge',
@@ -212,14 +289,20 @@ export async function searchPublicCatalog(query = '', lang: 'fr' | 'de' | 'all' 
           const dramaLang: 'fr' | 'de' = corpus === 'fre' ? 'fr' : 'de';
           const genre = corpus === 'fre' ? 'Théâtre classique français' : 'Deutsches klassisches Theater';
           const subtitleDesc = drama.subtitle ? `${drama.subtitle}. ` : '';
+          const dramaYear = drama.writtenYear || drama.yearPremiered || drama.yearPrinted || 1700;
           results.push({
             id: `dracor:${corpus}:${drama.name}`,
             source: 'DraCor',
             title: drama.title,
             author: authorName,
             language: dramaLang,
-            cefrLevel: dramaLang === 'fr' ? 'B2' : 'C1',
-            year: drama.writtenYear || drama.yearPremiered || drama.yearPrinted || 1700,
+            cefrLevel: classifyMetadataCefr({
+              language: dramaLang,
+              genre,
+              year: dramaYear,
+              source: 'DraCor',
+            }),
+            year: dramaYear,
             genre,
             coverColor: corpus === 'fre' ? 'sauge' : 'prune',
             description: `${subtitleDesc}Corpus théâtral universitaire DraCor (${corpus.toUpperCase()}). Distribution de ${drama.networkSize || 0} personnages.`,
@@ -270,7 +353,12 @@ export async function searchPublicCatalog(query = '', lang: 'fr' | 'de' | 'all' 
             title: gb.title,
             author: authorName,
             language: gbLang,
-            cefrLevel: gbLang === 'fr' ? 'B1' : 'B2',
+            cefrLevel: classifyMetadataCefr({
+              language: gbLang,
+              genre,
+              subjects: gb.subjects || [],
+              source: 'Gutenberg',
+            }),
             genre,
             coverUrl,
             coverColor: gbLang === 'fr' ? 'soleil' : 'bleuet',
@@ -300,8 +388,13 @@ export async function fetchAndSanitizeBookContent(item: {
   title: string;
   author: string;
   language: string;
+  genre?: string;
+  year?: number;
   downloadUrl?: string;
-}): Promise<{ chapters: { number: number; title: string; contentHtml: string; wordCount: number }[] }> {
+}): Promise<{
+  chapters: { number: number; title: string; contentHtml: string; wordCount: number }[];
+  computedCefrLevel: CefrLevel;
+}> {
   let rawText = '';
 
   if (item.id.startsWith('dracor:')) {
@@ -315,14 +408,35 @@ export async function fetchAndSanitizeBookContent(item: {
     if (!resp.ok) throw new Error('Impossible de télécharger la pièce depuis DraCor.');
     rawText = await resp.text();
   } else if (item.id.startsWith('gutenberg:') || item.downloadUrl) {
-    // Importation depuis Gutenberg ou URL directe du patrimoine
+    // Importation depuis Gutenberg ou URL directe du patrimoine (avec URLs de secours officielles)
     const gutenbergId = item.id.replace('gutenberg:', '');
-    const url = item.downloadUrl || `https://www.gutenberg.org/cache/epub/${gutenbergId}/pg${gutenbergId}.txt`;
-    const resp = await fetch(url, {
-      headers: { 'User-Agent': 'WonderWord-UNI-Paris8/1.0' },
-    });
-    if (!resp.ok) throw new Error('Impossible de télécharger le texte depuis le Projet Gutenberg.');
-    rawText = await resp.text();
+    const candidateUrls = [
+      item.downloadUrl,
+      `https://www.gutenberg.org/ebooks/${gutenbergId}.txt.utf-8`,
+      `https://www.gutenberg.org/cache/epub/${gutenbergId}/pg${gutenbergId}.txt.utf-8`,
+      `https://www.gutenberg.org/cache/epub/${gutenbergId}/pg${gutenbergId}.txt`,
+    ].filter((u): u is string => Boolean(u) && !u.includes('undefined'));
+
+    for (const url of candidateUrls) {
+      try {
+        const resp = await fetch(url, {
+          headers: { 'User-Agent': 'WonderWord-UNI-Paris8/1.0' },
+        });
+        if (resp.ok) {
+          const text = await resp.text();
+          if (text && text.length > 500) {
+            rawText = text;
+            break;
+          }
+        }
+      } catch {
+        // Essayer l'URL suivante
+      }
+    }
+
+    if (!rawText) {
+      throw new Error('Impossible de télécharger le texte intégral depuis le Projet Gutenberg.');
+    }
 
     // Nettoyage des notices légales de Gutenberg
     const startMatch = rawText.match(GUTENBERG_START_REGEX);
@@ -334,17 +448,20 @@ export async function fetchAndSanitizeBookContent(item: {
       rawText = rawText.slice(0, endMatch.index);
     }
   } else {
-    // Exemple patrimonial pré-rempli si aucune URL externe
-    rawText = `
-      Chapitre I. L'ouverture littéraire.
-      C'est ainsi que commence ce chef-d'œuvre du patrimoine universel. Les mots résonnent avec la voix des siècles passés et nous invitent à une écoute attentive des nuances de la langue.
-      
-      Chapitre II. La traversée des formes.
-      Chaque phrase révèle une architecture syntaxique singulière où le rythme et l'harmonie des sons construisent le sens profond du texte littéraire.
-    `;
+    throw new Error("Source textuelle introuvable pour l'importation.");
   }
 
-  return { chapters: splitTextIntoChapters(rawText, item.language) };
+  const computedCefrLevel = classifyTextReadability(rawText, {
+    language: item.language,
+    genre: item.genre,
+    year: item.year,
+    source: item.source,
+  });
+
+  return {
+    chapters: splitTextIntoChapters(rawText, item.language),
+    computedCefrLevel,
+  };
 }
 
 /**

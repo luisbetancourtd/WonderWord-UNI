@@ -1,5 +1,10 @@
 import { FastifyInstance } from 'fastify';
-import { searchPublicCatalog, fetchAndSanitizeBookContent, splitTextIntoChapters } from '../services/catalog.js';
+import {
+  searchPublicCatalog,
+  fetchAndSanitizeBookContent,
+  splitTextIntoChapters,
+  classifyTextReadability,
+} from '../services/catalog.js';
 import { analyzeLiteraryWord, SupportedLanguage } from '../services/linguistics.js';
 
 export default async function bookRoutes(server: FastifyInstance) {
@@ -188,7 +193,7 @@ export default async function bookRoutes(server: FastifyInstance) {
         title: b.title,
         author: b.author,
         language: (b.language === 'de' ? 'de' : 'fr') as 'fr' | 'de',
-        cefrLevel: (b.cefrLevel || 'B1') as 'A2' | 'B1' | 'B2' | 'C1',
+        cefrLevel: (b.cefrLevel === 'C1' || b.cefrLevel === 'B2' ? b.cefrLevel : 'B1') as 'B1' | 'B2' | 'C1',
         year: b.year,
         coverUrl: b.coverImage || undefined,
         coverColor: (b.coverColor || 'soleil') as any,
@@ -232,12 +237,14 @@ export default async function bookRoutes(server: FastifyInstance) {
     }
 
     const decoded = request.user as { id: string };
-    const { id, title, author, language, source, downloadUrl, coverUrl } = request.body as {
+    const { id, title, author, language, source, genre, year, downloadUrl, coverUrl } = request.body as {
       id: string;
       title: string;
       author: string;
       language: string;
       source: string;
+      genre?: string;
+      year?: number;
       downloadUrl?: string;
       coverUrl?: string;
     };
@@ -269,6 +276,8 @@ export default async function bookRoutes(server: FastifyInstance) {
           title,
           author,
           language: language === 'de' ? 'de' : 'fr',
+          genre,
+          year,
           downloadUrl,
         });
         const totalWords = content.chapters.reduce((sum, ch) => sum + ch.wordCount, 0);
@@ -276,6 +285,7 @@ export default async function bookRoutes(server: FastifyInstance) {
         book = await server.prisma.book.update({
           where: { id: book.id },
           data: {
+            cefrLevel: content.computedCefrLevel,
             totalChapters: content.chapters.length,
             totalWords,
             ...(coverUrl && !book.coverImage && { coverImage: coverUrl }),
@@ -302,6 +312,8 @@ export default async function bookRoutes(server: FastifyInstance) {
         title,
         author,
         language: language === 'de' ? 'de' : 'fr',
+        genre,
+        year,
         downloadUrl,
       });
 
@@ -314,13 +326,13 @@ export default async function bookRoutes(server: FastifyInstance) {
           title,
           author,
           language: language === 'de' ? 'de' : 'fr',
-          cefrLevel: language === 'de' ? 'B1' : 'B2',
+          cefrLevel: content.computedCefrLevel,
           publisher: `${source || 'Domaine Public'} (Édition Numérique Libre)`,
           description: `Ouvrage importé depuis le catalogue public ${source || 'Gutenberg/DraCor'}.`,
           coverColor: language === 'de' ? 'prune' : 'sauge',
           coverImage: coverUrl || null,
-          year: 1850,
-          genre: 'Patrimoine classique',
+          year: typeof year === 'number' ? year : 1850,
+          genre: genre || 'Patrimoine classique',
           totalChapters: content.chapters.length,
           totalWords,
           chapters: {
@@ -399,6 +411,7 @@ export default async function bookRoutes(server: FastifyInstance) {
 
     const chapters = splitTextIntoChapters(contentText, cleanLang);
     const totalWords = chapters.reduce((sum, ch) => sum + ch.wordCount, 0);
+    const computedLevel = classifyTextReadability(contentText, { language: cleanLang, genre });
 
     const coverColors = ['sauge', 'prune', 'soleil', 'terre', 'bleuet'] as const;
     const chosenColor = coverColors[cleanTitle.length % coverColors.length];
@@ -409,7 +422,7 @@ export default async function bookRoutes(server: FastifyInstance) {
         title: cleanTitle,
         author: cleanAuthor,
         language: cleanLang,
-        cefrLevel: cefrLevel || 'B1',
+        cefrLevel: cefrLevel && cefrLevel !== 'A2' ? cefrLevel : computedLevel,
         publisher: 'Atelier de Lecture & Studio Phonétique',
         description: contentText.trim().slice(0, 240) + (contentText.trim().length > 240 ? '…' : ''),
         coverColor: chosenColor,

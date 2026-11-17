@@ -113,7 +113,7 @@ export const ShadowingView: React.FC = () => {
             <span className="text-[10px] uppercase tracking-widest font-extrabold text-sauge bg-sauge-wash border border-sauge/25 rounded-full px-3 py-1">
               {customTarget
                 ? `${customTarget.language.toUpperCase()} · Palabra Diana: «${customTarget.word}»`
-                : 'Français · A2'}
+                : 'Français · B1'}
             </span>
             <span className="text-[13px] text-ink-2">
               {customTarget ? (

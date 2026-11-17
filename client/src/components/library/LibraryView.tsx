@@ -166,6 +166,8 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
             author: item.author,
             language: item.language,
             source: item.source,
+            genre: item.genre,
+            year: item.year,
             downloadUrl: item.downloadUrl,
             coverUrl: item.coverUrl,
           }),
@@ -335,7 +337,6 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onNavigate, onSelectBo
           </span>
           {[
             { label: 'Tous les niveaux', value: 'ALL' },
-            { label: 'A2 · Débutant', value: 'A2' },
             { label: 'B1 · Intermédiaire', value: 'B1' },
             { label: 'B2 · Avancé', value: 'B2' },
             { label: 'C1 · Autonome', value: 'C1' },

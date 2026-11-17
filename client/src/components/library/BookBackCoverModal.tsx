@@ -56,8 +56,6 @@ export const BookBackCoverModal: React.FC<BookBackCoverModalProps> = ({
 
   const getCefrBadgeColor = (lvl: string) => {
     switch (lvl) {
-      case 'A2':
-        return 'bg-emerald-100 text-emerald-800 border-emerald-300';
       case 'B1':
         return 'bg-blue-100 text-blue-800 border-blue-300';
       case 'B2':
@@ -65,7 +63,20 @@ export const BookBackCoverModal: React.FC<BookBackCoverModalProps> = ({
       case 'C1':
         return 'bg-purple-100 text-purple-800 border-purple-300';
       default:
-        return 'bg-stone-100 text-stone-800 border-stone-300';
+        return 'bg-blue-100 text-blue-800 border-blue-300';
+    }
+  };
+
+  const getCefrLabel = (lvl: string) => {
+    switch (lvl) {
+      case 'B1':
+        return 'B1 · Intermédiaire';
+      case 'B2':
+        return 'B2 · Avancé';
+      case 'C1':
+        return 'C1 · Autonome';
+      default:
+        return `${lvl} · Intermédiaire`;
     }
   };
 
@@ -154,7 +165,7 @@ export const BookBackCoverModal: React.FC<BookBackCoverModalProps> = ({
             <div className="w-full space-y-2 pt-2">
               <div className="flex flex-wrap items-center justify-center gap-1.5">
                 <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${getCefrBadgeColor(cefrLevel)}`}>
-                  Niveau {cefrLevel}
+                  Niveau {getCefrLabel(cefrLevel)}
                 </span>
                 <span className="text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-paper-warm border border-rule text-ink-2">
                   {language === 'de' ? '🇩🇪 Allemand' : '🇫🇷 Français'}

@@ -68,7 +68,7 @@ export interface CatalogBookItem {
   title: string;
   author: string;
   language: 'fr' | 'de';
-  cefrLevel: 'A2' | 'B1' | 'B2' | 'C1';
+  cefrLevel: 'B1' | 'B2' | 'C1';
   year?: number;
   coverUrl?: string;
   coverColor: string;
