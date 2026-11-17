@@ -665,13 +665,15 @@ export function splitTextIntoChapters(
   let currentWordCount = 0;
   let chapterIndex = 1;
 
+  const chapterWordsTarget = totalInputWords(paragraphs) > 40000 ? 1500 : 1200;
+
   for (const para of paragraphs) {
     const wordsInPara = para.split(/\s+/).filter(Boolean).length;
     currentChapterParas.push(`<p>${escapeHtml(para)}</p>`);
     currentWordCount += wordsInPara;
 
-    // Quand on atteint environ 1 200 mots, on forme un chapitre (jusqu'à 30 chapitres équilibrés)
-    if (currentWordCount >= 1200 && chapters.length < 29) {
+    // Découpage équilibré (~1 200 à 1 500 mots par chapitre, jusqu'à 250 chapitres)
+    if (currentWordCount >= chapterWordsTarget && chapters.length < 249) {
       chapters.push({
         number: chapterIndex,
         title: `${chapterLabel} ${chapterIndex}`,
@@ -705,6 +707,14 @@ export function splitTextIntoChapters(
   }
 
   return chapters;
+}
+
+function totalInputWords(paragraphs: string[]): number {
+  let count = 0;
+  for (const p of paragraphs) {
+    count += p.split(/\s+/).filter(Boolean).length;
+  }
+  return count;
 }
 
 function escapeHtml(str: string): string {

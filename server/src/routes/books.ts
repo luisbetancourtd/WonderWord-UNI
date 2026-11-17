@@ -322,10 +322,12 @@ export default async function bookRoutes(server: FastifyInstance) {
       },
     });
 
-    // Si un livre importé précédemment avait un texte trop court ou un seul chapitre géant non découpé, le rafraîchir
+    // Si un livre importé précédemment avait un texte trop court ou un chapitre final géant (ancien plafond à 30), le rafraîchir
     const needsRefresh =
       book &&
-      (book.totalWords <= 160 || (book.totalChapters === 1 && book.totalWords > 2500)) &&
+      (book.totalWords <= 160 ||
+        (book.totalChapters === 1 && book.totalWords > 2500) ||
+        (book.totalChapters === 30 && book.totalWords > 60000)) &&
       (Boolean(downloadUrl) || id.startsWith('dracor:') || id.startsWith('gutenberg:'));
     if (book && needsRefresh) {
       try {

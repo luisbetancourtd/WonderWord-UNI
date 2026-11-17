@@ -311,10 +311,11 @@ export function generateFrenchIpa(word: string): string {
 
   let p = w;
 
-  // Suffixes fréquents
+  // Suffixes fréquents (marqueur interne temporaire pour éviter la re-nasalisation de mɑ̃)
   p = p.replace(/tion(s?)$/, 'sjɔ̃');
   p = p.replace(/sion(s?)$/, 'zjɔ̃');
-  p = p.replace(/ment$/, 'mɑ̃');
+  p = p.replace(/ement$/, 'ə@M_AN@');
+  p = p.replace(/ment$/, '@M_AN@');
   p = p.replace(/eaux?$/, 'o');
   p = p.replace(/eux$/, 'ø');
   p = p.replace(/euse(s?)$/, 'øz');
@@ -346,10 +347,10 @@ export function generateFrenchIpa(word: string): string {
   p = p.replace(/gu(?=[eiyéèê])/g, 'ɡ');
   p = p.replace(/ill/g, 'j');
 
-  // Voyelles nasales
-  p = p.replace(/(?:an|am|en|em)(?![aeiouyéèêëîïôùûümn])/g, 'ɑ̃');
-  p = p.replace(/(?:on|om)(?![aeiouyéèêëîïôùûümn])/g, 'ɔ̃');
-  p = p.replace(/(?:in|im|ain|aim|ein|yn|ym)(?![aeiouyéèêëîïôùûümn])/g, 'ɛ̃');
+  // Voyelles nasales (exclure également les symboles IPA déjà transcrits)
+  p = p.replace(/(?:an|am|en|em)(?![aeiouyéèêëîïôùûümnɑɔɛøœə@])/g, 'ɑ̃');
+  p = p.replace(/(?:on|om)(?![aeiouyéèêëîïôùûümnɑɔɛøœə@])/g, 'ɔ̃');
+  p = p.replace(/(?:in|im|ain|aim|ein|yn|ym)(?![aeiouyéèêëîïôùûümnɑɔɛøœə@])/g, 'ɛ̃');
 
   // Consonnes contextuelles
   p = p.replace(/c(?=[eiyéèêëîï])/g, 's');
@@ -378,9 +379,10 @@ export function generateFrenchIpa(word: string): string {
   p = p.replace(/[ùû]/g, 'u');
   p = p.replace(/u/g, 'y');
 
-  // Consonnes finales muettes et e caduc final
+  // Consonnes finales muettes, e caduc final et restauration du suffixe -ment
   p = p.replace(/[dsxtzp]$/, '');
   p = p.replace(/e$/, '');
+  p = p.replace(/@M_AN@/g, 'mɑ̃');
 
   return `/${p || w}/`;
 }

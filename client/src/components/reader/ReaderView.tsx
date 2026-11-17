@@ -349,7 +349,8 @@ export function quickClientIpa(
   // Français par défaut
   p = p
     .replace(/tion(s?)$/, 'sjɔ̃')
-    .replace(/ment$/, 'mɑ̃')
+    .replace(/ement$/, 'ə@M_AN@')
+    .replace(/ment$/, '@M_AN@')
     .replace(/eau(x?)$/, 'o')
     .replace(/ou/g, 'u')
     .replace(/oi/g, 'wa')
@@ -359,15 +360,16 @@ export function quickClientIpa(
     .replace(/ch/g, 'ʃ')
     .replace(/gn/g, 'ɲ')
     .replace(/qu/g, 'k')
-    .replace(/(?:an|am|en|em)(?![aeiouyéèê])/g, 'ɑ̃')
-    .replace(/(?:on|om)(?![aeiouyéèê])/g, 'ɔ̃')
-    .replace(/(?:in|im|ain|ein)(?![aeiouyéèê])/g, 'ɛ̃')
+    .replace(/(?:an|am|en|em)(?![aeiouyéèêɑɔɛøœə@])/g, 'ɑ̃')
+    .replace(/(?:on|om)(?![aeiouyéèêɑɔɛøœə@])/g, 'ɔ̃')
+    .replace(/(?:in|im|ain|ein)(?![aeiouyéèêɑɔɛøœə@])/g, 'ɛ̃')
     .replace(/r/g, 'ʁ')
     .replace(/[é]/g, 'e')
     .replace(/[èêë]/g, 'ɛ')
     .replace(/u/g, 'y')
     .replace(/[dsxtzp]$/, '')
-    .replace(/e$/, '');
+    .replace(/e$/, '')
+    .replace(/@M_AN@/g, 'mɑ̃');
   return `/${p || clean}/`;
 }
 
