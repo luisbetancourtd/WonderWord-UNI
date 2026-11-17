@@ -17,8 +17,13 @@ async function sendWithFallback(params: {
     return { success: false, providerNote: 'RESEND_API_KEY non configurée' };
   }
 
+  const customEnvFrom =
+    process.env.RESEND_FROM_EMAIL && !process.env.RESEND_FROM_EMAIL.includes('resend.dev')
+      ? process.env.RESEND_FROM_EMAIL
+      : undefined;
+
   const candidateSenders = [
-    process.env.RESEND_FROM_EMAIL,
+    customEnvFrom,
     'WonderWord-UNI <noreply@luisbetancourt.fr>',
     'WonderWord-UNI <noreply@wonderword.luisbetancourt.fr>',
     'WonderWord-UNI <onboarding@resend.dev>',
