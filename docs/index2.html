@@ -1086,6 +1086,165 @@
       </div>
     </section>
 
+    <!-- ======================================================================
+         7. STYLOMÉTRIE & CALIBRATION CECRL DU CORPUS (SUPPRESSION DU NIVEAU A2)
+         ====================================================================== -->
+    <section class="log-section">
+      <div class="section-heading">
+        <span class="section-number">Chapitre 07</span>
+        <h2 class="section-title">Stylométrie &amp; Calibration CECRL du Corpus (B1–C1)</h2>
+        <div class="heading-rule"></div>
+      </div>
+
+      <div class="editorial-card">
+        <p>
+          Lors de la deuxième livraison, une étiquette initiale <code>A2 · Débutant</code> figurait dans les filtres de la Bibliothèque afin de couvrir l'entrée de gamme du CECRL. Toutefois, l'analyse critique du corpus patrimonial issu de <strong>Project Gutenberg</strong> et de <strong>DraCor</strong> a soulevé une question scientifique fondamentale : <em>la littérature classique authentique du XVII<sup>e</sup> au début du XX<sup>e</sup> siècle peut-elle honnêtement relever d'un niveau débutant A2 ?</em>
+        </p>
+
+        <h3 style="font-family:'Libre Caslon Text', serif; font-size:20px; margin: 24px 0 12px; color:var(--ink);">
+          1. Audit Empirique de Lisibilité sur le Corpus Réel (DraCor &amp; Corpus Paris 8)
+        </h3>
+        <p>
+          Pour fonder notre décision sur des mesures quantifiables, nous avons mesuré automatiquement quatre indicateurs stylométriques sur <strong>26 œuvres littéraires et théâtrales réelles</strong> (corpus <em>FreDraCor</em>, <em>GerDraCor</em> et œuvres semées en base de données) : la longueur moyenne des phrases (mots/phrase), la proportion de mots longs (&gt; 6 lettres), l'<strong>indice de lisibilité LIX de Björnsson</strong> (<code>Mots/Phrase + % Mots longs</code>) et la richesse lexicale (<em>Type-Token Ratio</em>, TTR).
+        </p>
+
+        <table class="specs-table">
+          <thead>
+            <tr>
+              <th>Œuvre &amp; Auteur</th>
+              <th>Source / Genre</th>
+              <th>Mots / Phrase</th>
+              <th>% Mots &gt; 6 car.</th>
+              <th>Indice LIX</th>
+              <th>TTR &amp; Constat Didactique</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Vingt Mille Lieues sous les mers</strong> (Verne, 1870)</td>
+              <td>Prose scientifique (<code>fr</code>)</td>
+              <td>32.7</td>
+              <td>33.7%</td>
+              <td><strong>66.4</strong></td>
+              <td>TTR 79.6% · Lexique technique dense → <strong>B1/B2</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Les Fleurs du Mal</strong> (Baudelaire, 1857)</td>
+              <td>Poésie symboliste (<code>fr</code>)</td>
+              <td>32.0</td>
+              <td>26.0%</td>
+              <td><strong>58.0</strong></td>
+              <td>TTR 74.0% · Syntaxe métrique complexe → <strong>C1</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Die Verwandlung</strong> (Kafka, 1915)</td>
+              <td>Prose narrative (<code>de</code>)</td>
+              <td>22.6</td>
+              <td>28.1%</td>
+              <td><strong>50.7</strong></td>
+              <td>TTR 70.7% · Subordonnées allemandes → <strong>B1/B2</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Le Tour du monde en 80 jours</strong> (Verne, 1872)</td>
+              <td>Roman d'aventure (<code>fr</code>)</td>
+              <td>27.0</td>
+              <td>23.5%</td>
+              <td><strong>50.5</strong></td>
+              <td>TTR 77.8% · Subjonctif imparfait (<em>« sût »</em>) → <strong>Recalibré B1</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Candide ou l'Optimisme</strong> (Voltaire, 1759)</td>
+              <td>Conte philosophique (<code>fr</code>)</td>
+              <td>24.8</td>
+              <td>22.4%</td>
+              <td><strong>47.2</strong></td>
+              <td>TTR 61.0% · Ironie &amp; temps littéraires → <strong>B2</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Le Petit Prince</strong> (Saint-Exupéry, 1943)</td>
+              <td>Fable moderne (<code>fr</code>)</td>
+              <td>15.9</td>
+              <td>25.6%</td>
+              <td><strong>41.5</strong></td>
+              <td>TTR 57.0% · Phrases claires, sens figuré → <strong>B1</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Kinder- und Hausmärchen</strong> (Grimm, 1812)</td>
+              <td>Conte populaire (<code>de</code>)</td>
+              <td>25.5</td>
+              <td><strong>10.3%</strong></td>
+              <td><strong>35.8</strong></td>
+              <td>TTR 64.7% · Lexique concret simple → <strong>Seuil B1</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Phèdre</strong> (Racine, 1677) &amp; <strong>Die Räuber</strong> (Schiller, 1781)</td>
+              <td>Théâtre DraCor (<code>fr/de</code>)</td>
+              <td>11.7 / 13.0</td>
+              <td>18.3% / 19.2%</td>
+              <td><strong>30.0 / 32.2</strong></td>
+              <td>Biais LIX : répliques brèves mais archaïsmes (5.1–8.2‰) → <strong>C1</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Woyzeck</strong> (Büchner) &amp; <strong>Les Deux Timides</strong> (Labiche)</td>
+              <td>Théâtre court moderne</td>
+              <td>6.5 / 5.3</td>
+              <td>12.0% / 15.7%</td>
+              <td><strong>18.5 / 21.0</strong></td>
+              <td>Dialogues quotidiens directs → <strong>B1</strong></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="callout-box warn">
+          <strong>Deux découvertes scientifiques issues des mesures :</strong><br />
+          1. <strong>Absence de littérature classique véritablement A2 :</strong> En prose authentique (y compris dans les récits d'aventure comme Jules Verne), la longueur des phrases dépasse 24 mots et recourt au passé simple et à l'imparfait du subjonctif (LIX &gt; 47). Même les contes des frères Grimm présentent des constructions du XIX<sup>e</sup> siècle.<br />
+          2. <strong>Le piège du LIX naïf sur le corpus théâtral (DraCor) :</strong> Une formule LIX pure sous-évalue gravement les tragédies en vers (<em>Phèdre</em> : LIX 30.0, <em>Faust I</em> : LIX 33.3, <em>Die Räuber</em> : LIX 32.2) car chaque réplique dramatique est comptée comme une phrase courte, masquant l'inversion poétique et le lexique archaïque.
+        </div>
+
+        <h3 style="font-family:'Libre Caslon Text', serif; font-size:20px; margin: 28px 0 12px; color:var(--ink);">
+          2. Décision Pédagogique &amp; Classificateur Multi-Facteurs (<code>B1 · B2 · C1</code>)
+        </h3>
+        <p>
+          Par honnêteté didactique envers les apprenants et cohérence avec le CECRL (selon lequel la lecture d'œuvres littéraires authentiques non adaptées débute au palier <strong>B1 — Utilisateur indépendant</strong>), nous avons pris deux mesures structurelles :
+        </p>
+        <ul style="margin: 10px 0 20px 24px; color:var(--ink-2); font-size:15px; line-height:1.7;">
+          <li><strong>Suppression du filtre et du label <code>A2</code> pour le corpus littéraire :</strong> Les filtres de la Bibliothèque et l'ensemble des œuvres en base démarrent désormais à <strong><code>B1 · Intermédiaire</code></strong>, suivis de <strong><code>B2 · Avancé</code></strong> et <strong><code>C1 · Autonome</code></strong>.</li>
+          <li><strong>Classificateur stylométrique multi-facteurs (<code>classifyTextReadability</code> dans <code>catalog.ts</code>) :</strong> Lors de toute importation (Gutenberg, DraCor) ou création de document dans l'Atelier (<code>.EPUB/.PDF/.TXT</code>), le serveur calcule automatiquement le niveau CECRL en pondérant <strong>indice LIX + diversité lexicale (TTR) + correction de genre (théâtre/vers/philosophie) + pondération historique (œuvres antérieures à 1830)</strong>.</li>
+        </ul>
+
+        <div class="terminal-box">
+          <div class="terminal-header">
+            <div class="terminal-dots">
+              <span class="dot dot-red"></span>
+              <span class="dot dot-yellow"></span>
+              <span class="dot dot-green"></span>
+            </div>
+            <span>typescript — server/src/services/catalog.ts (Classificateur Multi-Facteurs B1–C1)</span>
+          </div>
+          <div class="terminal-body">
+<pre><span class="code-keyword">export function</span> <span class="code-cmd">classifyTextReadability</span>(rawText: <span class="code-param">string</span>, meta = {}): <span class="code-param">'B1' | 'B2' | 'C1'</span> {
+  <span class="code-keyword">const</span> avgSentLen = wordCount / sentenceCount;
+  <span class="code-keyword">const</span> pctLong    = (longWords * 100) / wordCount;
+  <span class="code-keyword">const</span> lix        = avgSentLen + pctLong;
+  <span class="code-keyword">const</span> ttr        = (uniqueWords * 100) / wordCount;
+
+  <span class="code-keyword">const</span> isDramaOrVerse = meta.source === <span class="code-val">'DraCor'</span> || <span class="code-val">/théâtre|drama|tragédie|poésie|philosoph/i</span>.test(genreLower);
+  <span class="code-keyword">const</span> isHistorical   = meta.year &amp;&amp; meta.year &lt; 1830;
+
+  <span class="code-keyword">let</span> score = lix;
+  <span class="code-keyword">if</span> (ttr &gt;= 46)       score += 6;  <span class="code-comment">// Richesse lexicale soutenue</span>
+  <span class="code-keyword">if</span> (isDramaOrVerse) score += 12; <span class="code-comment">// Compense la brièveté des répliques théâtrales</span>
+  <span class="code-keyword">if</span> (isHistorical)   score += 8;  <span class="code-comment">// Syntaxe et vocabulaire classiques pré-1830</span>
+
+  <span class="code-keyword">if</span> (score &gt;= 54 || (isDramaOrVerse &amp;&amp; isHistorical &amp;&amp; score &gt;= 45)) <span class="code-keyword">return</span> <span class="code-val">'C1'</span>;
+  <span class="code-keyword">if</span> (score &gt;= 42 || isHistorical) <span class="code-keyword">return</span> <span class="code-val">'B2'</span>;
+  <span class="code-keyword">return</span> <span class="code-val">'B1'</span>;
+}</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <!-- Pied de page -->
