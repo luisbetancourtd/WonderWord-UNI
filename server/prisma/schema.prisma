@@ -124,3 +124,16 @@ model VocabularyCard {
   @@map("vocabulary_cards")
 }
 
+model CorpusLexicon {
+  id           String   @id @default(uuid())
+  lemma        String
+  language     String   @default("fr") // "fr" | "de"
+  cefrLevel    String   @map("cefr_level") // "B1" | "B2" | "C1" | "C2"
+  partOfSpeech String?  @map("part_of_speech")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@unique([lemma, language])
+  @@index([language, cefrLevel])
+  @@map("corpus_lexicon")
+}
+

@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { seedCorpusLexicon } from './services/corpusLexicon.js';
 
 const prisma = new PrismaClient();
 
@@ -403,7 +404,8 @@ async function main() {
     },
   });
 
-  console.log(`✅ Catalogue alimenté avec succès : 8 chefs-d'œuvre bilingues (B1–C1) disponibles dans Découvrir.`);
+  const insertedCorpus = await seedCorpusLexicon(prisma);
+  console.log(`✅ Catalogue alimenté (8 chefs-d'œuvre B1–C1) + CorpusLexicon B1–C2 (${insertedCorpus} nouveaux lemmes).`);
 }
 
 main()

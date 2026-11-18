@@ -7,6 +7,7 @@ import {
   findCuratedCatalogEntry,
 } from '../services/catalog.js';
 import { analyzeLiteraryWord, SupportedLanguage } from '../services/linguistics.js';
+import { seedCorpusLexicon } from '../services/corpusLexicon.js';
 
 export default async function bookRoutes(server: FastifyInstance) {
   // 1. Lister tous les livres du catalogue avec filtres de recherche et niveau CECR
@@ -103,6 +104,58 @@ export default async function bookRoutes(server: FastifyInstance) {
         status: userBook?.status || 'not_started',
       };
     });
+  });
+
+  // 1a. Récupérer le corpus lexical gradué CECR (B1, B2, C1, C2) depuis PostgreSQL
+  server.get('/corpus', async (request) => {
+    const { language: rawLang, level } = request.query as {
+      language?: string;
+      level?: string;
+    };
+    const language = rawLang === 'de' ? 'de' : 'fr';
+    const allowedLevels = ['B1', 'B2', 'C1', 'C2'];
+    const whereClause: any = { language };
+    if (level && allowedLevels.includes(level.toUpperCase())) {
+      whereClause.cefrLevel = level.toUpperCase();
+    }
+
+    let items = await server.prisma.corpusLexicon.findMany({
+      where: whereClause,
+      select: {
+        lemma: true,
+        cefrLevel: true,
+        partOfSpeech: true,
+      },
+      orderBy: [{ cefrLevel: 'asc' }, { lemma: 'asc' }],
+    });
+
+    // Sécurité au premier démarrage si le seed n'avait pas encore peuplé la table
+    if (items.length === 0 && !level) {
+      await seedCorpusLexicon(server.prisma);
+      items = await server.prisma.corpusLexicon.findMany({
+        where: whereClause,
+        select: {
+          lemma: true,
+          cefrLevel: true,
+          partOfSpeech: true,
+        },
+        orderBy: [{ cefrLevel: 'asc' }, { lemma: 'asc' }],
+      });
+    }
+
+    const counts = { B1: 0, B2: 0, C1: 0, C2: 0 };
+    for (const item of items) {
+      if (item.cefrLevel in counts) {
+        counts[item.cefrLevel as keyof typeof counts]++;
+      }
+    }
+
+    return {
+      language,
+      total: items.length,
+      counts,
+      items,
+    };
   });
 
   // 1b. Découverte d'ouvrages dans le catalogue public (8 classiques Paris 8 + Gutendex & DraCor) avec pagination
@@ -920,17 +973,27 @@ export default async function bookRoutes(server: FastifyInstance) {
     }
 
     const decoded = request.user as { id: string };
-    const { bookId, word, ipa, translation, definition, grammatical, contextSentence, language } =
-      request.body as {
-        bookId?: string;
-        word: string;
-        ipa: string;
-        translation: string;
-        definition: string;
-        grammatical: string;
-        contextSentence?: string;
-        language?: string;
-      };
+    const {
+      bookId,
+      word,
+      ipa,
+      translation,
+      definition,
+      grammatical,
+      contextSentence,
+      language,
+      status,
+    } = request.body as {
+      bookId?: string;
+      word: string;
+      ipa: string;
+      translation: string;
+      definition: string;
+      grammatical: string;
+      contextSentence?: string;
+      language?: string;
+      status?: string;
+    };
 
     if (!word) {
       return reply.status(400).send({ message: 'Mot requis' });
@@ -939,6 +1002,8 @@ export default async function bookRoutes(server: FastifyInstance) {
     const supported = ['fr', 'de', 'en', 'es', 'ru'];
     const lang = language && supported.includes(language.toLowerCase()) ? language.toLowerCase() : 'fr';
     const cleanWord = word.trim();
+    const validStatuses = ['new', 'learning', 'review', 'mastered'];
+    const targetStatus = status && validStatuses.includes(status) ? status : undefined;
 
     const card = await server.prisma.vocabularyCard.upsert({
       where: {
@@ -954,6 +1019,7 @@ export default async function bookRoutes(server: FastifyInstance) {
         definition,
         grammatical,
         ...(contextSentence && { contextSentence }),
+        ...(targetStatus && { status: targetStatus }),
       },
       create: {
         userId: decoded.id,
@@ -965,12 +1031,70 @@ export default async function bookRoutes(server: FastifyInstance) {
         grammatical: grammatical || 'Terme lexical',
         contextSentence: contextSentence || null,
         language: lang,
+        status: targetStatus || 'new',
       },
     });
 
     return {
       success: true,
       card,
+    };
+  });
+
+  // 4g. Mettre à jour le statut d'apprentissage d'une carte (new | learning | review | mastered)
+  server.patch('/vocabulary/:cardId/status', async (request, reply) => {
+    try {
+      await request.jwtVerify();
+    } catch {
+      return reply.status(401).send({ message: 'Non autorisé' });
+    }
+
+    const decoded = request.user as { id: string };
+    const { cardId } = request.params as { cardId: string };
+    const { status } = request.body as { status?: string };
+    const validStatuses = ['new', 'learning', 'review', 'mastered'];
+
+    if (!status || !validStatuses.includes(status)) {
+      return reply.status(400).send({ message: 'Statut FSRS invalide' });
+    }
+
+    const existing = await server.prisma.vocabularyCard.findFirst({
+      where: { id: cardId, userId: decoded.id },
+    });
+
+    if (!existing) {
+      return reply.status(404).send({ message: 'Carte introuvable' });
+    }
+
+    const updated = await server.prisma.vocabularyCard.update({
+      where: { id: cardId },
+      data: { status },
+    });
+
+    return {
+      success: true,
+      card: updated,
+    };
+  });
+
+  // 4h. Supprimer une carte du paquet FSRS
+  server.delete('/vocabulary/:cardId', async (request, reply) => {
+    try {
+      await request.jwtVerify();
+    } catch {
+      return reply.status(401).send({ message: 'Non autorisé' });
+    }
+
+    const decoded = request.user as { id: string };
+    const { cardId } = request.params as { cardId: string };
+
+    const deleted = await server.prisma.vocabularyCard.deleteMany({
+      where: { id: cardId, userId: decoded.id },
+    });
+
+    return {
+      success: true,
+      deletedCount: deleted.count,
     };
   });
 

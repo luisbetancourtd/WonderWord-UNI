@@ -51,6 +51,40 @@ export function App() {
   // État pour la vue Vocabulaire FSRS
   const [vocabList, setVocabList] = useState<VocabCardItem[]>([]);
   const [vocabLoading, setVocabLoading] = useState(false);
+  const [vocabFilter, setVocabFilter] = useState<'all' | 'learning' | 'mastered'>('all');
+
+  const handleToggleCardStatus = async (card: VocabCardItem) => {
+    const nextStatus = card.status === 'mastered' ? 'learning' : 'mastered';
+    try {
+      const res = await apiFetch<{ success: boolean; card: VocabCardItem }>(
+        `/books/vocabulary/${card.id}/status`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify({ status: nextStatus }),
+        }
+      );
+      if (res?.card) {
+        setVocabList((prev) =>
+          prev.map((c) => (c.id === card.id ? { ...c, status: res.card.status } : c))
+        );
+      }
+    } catch (err) {
+      console.error('Erreur mise à jour statut carte FSRS:', err);
+    }
+  };
+
+  const handleDeleteVocabCard = async (cardId: string) => {
+    try {
+      await apiFetch(`/books/vocabulary/${cardId}`, { method: 'DELETE' });
+      setVocabList((prev) => {
+        const next = prev.filter((c) => c.id !== cardId);
+        setSidebarStats((s) => ({ ...s, vocabCount: next.length }));
+        return next;
+      });
+    } catch (err) {
+      console.error('Erreur suppression carte FSRS:', err);
+    }
+  };
 
   // Vérifier le token JWT ou le token de validation d'email dans l'URL
   useEffect(() => {
@@ -295,6 +329,42 @@ export function App() {
                 </button>
               </div>
 
+              {vocabList.length > 0 && (
+                <div className="flex flex-wrap items-center justify-between gap-3 bg-paper-warm border border-rule rounded-2xl px-5 py-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {(
+                      [
+                        { id: 'all', label: `Toutes (${vocabList.length})` },
+                        {
+                          id: 'learning',
+                          label: `En cours (${vocabList.filter((c) => c.status !== 'mastered').length})`,
+                        },
+                        {
+                          id: 'mastered',
+                          label: `Apprises · Masquées dans les livres (${vocabList.filter((c) => c.status === 'mastered').length})`,
+                        },
+                      ] as const
+                    ).map((tab) => (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => setVocabFilter(tab.id)}
+                        className={`text-[11px] font-bold px-3.5 py-1.5 rounded-full transition-colors cursor-pointer ${
+                          vocabFilter === tab.id
+                            ? 'bg-sauge text-white'
+                            : 'bg-paper border border-rule-soft text-ink-2 hover:text-ink'
+                        }`}
+                      >
+                        {tab.label}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-[11px] text-ink-3 m-0">
+                    Les cartes marquées « Maîtrisée » cessent d’être cliquables dans vos prochains chapitres et livres.
+                  </p>
+                </div>
+              )}
+
               {vocabLoading ? (
                 <div className="p-12 text-center bg-paper border border-rule rounded-2xl">
                   <p className="text-xs text-ink-2">Chargement de vos cartes FSRS…</p>
@@ -305,8 +375,8 @@ export function App() {
                     Votre paquet FSRS est vide pour le moment
                   </h3>
                   <p className="text-xs text-ink-2 max-w-md mx-auto leading-relaxed">
-                    Ouvrez l’<strong>Atelier de Lecture</strong>, cliquez sur n’importe quel mot
-                    pour inspecter sa phonétique IPA et cliquez sur{' '}
+                    Ouvrez l’<strong>Atelier de Lecture</strong>, cliquez sur un mot cible du corpus{' '}
+                    <strong>B1–C2</strong> pour explorer ses synonymes en immersion et cliquez sur{' '}
                     <strong>« Guardar en Mazo FSRS (1:1) »</strong>.
                   </p>
                   <button
@@ -319,79 +389,122 @@ export function App() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  {vocabList.map((card) => (
-                    <div
-                      key={card.id}
-                      className="bg-paper border border-rule rounded-2xl p-6 shadow-sm flex flex-col justify-between gap-4"
-                    >
-                      <div>
-                        <div className="flex items-center justify-between gap-2 mb-2">
-                          <span className="text-[10px] uppercase tracking-wider font-extrabold text-sauge bg-sauge-wash px-2.5 py-0.5 rounded-full">
-                            {card.language.toUpperCase()} · {card.grammatical}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if ('speechSynthesis' in window) {
-                                window.speechSynthesis.cancel();
-                                const u = new SpeechSynthesisUtterance(card.word);
-                                u.lang = card.language === 'de' ? 'de-DE' : 'fr-FR';
-                                window.speechSynthesis.speak(u);
-                              }
-                            }}
-                            className="w-7 h-7 rounded-full bg-soleil-wash text-soleil-ink flex items-center justify-center hover:bg-soleil transition-colors cursor-pointer"
-                            title="Écouter la prononciation"
-                          >
-                            <Volume2 size={14} />
-                          </button>
-                        </div>
-
-                        <div className="flex items-baseline gap-3 mb-1">
-                          <h3 className="font-serif text-2xl text-ink m-0">{card.word}</h3>
-                          <span className="font-ipa text-sauge font-bold text-base">
-                            {card.ipa}
-                          </span>
-                        </div>
-
-                        <p className="text-xs font-semibold text-prune mb-1.5">
-                          {card.translation}
-                        </p>
-                        <p className="text-xs text-ink-2 leading-relaxed m-0">{card.definition}</p>
-
-                        {card.contextSentence && (
-                          <blockquote className="mt-3 pl-3 border-l-2 border-soleil text-xs italic text-ink-2">
-                            « {card.contextSentence} »
-                          </blockquote>
-                        )}
-                      </div>
-
-                      <div className="pt-3 border-t border-rule-soft flex items-center justify-between">
-                        <span className="text-[11px] text-ink-3 font-medium">
-                          Statut : <strong className="text-sauge">{card.status}</strong>
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            localStorage.setItem(
-                              'wonderword_shadowing_target',
-                              JSON.stringify({
-                                word: card.word,
-                                ipa: card.ipa,
-                                sentence: card.contextSentence || card.word,
-                                language: card.language,
-                                bookTitle: 'Paquet FSRS',
-                              })
-                            );
-                            setCurrentView('shadowing');
-                          }}
-                          className="text-[11px] font-bold text-prune hover:underline inline-flex items-center gap-1 cursor-pointer"
+                  {vocabList
+                    .filter((card) =>
+                      vocabFilter === 'all'
+                        ? true
+                        : vocabFilter === 'mastered'
+                        ? card.status === 'mastered'
+                        : card.status !== 'mastered'
+                    )
+                    .map((card) => {
+                      const isMastered = card.status === 'mastered';
+                      return (
+                        <div
+                          key={card.id}
+                          className={`bg-paper border rounded-2xl p-6 shadow-sm flex flex-col justify-between gap-4 transition-opacity ${
+                            isMastered ? 'border-sauge/40 opacity-85' : 'border-rule'
+                          }`}
                         >
-                          <Mic size={12} />
-                          <span>Pratiquer en Shadowing</span>
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                          <div>
+                            <div className="flex items-center justify-between gap-2 mb-2">
+                              <span className="text-[10px] uppercase tracking-wider font-extrabold text-sauge bg-sauge-wash px-2.5 py-0.5 rounded-full">
+                                {card.language.toUpperCase()} · {card.grammatical}
+                              </span>
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if ('speechSynthesis' in window) {
+                                      window.speechSynthesis.cancel();
+                                      const u = new SpeechSynthesisUtterance(card.word);
+                                      u.lang = card.language === 'de' ? 'de-DE' : 'fr-FR';
+                                      window.speechSynthesis.speak(u);
+                                    }
+                                  }}
+                                  className="w-7 h-7 rounded-full bg-soleil-wash text-soleil-ink flex items-center justify-center hover:bg-soleil transition-colors cursor-pointer"
+                                  title="Écouter la prononciation"
+                                >
+                                  <Volume2 size={14} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteVocabCard(card.id)}
+                                  className="w-7 h-7 rounded-full bg-paper-warm text-ink-3 flex items-center justify-center hover:text-terre hover:bg-terre-wash transition-colors cursor-pointer"
+                                  title="Supprimer du paquet"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="flex items-baseline gap-3 mb-1">
+                              <h3 className="font-serif text-2xl text-ink m-0">{card.word}</h3>
+                              <span className="font-ipa text-sauge font-bold text-base">
+                                {card.ipa}
+                              </span>
+                            </div>
+
+                            <p className="text-xs text-ink-2 leading-relaxed m-0">
+                              {card.definition}
+                            </p>
+                            {card.translation && (
+                              <p className="text-[11px] font-semibold text-prune/80 mt-1.5 mb-0">
+                                Secours : {card.translation}
+                              </p>
+                            )}
+
+                            {card.contextSentence && (
+                              <blockquote className="mt-3 pl-3 border-l-2 border-soleil text-xs italic text-ink-2">
+                                « {card.contextSentence} »
+                              </blockquote>
+                            )}
+                          </div>
+
+                          <div className="pt-3 border-t border-rule-soft flex items-center justify-between gap-2 flex-wrap">
+                            <button
+                              type="button"
+                              onClick={() => handleToggleCardStatus(card)}
+                              className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1 rounded-full transition-colors cursor-pointer ${
+                                isMastered
+                                  ? 'bg-sauge text-white hover:bg-sauge-2'
+                                  : 'bg-sauge-wash text-sauge border border-sauge/30 hover:bg-sauge hover:text-white'
+                              }`}
+                              title={
+                                isMastered
+                                  ? 'Réactiver ce mot pour le rendre de nouveau cliquable dans les livres'
+                                  : 'Marquer comme appris : ne sera plus cliquable dans vos prochains livres'
+                              }
+                            >
+                              <Check size={12} />
+                              <span>
+                                {isMastered ? 'Maîtrisée ✓ (Réactiver)' : 'Marquer apprise ✓'}
+                              </span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                localStorage.setItem(
+                                  'wonderword_shadowing_target',
+                                  JSON.stringify({
+                                    word: card.word,
+                                    ipa: card.ipa,
+                                    sentence: card.contextSentence || card.word,
+                                    language: card.language,
+                                    bookTitle: 'Paquet FSRS',
+                                  })
+                                );
+                                setCurrentView('shadowing');
+                              }}
+                              className="text-[11px] font-bold text-prune hover:underline inline-flex items-center gap-1 cursor-pointer"
+                            >
+                              <Mic size={12} />
+                              <span>Pratiquer en Shadowing</span>
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
                 </div>
               )}
             </div>

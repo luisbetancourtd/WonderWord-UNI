@@ -25,6 +25,12 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { apiFetch } from '../../lib/api';
+import {
+  resolveCorpusWordState,
+  normalizeVocabularyLemma,
+  type CorpusEntryItem,
+  type CorpusCefrLevel,
+} from '../../lib/corpusMatch';
 import type { ViewType, BookSummary } from '../../types';
 
 export type SupportedLang = 'fr' | 'de' | 'en' | 'es' | 'ru';
@@ -47,6 +53,7 @@ interface SelectedWord {
   definition: string;
   grammatical: string;
   sentence?: string;
+  corpusLevel?: CorpusCefrLevel;
 }
 
 interface ChapterSummaryItem {
@@ -518,6 +525,9 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
   const [savingFsrs, setSavingFsrs] = useState(false);
   const [showTranslationRescue, setShowTranslationRescue] = useState(false);
   const [userVocabWords, setUserVocabWords] = useState<Set<string>>(new Set());
+  const [masteredWords, setMasteredWords] = useState<Set<string>>(new Set());
+  const [corpusItems, setCorpusItems] = useState<CorpusEntryItem[]>([]);
+  const [corpusOnlyClickable, setCorpusOnlyClickable] = useState<boolean>(true);
 
   // Contrôles de la barre d'outils du livre (Typographie, Seuil FSRS, Audio TTS, Tiroirs)
   const [fontSize, setFontSize] = useState<number>(() => {
@@ -562,15 +572,47 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
     setCurrentSubPage(1);
   }, [chapterNumber, bookId]);
 
-  // Charger les cartes de vocabulaire de l'utilisateur pour le filtre de rétention FSRS
+  // Charger les cartes de vocabulaire de l'utilisateur + le corpus gradué CECR (B1–C2)
   useEffect(() => {
     apiFetch<VocabularyCardItem[]>('/books/vocabulary')
       .then((cards) => {
-        const wordSet = new Set(cards.map((c) => c.word.toLowerCase().trim()));
-        setUserVocabWords(wordSet);
+        const learningSet = new Set<string>();
+        const learnedSet = new Set<string>();
+        for (const c of cards || []) {
+          if (c.language && c.language.toLowerCase() !== activeLang) continue;
+          const raw = c.word.toLowerCase().trim();
+          const norm = normalizeVocabularyLemma(c.word);
+          if (c.status === 'mastered') {
+            if (raw) learnedSet.add(raw);
+            if (norm) learnedSet.add(norm);
+          } else {
+            if (raw) learningSet.add(raw);
+            if (norm) learningSet.add(norm);
+          }
+        }
+        setUserVocabWords(learningSet);
+        setMasteredWords(learnedSet);
       })
       .catch(() => {});
-  }, []);
+
+    if (activeLang === 'fr' || activeLang === 'de') {
+      apiFetch<{ items?: CorpusEntryItem[] }>(`/books/corpus?language=${activeLang}`)
+        .then((res) => {
+          setCorpusItems(Array.isArray(res?.items) ? res.items : []);
+        })
+        .catch(() => setCorpusItems([]));
+    } else {
+      setCorpusItems([]);
+    }
+  }, [activeLang]);
+
+  const corpusMap = useMemo(() => {
+    const map = new Map<string, CorpusEntryItem>();
+    for (const item of corpusItems) {
+      map.set(item.lemma.toLowerCase().trim(), item);
+    }
+    return map;
+  }, [corpusItems]);
 
   // Arrêter la synthèse vocale au changement de chapitre, mode ou démontage
   useEffect(() => {
@@ -880,6 +922,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
       paragraphText.slice(0, 180);
 
     const alreadyInFsrs = userVocabWords.has(cleaned.toLowerCase());
+    const corpusResolution = resolveCorpusWordState(cleaned, lang, corpusMap, masteredWords);
     setSavedToFsrs(alreadyInFsrs);
     setShowTranslationRescue(false);
     setWordLoading(true);
@@ -887,13 +930,14 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
     const immediateIpa = quickClientIpa(cleaned, lang, enrichedIpaMap);
     setSelectedWord({
       word: cleaned,
-      lemma: cleaned,
+      lemma: corpusResolution.lemma || cleaned,
       ipa: immediateIpa,
       synonyms: [],
       translation: '',
       definition: `Immersion ${lang.toUpperCase()} : recherche des synonymes et définition…`,
       grammatical: `Analyse lexicale · ${lang.toUpperCase()}`,
       sentence: matchingSentence,
+      corpusLevel: corpusResolution.cefrLevel,
     });
 
     try {
@@ -918,29 +962,97 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
         setEnrichedIpaMap((prev) => ({ ...prev, [cleaned.toLowerCase()]: analysis.ipa }));
       }
 
+      const nextResolution = resolveCorpusWordState(
+        analysis.lemma || cleaned,
+        lang,
+        corpusMap,
+        masteredWords
+      );
+
       setSelectedWord({
         word: analysis.word || cleaned,
-        lemma: analysis.lemma || cleaned,
+        lemma: analysis.lemma || corpusResolution.lemma || cleaned,
         ipa: analysis.ipa || immediateIpa,
         synonyms: Array.isArray(analysis.synonyms) ? analysis.synonyms : [],
         translation: analysis.translation || '',
         definition: analysis.definition,
         grammatical: analysis.grammatical,
         sentence: matchingSentence,
+        corpusLevel: corpusResolution.cefrLevel || nextResolution.cefrLevel,
       });
     } catch {
       setSelectedWord({
         word: cleaned,
-        lemma: cleaned,
+        lemma: corpusResolution.lemma || cleaned,
         ipa: immediateIpa,
         synonyms: [],
         translation: '',
         definition: `Employé dans ce passage : « ${matchingSentence.slice(0, 140)} »`,
         grammatical: `Vocabulaire littéraire · ${lang.toUpperCase()}`,
         sentence: matchingSentence,
+        corpusLevel: corpusResolution.cefrLevel,
       });
     } finally {
       setWordLoading(false);
+    }
+  };
+
+  // Marquer un mot directement comme appris ("mastered") pour qu'il ne soit plus cliquable dans les prochains livres
+  const handleMarkWordMastered = async () => {
+    if (!selectedWord || savingFsrs) return;
+    try {
+      setSavingFsrs(true);
+      const fallbackTranslation =
+        selectedWord.translation ||
+        (selectedWord.synonyms && selectedWord.synonyms.length > 0
+          ? selectedWord.synonyms.slice(0, 3).join(' · ')
+          : selectedWord.definition.slice(0, 80));
+      const targetWordKey = (
+        selectedWord.lemma ||
+        selectedWord.word
+      )
+        .toLowerCase()
+        .trim();
+
+      await apiFetch('/books/vocabulary', {
+        method: 'POST',
+        body: JSON.stringify({
+          bookId: readerMode === 'book' ? chapterData?.book.id : undefined,
+          word: targetWordKey,
+          ipa: selectedWord.ipa,
+          translation: fallbackTranslation,
+          definition: selectedWord.definition,
+          grammatical: selectedWord.grammatical,
+          contextSentence: selectedWord.sentence,
+          language: activeLang,
+          status: 'mastered',
+        }),
+      });
+
+      setMasteredWords((prev) => {
+        const next = new Set(prev);
+        next.add(selectedWord.word.toLowerCase().trim());
+        next.add(targetWordKey);
+        const normWord = normalizeVocabularyLemma(selectedWord.word);
+        const normLemma = normalizeVocabularyLemma(targetWordKey);
+        if (normWord) next.add(normWord);
+        if (normLemma) next.add(normLemma);
+        return next;
+      });
+      setUserVocabWords((prev) => {
+        const next = new Set(prev);
+        next.delete(selectedWord.word.toLowerCase().trim());
+        next.delete(targetWordKey);
+        return next;
+      });
+      const label = selectedWord.word;
+      setSelectedWord(null);
+      showToast(`« ${label} » marquée apprise : elle disparaît de vos prochains livres !`);
+    } catch (err) {
+      console.error('Erreur marquage appris:', err);
+      showToast('Erreur lors de la mise à jour du statut appris.');
+    } finally {
+      setSavingFsrs(false);
     }
   };
 
@@ -1143,15 +1255,23 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
     [annotations, currentChapterNum]
   );
 
-  // Déterminer si un mot reçoit une glose <ruby> selon le Seuil FSRS (< 80%, < 90%, < 95%, < 98%, Masqué)
-  const shouldDisplayRuby = (token: string, index: number, isStudyMode: boolean): boolean => {
+  // Déterminer si un mot reçoit une glose <ruby> selon le Seuil FSRS et le Corpus B1–C2
+  const shouldDisplayRuby = (
+    token: string,
+    index: number,
+    isStudyMode: boolean,
+    isMastered: boolean,
+    inCorpus: boolean
+  ): boolean => {
+    if (isMastered) return false;
+    if (corpusMap.size > 0 && corpusOnlyClickable && !inCorpus) return false;
     if (isStudyMode && !showStudyIpa) return false;
     if (!isStudyMode && fsrsThreshold === 0) return false;
 
     const clean = cleanToken(token).toLowerCase();
     if (clean.length < 4) return false;
 
-    // Toujours annoter les mots cibles du dictionnaire critique ou du mazo FSRS de l'utilisateur
+    // Toujours annoter les mots cibles du dictionnaire critique ou du paquet FSRS en cours
     if (
       QUICK_IPA_FR[clean] ||
       QUICK_IPA_DE[clean] ||
@@ -1246,8 +1366,18 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
           firstWordRendered = true;
         }
 
+        const corpusState = resolveCorpusWordState(clean, lang, corpusMap, masteredWords);
+        const isMasteredWord = corpusState.isMastered;
+        const isCorpusActive = corpusMap.size > 0 && corpusOnlyClickable;
+        const isClickableWord =
+          Boolean(clean) &&
+          !isMasteredWord &&
+          (!isCorpusActive || corpusState.inCorpus);
+
         const isSelected =
-          selectedWord && clean.toLowerCase() === selectedWord.word.toLowerCase();
+          isClickableWord &&
+          selectedWord &&
+          clean.toLowerCase() === selectedWord.word.toLowerCase();
 
         // Vérifier si ce mot fait partie d'un surlignage utilisateur
         const matchingWordHighlight = paraHighlights.find((h) =>
@@ -1257,7 +1387,29 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
           ? `${getHighlightBadgeClass(matchingWordHighlight.color)} px-1 rounded`
           : '';
 
-        const showRuby = shouldDisplayRuby(token, tIdx, isStudyMode);
+        const corpusUnderlineClass =
+          isClickableWord && corpusState.inCorpus
+            ? corpusState.cefrLevel === 'C2'
+              ? 'border-b border-dotted border-terre/80'
+              : corpusState.cefrLevel === 'C1'
+              ? 'border-b border-dotted border-prune/75'
+              : corpusState.cefrLevel === 'B2'
+              ? 'border-b border-dotted border-bleuet/75'
+              : 'border-b border-dotted border-sauge/75'
+            : '';
+
+        const corpusTitle =
+          isClickableWord && corpusState.inCorpus
+            ? `Corpus ${corpusState.cefrLevel} (${corpusState.lemma}) · Cliquer pour analyser`
+            : undefined;
+
+        const showRuby = shouldDisplayRuby(
+          token,
+          tIdx,
+          isStudyMode,
+          isMasteredWord,
+          corpusState.inCorpus
+        );
         const rubyIpa = showRuby ? quickClientIpa(clean, lang, enrichedIpaMap) : '';
 
         if (isFirstWord && token.length >= 1) {
@@ -1266,8 +1418,15 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
           return (
             <span
               key={tIdx}
-              onClick={() => handleInteractiveWordClick(token, para.text, lang)}
-              className={`cursor-pointer rounded px-0.5 transition-colors hover:bg-soleil-wash ${highlightClass} ${
+              onClick={
+                isClickableWord
+                  ? () => handleInteractiveWordClick(token, para.text, lang)
+                  : undefined
+              }
+              title={corpusTitle}
+              className={`rounded px-0.5 transition-colors ${
+                isClickableWord ? 'cursor-pointer hover:bg-soleil-wash' : ''
+              } ${corpusUnderlineClass} ${highlightClass} ${
                 isSelected ? 'bg-prune-wash text-prune font-semibold' : ''
               }`}
             >
@@ -1281,8 +1440,15 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
           return (
             <ruby
               key={tIdx}
-              onClick={() => handleInteractiveWordClick(token, para.text, lang)}
-              className={`target-word cursor-pointer rounded px-0.5 transition-colors hover:bg-soleil-wash ${highlightClass} ${
+              onClick={
+                isClickableWord
+                  ? () => handleInteractiveWordClick(token, para.text, lang)
+                  : undefined
+              }
+              title={corpusTitle}
+              className={`target-word rounded px-0.5 transition-colors ${
+                isClickableWord ? 'cursor-pointer hover:bg-soleil-wash' : ''
+              } ${corpusUnderlineClass} ${highlightClass} ${
                 isSelected ? 'bg-prune-wash text-prune' : ''
               }`}
             >
@@ -1294,11 +1460,20 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
           );
         }
 
+        if (!isClickableWord) {
+          return (
+            <span key={tIdx} className={highlightClass || undefined}>
+              {token}
+            </span>
+          );
+        }
+
         return (
           <span
             key={tIdx}
             onClick={() => handleInteractiveWordClick(token, para.text, lang)}
-            className={`cursor-pointer rounded px-0.5 transition-colors hover:bg-soleil-wash ${highlightClass} ${
+            title={corpusTitle}
+            className={`cursor-pointer rounded px-0.5 transition-colors hover:bg-soleil-wash ${corpusUnderlineClass} ${highlightClass} ${
               isSelected ? 'bg-prune-wash text-prune font-semibold underline' : ''
             }`}
           >
@@ -1770,18 +1945,38 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
               )}
             </div>
 
-            {/* Centre : Selector de Umbral FSRS del Ruby Adaptativo */}
-            <div className="flex items-center gap-2 bg-paper-warm px-3.5 py-1 rounded-full border border-rule">
-              <SlidersHorizontal size={13} className="text-sauge" />
-              <span className="text-[11px] font-bold text-ink-2">Filtro FSRS:</span>
+            {/* Centre : Sélecteur Corpus B1-C2 & Umbral FSRS */}
+            <div className="flex items-center gap-2 flex-wrap justify-center">
               <button
                 type="button"
-                onClick={handleCycleFsrsThreshold}
-                className="bg-sauge hover:bg-sauge-2 text-white rounded-full px-2.5 py-0.5 text-[10.5px] font-extrabold transition-colors"
-                title="Alternar densidad de glosas fonéticas según retención FSRS"
+                onClick={() => setCorpusOnlyClickable((prev) => !prev)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10.5px] font-bold transition-colors ${
+                  corpusOnlyClickable
+                    ? 'bg-prune-wash text-prune border-prune/30'
+                    : 'bg-paper-warm text-ink-2 border-rule hover:text-ink'
+                }`}
+                title="Basculer entre les mots cibles du corpus B1–C2 (non appris) et tout le texte cliquable"
               >
-                {fsrsThreshold === 0 ? 'IPA Oculto' : `Retención < ${fsrsThreshold}%`}
+                <Sparkles size={12} />
+                <span>
+                  {corpusOnlyClickable
+                    ? `Corpus B1–C2 (${masteredWords.size} apprises)`
+                    : 'Mode Libre (tout cliquable)'}
+                </span>
               </button>
+
+              <div className="flex items-center gap-2 bg-paper-warm px-3.5 py-1 rounded-full border border-rule">
+                <SlidersHorizontal size={13} className="text-sauge" />
+                <span className="text-[11px] font-bold text-ink-2">Filtro FSRS:</span>
+                <button
+                  type="button"
+                  onClick={handleCycleFsrsThreshold}
+                  className="bg-sauge hover:bg-sauge-2 text-white rounded-full px-2.5 py-0.5 text-[10.5px] font-extrabold transition-colors"
+                  title="Alternar densidad de glosas fonéticas según retención FSRS"
+                >
+                  {fsrsThreshold === 0 ? 'IPA Oculto' : `Retención < ${fsrsThreshold}%`}
+                </button>
+              </div>
             </div>
 
             {/* Droite : Audio TTS & Typographie A+ / A- */}
@@ -2145,9 +2340,16 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
         <div className="fixed right-8 bottom-8 w-[360px] max-w-[calc(100vw-2rem)] bg-paper rounded-[24px] border border-rule shadow-2xl p-6 z-50 animate-in fade-in slide-in-from-bottom-4">
           <div className="flex items-start justify-between gap-3 mb-2">
             <div>
-              <span className="inline-block text-[9.5px] uppercase tracking-[0.12em] font-extrabold text-sauge bg-sauge-wash px-2.5 py-0.5 rounded-full">
-                {selectedWord.grammatical}
-              </span>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {selectedWord.corpusLevel && (
+                  <span className="inline-block text-[9.5px] uppercase tracking-[0.12em] font-extrabold text-prune bg-prune-wash px-2 py-0.5 rounded-full">
+                    Corpus {selectedWord.corpusLevel}
+                  </span>
+                )}
+                <span className="inline-block text-[9.5px] uppercase tracking-[0.12em] font-extrabold text-sauge bg-sauge-wash px-2.5 py-0.5 rounded-full">
+                  {selectedWord.grammatical}
+                </span>
+              </div>
               <h3 className="font-serif text-[22px] font-normal text-ink mt-1 mb-0.5">
                 {selectedWord.lemma || selectedWord.word}
               </h3>
@@ -2263,6 +2465,17 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                   ? 'Guardando…'
                   : 'Guardar en Mazo FSRS (1:1)'}
               </span>
+            </button>
+
+            <button
+              type="button"
+              disabled={savingFsrs}
+              onClick={handleMarkWordMastered}
+              className="w-full rounded-full py-2 px-4 text-[11px] font-bold border border-sauge/30 bg-sauge-wash/70 hover:bg-sauge hover:text-white text-sauge transition-colors flex items-center justify-center gap-1.5"
+              title="Marque ce mot comme appris pour qu’il ne soit plus cliquable dans les prochains chapitres et livres"
+            >
+              <Check size={13} />
+              <span>Marquer apprise (masquer partout)</span>
             </button>
 
             <button
